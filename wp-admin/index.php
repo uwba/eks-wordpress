@@ -17,12 +17,8 @@ require_once(ABSPATH . 'wp-admin/includes/dashboard.php');
 wp_dashboard_setup();
 
 wp_enqueue_script( 'dashboard' );
-if ( current_user_can( 'edit_theme_options' ) )
-	wp_enqueue_script( 'customize-loader' );
-if ( current_user_can( 'install_plugins' ) )
-	wp_enqueue_script( 'plugin-install' );
-if ( current_user_can( 'upload_files' ) )
-	wp_enqueue_script( 'media-upload' );
+wp_enqueue_script( 'plugin-install' );
+wp_enqueue_script( 'media-upload' );
 add_thickbox();
 
 if ( wp_is_mobile() )
@@ -76,7 +72,7 @@ if ( current_user_can( 'moderate_comments' ) )
 	$help .= '<p>' . __('<strong>Recent Comments</strong> - Shows the most recent comments on your posts (configurable, up to 30) and allows you to moderate them.') . '</p>';
 if ( current_user_can( 'publish_posts' ) )
 	$help .= '<p>' . __('<strong>Incoming Links</strong> - Shows links to your site found by Google Blog Search.') . '</p>';
-if ( current_user_can( 'create_posts' ) ) {
+if ( current_user_can( 'edit_posts' ) ) {
 	$help .= '<p>' . __('<strong>QuickPress</strong> - Allows you to create a new post and either publish it or save it as a draft.') . '</p>';
 	$help .= '<p>' . __('<strong>Recent Drafts</strong> - Displays links to the 5 most recent draft posts you&#8217;ve started.') . '</p>';
 }
@@ -110,21 +106,7 @@ $today = current_time('mysql', 1);
 <?php screen_icon(); ?>
 <h2><?php echo esc_html( $title ); ?></h2>
 
-<?php if ( has_action( 'welcome_panel' ) && current_user_can( 'edit_theme_options' ) ) :
-	$classes = 'welcome-panel';
-
-	$option = get_user_meta( get_current_user_id(), 'show_welcome_panel', true );
-	// 0 = hide, 1 = toggled to show or single site creator, 2 = multisite site owner
-	$hide = 0 == $option || ( 2 == $option && wp_get_current_user()->user_email != get_option( 'admin_email' ) );
-	if ( $hide )
-		$classes .= ' hidden'; ?>
-
- 	<div id="welcome-panel" class="<?php echo esc_attr( $classes ); ?>">
- 		<?php wp_nonce_field( 'welcome-panel-nonce', 'welcomepanelnonce', false ); ?>
-		<a class="welcome-panel-close" href="<?php echo esc_url( admin_url( '?welcome=0' ) ); ?>"><?php _e( 'Dismiss' ); ?></a>
-		<?php do_action( 'welcome_panel' ); ?>
-	</div>
-<?php endif; ?>
+<?php wp_welcome_panel(); ?>
 
 <div id="dashboard-widgets-wrap">
 
