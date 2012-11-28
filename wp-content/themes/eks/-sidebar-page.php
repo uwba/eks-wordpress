@@ -1,0 +1,1 @@
+<?php dynamic_sidebar( 'page' ); // Upcoming events, Simple Section Navigation?>
