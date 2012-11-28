@@ -218,12 +218,12 @@ class VA_Listing_Dashboard extends APP_View {
 		// dashboard permalinks
 
 		appthemes_add_rewrite_rule( $dashboard_permalink . '/?$', array(
-			'dashboard' => $dashboard_listings_permalink,
+			'dashboard' => 'listings',
 			'dashboard_author' => 'self'
 		) );
 
 		appthemes_add_rewrite_rule( $dashboard_permalink . '/page/(\d)/?$', array(
-			'dashboard' => $dashboard_listings_permalink,
+			'dashboard' => 'listings',
 			'dashboard_author' => 'self',
 			'paged' => '$matches[1]',
 		) );
@@ -394,10 +394,9 @@ class VA_Listing_Edit extends VA_Listing_Create {
 
 		$wp->add_query_var( 'listing_edit' );
 
-		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->edit_listing_permalink;
 
-		appthemes_add_rewrite_rule( $listing_permalink. '/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
 			'listing_edit' => '$matches[1]'
 		) );
 	}
@@ -452,11 +451,10 @@ class VA_Listing_Purchase extends APP_View {
 		global $wp, $va_options;
 
 		$wp->add_query_var( 'listing_purchase' );
-		
-		$listing_permalink = $va_options->listing_permalink;
+
 		$permalink = $va_options->purchase_listing_permalink;
 
-		appthemes_add_rewrite_rule( $listing_permalink . '/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
 			'listing_purchase' => '$matches[1]'
 		) );
 	}
@@ -509,10 +507,9 @@ class VA_Listing_Claim extends APP_View {
 
 		$wp->add_query_var( 'listing_claim' );
 
-		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->claim_listing_permalink;
 
-		appthemes_add_rewrite_rule( $listing_permalink . '/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
 			'listing_claim' => '$matches[1]'
 		) );
 		
@@ -522,7 +519,6 @@ class VA_Listing_Claim extends APP_View {
 		add_action( 'appthemes_transaction_completed', array( $this, 'handle_claim_transaction_completed' ) );
 		add_action( 'pending-claimed_to_publish', array( $this, 'update_listing_author' ) );
 		add_action( 'va_purchase_activated', array( $this, 'update_order_listing_author' ) );
-		add_action( 'appthemes_transaction_activated', array( $this, 'update_order_listing_author' ) );
 		add_action( 'appthemes_after_import_upload_form', array( $this, 'import_form_option' ) );
 		add_action( 'app_importer_import_row_post_meta', array( $this, 'import_form_action' ) );
 		
@@ -577,10 +573,6 @@ class VA_Listing_Claim extends APP_View {
 			
 			if ( empty( $claimable ) )
 				$errors->add( 'not-claimable', __( 'This listing is not claimable.', APP_TD ) );
-
-			if ( get_current_user_id() == get_post( $_POST['ID'] )->post_author )
-				$errors->add( 'own-not-claimable', __( 'This listing already belongs to you.', APP_TD ) );
-
 		}
 
 		return $errors;	

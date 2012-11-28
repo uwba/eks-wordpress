@@ -74,14 +74,13 @@ class APP_Geo_Query {
 		scb_uninstall_table( 'app_geodata' );
 	}
 
-	/**
-	 * Calculates the distance between two points on the surface of an Earth-sized sphere
-	 */
-	protected function distance( $lat_1, $lng_1, $lat_2, $lng_2, $unit ) {
-		$earth_radius = ('mi' == $unit) ? 3959 : 6371;
+	function distance($lat_1, $lng_1, $lat_2, $lng_2, $unit = 'mi') {
+		list( $unit, $region ) = get_theme_support( 'app-geo' );
 
-		$delta_lat = $lat_2 - $lat_1;
-		$delta_lon = $lng_2 - $lng_1;
+		$earth_radius = 'mi' == $unit ? 3959 : 6371;
+
+		$delta_lat = $lat_2 - $lat_1 ;
+		$delta_lon = $lng_2 - $lng_1 ;
 		$alpha    = $delta_lat/2;
 		$beta     = $delta_lon/2;
 		$a        = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($lat_1)) * cos(deg2rad($lat_2)) * sin(deg2rad($beta)) * sin(deg2rad($beta)) ;
@@ -139,13 +138,10 @@ class APP_Geo_Query {
 					$geocode->results[0]->geometry->bounds->northeast->lat,
 					$geocode->results[0]->geometry->bounds->northeast->lng,
 					$geocode->results[0]->geometry->bounds->southwest->lat,
-					$geocode->results[0]->geometry->bounds->southwest->lng,
-					$unit
+					$geocode->results[0]->geometry->bounds->southwest->lng
 				);
 
-				// since distance is more of a diameter, and since the bounds are a square,
-				// lets use something more than half the diameter to make a radius (circle)
-				// thats clsoe to the the area of the square bounds
+				// since distance is more of a diameter, and since the bounds are a square, lets use something more than half the diameter to make a radius (circle) thats clsoe to the the area of the square bounds
 				$radius = $bounds_distance * .65;
 			}
 

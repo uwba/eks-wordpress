@@ -147,16 +147,3 @@ function va_get_featured_listings() {
 	return $query;
 }
 
-function va_any_featured_addon_enabled(){
-
-	global $va_options;
-
-	$addons = array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT );
-	foreach( $addons as $addon ){
-		if( $va_options->addons[$addon]['enabled'] == 'yes' )
-			return true;
-	}
-
-	return false;
-}
-

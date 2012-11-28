@@ -221,38 +221,25 @@ function appthemes_display_notice( $class, $msg ) {
  * Create categories list.
  *
  * @param array $args
- * @param array $terms_args
  *
  * @return string
  */
-function appthemes_categories_list( $args, $terms_args = array() ) {
+function appthemes_categories_list( $args ) {
 
-	$defaults = array(
-		'menu_cols' => 2,
-		'menu_depth' => 3,
-		'menu_sub_num' => 3,
-		'cat_parent_count' => false,
-		'cat_child_count' => false,
-		'cat_hide_empty' => false,
-		'cat_nocatstext' => true,
-		'taxonomy' => 'category',
-	);
+	$defaults = array('menu_cols' => 2,
+										'menu_depth' => 3,
+										'menu_sub_num' => 3,
+										'cat_parent_count' => false,
+										'cat_child_count' => false,
+										'cat_hide_empty' => false,
+										'cat_nocatstext' => true,
+										'cat_order' => 'ASC',
+										'taxonomy' => 'category');
 
 	$options = wp_parse_args( (array)$args, $defaults );
 
-	$terms_defaults = array(
-		'hide_empty' => false,
-		'hierarchical' => true,
-		'pad_counts' => true,
-		'show_count' => true,
-		'orderby' => 'name',
-		'order' => 'ASC',
-	);
-
-	$terms_args = wp_parse_args( (array)$terms_args, $terms_defaults );
-
 	// get all terms for the taxonomy
-	$terms = get_terms( $options['taxonomy'], $terms_args );
+	$terms = get_terms( $options['taxonomy'], 'hide_empty=0&hierarchical=1&pad_counts=1&show_count=1&orderby=name&order='.$options['cat_order'] );
 	$cats = array();
 	$subcats = array();
 	$cat_menu = '';
@@ -403,34 +390,5 @@ function appthemes_get_password_recovery_url( $context = 'display' ) {
 
 function appthemes_framework_image( $name ) {
 	return get_template_directory_uri() . '/framework/images/' . $name;
-}
-
-function appthemes_absfloat( $maybefloat ){
-	return abs( floatval( $maybefloat ) );
-}
-
-/**
- * Preserve a REQUEST variable by generating a hidden input for it
- */
-function appthemes_pass_request_var( $keys ) {
-	foreach ( (array) $keys as $key ) {
-		if ( isset( $_REQUEST[ $key ] ) )
-			_appthemes_form_serialize( $_REQUEST[ $key ], array( $key ) );
-	}
-}
-
-function _appthemes_form_serialize( $data, $name ) {
-	if ( !is_array( $data ) ) {
-		echo html( 'input', array(
-			'type' => 'hidden',
-			'name' => scbForms::get_name( $name ),
-			'value' => $data
-		) ) . "\n";
-		return;
-	}
-
-	foreach ( $data as $key => $value ) {
-		_appthemes_form_serialize( $value, array_merge( $name, array( $key ) ) );
-	}
 }
 

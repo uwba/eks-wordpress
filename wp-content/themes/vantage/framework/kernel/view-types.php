@@ -123,28 +123,29 @@ class APP_View_Page extends APP_View {
 
 		$page_id = (int) get_query_var( 'page_id' );
 
-		return $page_id && $page_id == self::_get_id( get_class( $this ) ); // for 'page_on_front'
+		return $page_id && $page_id == self::get_id( $this->template ); // for 'page_on_front'
 	}
 
 	static function _get_id( $class ) {
-		$template = self::$instances[ $class ]->template;
+		return self::get_id( self::$instances[ $class ]->template );
+	}
 
-		if ( isset( self::$page_ids[ $template ] ) )
-			return self::$page_ids[ $template ];
+	static function get_id( $template ) {
+		if ( isset( self::$page_ids[$template] ) )
+			return self::$page_ids[$template];
 
 		// don't use 'fields' => 'ids' because it skips caching
-		$page_q = new WP_Query( array(
+		$pages = get_posts( array(
 			'post_type' => 'page',
 			'meta_key' => '_wp_page_template',
 			'meta_value' => $template,
-			'posts_per_page' => 1,
-			'suppress_filters' => true
+			'posts_per_page' => 1
 		) );
 
-		if ( empty( $page_q->posts ) )
+		if ( empty( $pages ) )
 			$page_id = 0;
 		else
-			$page_id = $page_q->posts[0]->ID;
+			$page_id = $pages[0]->ID;
 
 		self::$page_ids[$template] = $page_id;
 
@@ -152,8 +153,8 @@ class APP_View_Page extends APP_View {
 	}
 
 	static function install() {
-		foreach ( self::$instances as $class => $instance ) {
-			if ( self::_get_id( $class ) )
+		foreach ( self::$instances as $instance ) {
+			if ( self::get_id( $instance->template ) )
 				continue;
 
 			$page_id = wp_insert_post( array(
@@ -170,8 +171,8 @@ class APP_View_Page extends APP_View {
 	}
 
 	static function uninstall() {
-		foreach ( self::$instances as $class => $instance ) {
-			$page_id = self::_get_id( $class );
+		foreach ( self::$instances as $instance ) {
+			$page_id = self::get_id( $instance->template );
 
 			if ( !$page_id )
 				continue;
@@ -184,4 +185,8 @@ class APP_View_Page extends APP_View {
 }
 
 add_action( 'appthemes_first_run', array( 'APP_View_Page', 'install' ), 9 );
+
+// Back-compat
+abstract class APP_View_Controller extends APP_View {}
+class APP_Page_Template extends APP_View_Page {}
 

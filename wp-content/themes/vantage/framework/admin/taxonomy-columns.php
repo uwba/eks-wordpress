@@ -1,14 +1,12 @@
 <?php
-/**
- * Generates a column with the associated terms,
- * for any taxonomy with 'show_admin_column' => true
- *
- * Implemented in http://core.trac.wordpress.org/ticket/21240
- */
 
 add_action( 'registered_taxonomy', array( 'APP_Tax_Admin_Column', 'register_column' ), 10, 3 );
 
 
+/**
+ * Generates a column with the associated terms,
+ * for any taxonomy with 'show_admin_column' => true
+ */
 class APP_Tax_Admin_Column {
 
 	static function register_column( $taxonomy, $object_type, $args ) {

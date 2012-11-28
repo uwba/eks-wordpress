@@ -23,7 +23,7 @@ function appthemes_process_gateway( $gateway_id, $order ) {
 	$options = APP_Gateway_Registry::get_gateway_options( $gateway_id );
 	$gateway = APP_Gateway_Registry::get_gateway( $gateway_id );
 
-	if( APP_Gateway_Registry::is_gateway_enabled( $gateway_id ) || current_user_can( 'manage_options') )
+	if( APP_Gateway_Registry::is_gateway_enabled( $gateway_id ) )
 		$gateway->process( $receipt_order, $options );
 	else
 		return false;
@@ -40,18 +40,11 @@ function appthemes_list_gateway_dropdown( $input_name = 'payment_gateway' ) {
 	$gateways = array();
 	foreach ( APP_Gateway_Registry::get_gateways() as $gateway ) {
 
+		// Skip disabled gateways
 		if ( !APP_Gateway_registry::is_gateway_enabled( $gateway->identifier() ) ) {
-
-			if( current_user_can( 'manage_options' ) )
-				$gateways[ $gateway->identifier() ] = $gateway->display_name( 'dropdown' ) . __( ' (disabled)');
-
 			continue;
 		}
 		$gateways[ $gateway->identifier() ] = $gateway->display_name( 'dropdown' );
-	}
-
-	if( empty( $gateways ) ){
-		$gateways[''] = __( '-- No Gateways are currently available. --', APP_TD );
 	}
 
 	echo scbForms::input( array(

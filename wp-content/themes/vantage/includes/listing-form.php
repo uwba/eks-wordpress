@@ -51,7 +51,6 @@ function va_handle_listing_form() {
 function va_handle_update_listing() {
 
 	$listing_cat = va_get_listing_cat_id();
-
 	$args = wp_array_slice_assoc( $_POST, array( 'ID', 'post_title', 'post_content', 'tax_input' ) );
 
 	$errors = apply_filters( 'va_listing_validate_fields', va_get_listing_error_obj() );
@@ -67,10 +66,6 @@ function va_handle_update_listing() {
 		$listing_id = wp_update_post( $args );
 	}
 
-	$tags = va_get_listing_tags($args['tax_input'][VA_LISTING_TAG]);
-
-	wp_set_object_terms( $listing_id, $tags, VA_LISTING_TAG );
-	
 	wp_set_object_terms( $listing_id, (int) $listing_cat, VA_LISTING_CATEGORY );
 
 	foreach ( va_get_listing_contact_fields() as $field ) {
@@ -158,16 +153,6 @@ function va_get_listing_cat_id() {
 	}
 
 	return $cat_id;
-}
-
-function va_get_listing_tags($tags_string) {
-	$tags_array = array();
-
-	foreach(explode(',',$tags_string) as $tag){
-		$tags_array[] = trim($tag);
-	}
-
-	return $tags_array;
 }
 
 function the_listing_tags_to_edit( $listing_id ) {

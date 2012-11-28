@@ -45,7 +45,20 @@ class P2P_Connection_Type_Factory {
 				$args[ $direction . '_object' ] = 'attachment';
 
 			if ( 'post' == $args[ $direction . '_object' ] ) {
-				$args[ $direction . '_query_vars' ]['post_type'] = (array) $object;
+				$validated = array();
+
+				foreach ( (array) $object as $ptype ) {
+					if ( !post_type_exists( $ptype ) ) {
+						trigger_error( "Post type '$ptype' is not defined." );
+					} else {
+						$validated[] = $ptype;
+					}
+				}
+
+				if ( empty( $validated ) )
+					$validated = array( 'post' );
+
+				$args[ $direction . '_query_vars' ]['post_type'] = $validated;
 			}
 		}
 

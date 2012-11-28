@@ -1,25 +1,11 @@
 <?php
-function va_get_dashboard_permalink_setting( $permalink ) {
-	global $va_options;
-
-	$permalinks = array(
-		'dashboard' => $va_options->dashboard_permalink,
-		'listings' => $va_options->dashboard_listings_permalink,
-		'reviews' => $va_options->dashboard_reviews_permalink,
-		'favorites' => $va_options->dashboard_faves_permalink,
-		'claimed-listings' => $va_options->dashboard_claimed_permalink,
-	);
-
-	return $permalinks[$permalink];
-}
-
 function va_get_dashboard_name() {
 	global $wp_query;
 	$dashboard_type = $wp_query->get( 'dashboard' );
-
-	if ( $dashboard_type == va_get_dashboard_permalink_setting('reviews') ) {
+	
+	if ( $dashboard_type == 'reviews' ) {
 		return __( 'Reviews', APP_TD );
-	} else if ( $dashboard_type == va_get_dashboard_permalink_setting('claimed-listings') ) {
+	} else if ( $dashboard_type == 'claimed_listings' ) {
 		return __( 'Claimed Listings', APP_TD );
 	} else {
 		return __( 'Listings', APP_TD );
@@ -29,12 +15,12 @@ function va_get_dashboard_name() {
 function va_get_dashboard_type() {
 	global $wp_query;
 	$dashboard_type = $wp_query->get( 'dashboard' );
-
-	if ( $dashboard_type == va_get_dashboard_permalink_setting('reviews') ) {
+	
+	if ( $dashboard_type == 'reviews' ) {
 		return 'reviews';
-	} else if ( $dashboard_type == va_get_dashboard_permalink_setting('claimed-listings') ) {
+	} else if ( $dashboard_type == 'claimed-listings' ) {
 		return 'claimed-listings';
-	} elseif ( $dashboard_type == va_get_dashboard_permalink_setting('favorites') ) {
+	} elseif ( $dashboard_type == 'favorites' ) {
 		return 'favorites';
 	} else {
 		return 'listings';
@@ -216,7 +202,7 @@ function va_get_listing_expiration_notice( $listing_id = '' ) {
 	if( !$expiration_date )
 		return;
 
-	$is_expired = strtotime($expiration_date) < time();
+	$is_expired = strtotime($expiration_date) > time();
 	if( $is_expired ){
 		$notice = sprintf( __('Listing Expired on: %s', APP_TD ), mysql2date( get_option('date_format'), $expiration_date ) );
 	}else{
@@ -276,38 +262,42 @@ function va_the_author_listings_link( $user_id = '' ) {
 }
 
 function va_get_the_author_listings_link( $user_id = '' ) {
+	global $va_options;
+
 	$nicename = get_the_author_meta( 'user_nicename', $user_id );
 	$display_name = get_the_author_meta( 'display_name', $user_id );
 
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('listings');
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_listings_permalink;
 
 	if ( get_option('permalink_structure') != '' ) { 
 		$url .=  $permalink . '/' . $nicename . '/';
 	} else {
-		$url .= '?dashboard='.va_get_dashboard_permalink_setting('listings').'&dashboard_author=' . $nicename . '';
+		$url .= '?dashboard=listings&dashboard_author=' . $nicename . '';
 	}
 	
 	return html_link( $url, $display_name );
 }
 
 function va_get_the_author_listings_url( $user_id = '' , $self = false ) {
+	global $va_options;
+
 	$nicename = get_the_author_meta( 'user_nicename', $user_id );
 
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('listings');
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_listings_permalink;
 
 	if ( $self ) {
 		if ( get_option('permalink_structure') != '' ) { 
 			$url .=  $permalink . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('listings').'&dashboard_author=self';
+			$url .= '?dashboard=listings&dashboard_author=self';
 		}
 	} else {
 		if ( get_option('permalink_structure') != '' ) { 
 			$url .=  $permalink . '/' . $nicename . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('listings').'&dashboard_author='.$nicename;
+			$url .= '?dashboard=listings&dashboard_author='.$nicename;
 		}
 	}
 
@@ -315,13 +305,15 @@ function va_get_the_author_listings_url( $user_id = '' , $self = false ) {
 }
 
 function va_get_claimed_listings_url() {
+	global $va_options;
+
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('claimed-listings') . '/';
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_claimed_permalink . '/';
 	
 	if ( get_option('permalink_structure') != '' ) { 
 		$url .=  $permalink;
 	} else {
-		$url .= '?dashboard='.va_get_dashboard_permalink_setting('claimed-listings').'&dashboard_author=self';
+		$url .= '?dashboard=claimed_listings&dashboard_author=self';
 	}
 	
 	return $url;
@@ -332,51 +324,57 @@ function va_the_author_reviews_link( $user_id = '' ) {
 }
 
 function va_get_the_author_reviews_link( $user_id = '' ) {
+	global $va_options;
+	
 	$nicename = get_the_author_meta( 'user_nicename', $user_id );
 	$display_name = get_the_author_meta( 'display_name', $user_id );
 
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('reviews');
+	$permalink = '/' . $va_options->dashboard_reviews_permalink;
 
 	if ( get_option('permalink_structure') != '' ) { 
 		$url .=  $permalink . '/' . $nicename . '/';
 	} else {
-		$url .= '?dashboard='.va_get_dashboard_permalink_setting('reviews').'&dashboard_author='.$nicename;
+		$url .= '?dashboard=reviews&dashboard_author='.$nicename;
 	}
 
 	return html_link( $url, $display_name );
 }
 
 function va_get_edit_review_url( $review_id ) {
+	global $va_options;
+
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('reviews');
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_reviews_permalink;
 
 	if ( get_option('permalink_structure') != '' ) { 
 		$url .=  $permalink . '/#review-' . $review_id;
 	} else {
-		$url .= '?dashboard='.va_get_dashboard_permalink_setting('reviews').'&dashboard_author=self#review-' . $review_id;
+		$url .= '?dashboard=reviews&dashboard_author=self#review-' . $review_id;
 	}	
 
 	return $url;
 }
 
 function va_get_the_author_reviews_url( $user_id = '' , $self = false ) {
+	global $va_options;
+
 	$nicename = get_the_author_meta( 'user_nicename', $user_id );
 	
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('reviews');
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_reviews_permalink;
 
 	if ( $self ) {
 		if ( get_option('permalink_structure') != '' ) { 
 			$url .=  $permalink . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('reviews').'&dashboard_author=self';
+			$url .= '?dashboard=reviews&dashboard_author=self';
 		}
 	} else {
 		if ( get_option('permalink_structure') != '' ) { 
 			$url .=  $permalink . '/' . $nicename . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('reviews').'&dashboard_author='.$nicename;
+			$url .= '?dashboard=reviews&dashboard_author='.$nicename;
 		}
 	}
 
@@ -384,22 +382,24 @@ function va_get_the_author_reviews_url( $user_id = '' , $self = false ) {
 }
 
 function va_get_the_author_faves_url( $user_id = '' , $self = false ) {
+	global $va_options;
+
 	$nicename = get_the_author_meta( 'user_nicename', $user_id );
 
 	$url = get_bloginfo( 'wpurl' );
-	$permalink = '/' . va_get_dashboard_permalink_setting('dashboard') . '/' . va_get_dashboard_permalink_setting('favorites');
+	$permalink = '/' . $va_options->dashboard_permalink . '/' . $va_options->dashboard_faves_permalink;
 
 	if ( $self ) {
 		if ( get_option('permalink_structure') != '' ) {
 			$url .=  $permalink . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('favorites').'&dashboard_author=self';
+			$url .= '?dashboard=favorites&dashboard_author=self';
 		}
 	} else {
 		if ( get_option('permalink_structure') != '' ) {
 			$url .=  $permalink . '/' . $nicename . '/';
 		} else {
-			$url .= '?dashboard='.va_get_dashboard_permalink_setting('favorites').'&dashboard_author='.$nicename;
+			$url .= '?dashboard=favorites&dashboard_author='.$nicename;
 		}
 	}
 

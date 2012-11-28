@@ -221,33 +221,8 @@ function vantage_map_edit() {
 	});
 
 	var marker = new google.maps.Marker({
-		map: map,
-		draggable: true
+		map: map
 	});
-	
-	google.maps.event.addListener(marker, 'dragend', function() {
-		var drag_position = marker.getPosition();
-
-		jQuery('input[name="lat"]').val(drag_position.lat());
-		jQuery('input[name="lng"]').val(drag_position.lng());
-		update_position(drag_position);
-		
-		var data = {
-			latLng: new google.maps.LatLng( drag_position.lat() , drag_position.lng() )
-		}
-
-		geocoder.geocode( data, function(results, status) {
-			if ( status == google.maps.GeocoderStatus.OK ) {
-				var found_location = results[0].geometry.location;
-				
-				jQuery('#listing-address').val(results[0].formatted_address);
-
-			} else {
-				alert("Google Maps error: " + status );
-			}
-		});
-
-	});	
 
 	function update_position(found_location) {
 		map.setCenter(found_location);
@@ -291,34 +266,18 @@ function vantage_map_edit() {
 		update_map(jQuery.noop);
 	});
 
-}
-
-function quickEditListing() {
-	var _edit = inlineEditPost.edit;
-	inlineEditPost.edit = function( id ) {
-
-		var args = [].slice.call( arguments );
-		_edit.apply( this, args );
-		
-		if ( typeof( id ) == 'object' ) {
-			id = this.getId( id );
+	function ensureMapInit(form) {
+		if ( map_initialized ) {
+			form.submit();
+			return;
 		}
 
-		if ( this.type == 'post' ) {
-			var editRow = jQuery( '#edit-' + id ), postRow = jQuery( '#post-'+id );
-			
-			// get the existing values
-			var listing_claimable = ( 1 == jQuery( 'input[name="listing_claimable"]', postRow ).val() ? true : false );
+		update_map(function(status) {
+			form.submit();
+		});
+	}
 
-			// set the values in the quick-editor
-			jQuery( ':input[name="listing_claimable"]', editRow ).attr( 'checked', listing_claimable );
-		}
-	};
-}
-
-// Ensure inlineEditPost.edit isn't patched until it's defined
-if ( inlineEditPost ) {
-	quickEditListing();
-} else {
-	jQuery( quickEditListing );
+	jQuery('#post').validate({
+		submitHandler: ensureMapInit
+	});
 }

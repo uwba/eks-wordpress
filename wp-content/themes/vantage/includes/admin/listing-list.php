@@ -21,7 +21,6 @@ function va_listing_manage_columns( $columns ) {
 	$columns['comments'] = $comments;
 	$columns['date'] = $date;
 	$columns['thumbnail'] = '';
-	$columns['claimable'] = '';
 	return $columns;
 }
 
@@ -43,49 +42,7 @@ function va_listing_add_column_data( $column_index, $post_id ) {
 	case 'claimee' :
 		echo va_get_the_author_listings_link( get_post_meta( $post_id, 'claimee', true ) );
 		break;
-	case 'claimable' :
-		echo '<input type="hidden" name="listing_claimable" value="'. ( 1 == get_post_meta( $post_id, 'listing_claimable', true ) ? '1': '') .'" />';
-		break;
+		
 	}
 }
 
-add_action( 'quick_edit_custom_box', 'va_quick_edit_claimee', 10, 2 );
-add_action( 'bulk_edit_custom_box', 'va_quick_edit_claimee', 10, 2 );
-
-function va_quick_edit_claimee( $column_name, $post_type ) {
-    switch ( $column_name ) {
-    case 'claimable':
-         ?>
-		    <fieldset class="inline-edit-col-right inline-edit-<?php echo $column_name ?>">
-		      <div class="inline-edit-col inline-edit-<?php echo $column_name ?>">
-		      	<div class="inline-edit-group">
-					<label class="inline-edit-<?php echo $column_name; ?> alignleft">
-						<input name="listing_claimable" type="checkbox" />
-						<span class="checkbox-title"><?php _e( 'Listing Claimable?' , APP_TD ); ?></span>
-					</label>
-		        </div>
-		      </div>
-		    </fieldset>
-		<?php
-        break;
-    }
-}
-
-add_action( 'save_post', 'va_listing_bulk_save' );
-
-function va_listing_bulk_save( $post_id ) {
-
-    if ( empty( $_REQUEST['post_type'] ) || VA_LISTING_PTYPE !== $_REQUEST['post_type'] ) {
-        return;
-    }
-    
-    if ( !current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-    
-    if ( isset( $_REQUEST['listing_claimable'] ) ) {
-        update_post_meta( $post_id, 'listing_claimable', 1 );
-    } else {
-    	delete_post_meta( $post_id, 'listing_claimable' );
-    }
-}

@@ -49,11 +49,12 @@ function va_init_category_walker() {
  * Hook into 'wp_terms_checklist_args' to override the category Walker and display radios buttons instead of checkboxes
  */
 function va_category_checklist( $args, $post_id ) {
-	if ( get_current_screen()->post_type == VA_LISTING_PTYPE ) {
+	global $post;
+
+	if ( is_admin() && VA_LISTING_PTYPE == $post->post_type ) {
 		$args['walker'] = new VA_Category_Walker( $post_id, $args['taxonomy'] );
 		$args['checked_ontop'] = FALSE;
 	}
-
 	return $args;
 }
 
@@ -73,7 +74,7 @@ function va_listing_hide_meta(){
 }
 
 class VA_Listing_Location_Meta extends APP_Meta_Box {
-
+	
 	public function __construct(){
 
 		if ( isset($_GET['post']) ) {
@@ -83,7 +84,7 @@ class VA_Listing_Location_Meta extends APP_Meta_Box {
 		} else if ( isset( $_POST['post_type'] ) && VA_LISTING_PTYPE != $_POST['post_type'] ) {
 			return;
 		}
-
+		
 		parent::__construct( 'listing-location', __( 'Location', APP_TD ), VA_LISTING_PTYPE, 'normal', 'default' );
 
 	}
@@ -147,7 +148,7 @@ class VA_Listing_Location_Meta extends APP_Meta_Box {
 }
 
 class VA_Listing_Claimable_Meta extends APP_Meta_Box {
-
+	
 	public function __construct(){
 		parent::__construct( 'listing-claimable', __( 'Claimable Listing', APP_TD ), VA_LISTING_PTYPE, 'advanced', 'default' );
 	}
@@ -174,23 +175,23 @@ class VA_Listing_Claimable_Meta extends APP_Meta_Box {
 }
 
 class VA_Listing_Reviews_Status_Meta extends APP_Meta_Box {
-
+	
 	public function __construct(){
 		parent::__construct( 'listing-reviews', __( 'Reviews Status', APP_TD ), VA_LISTING_PTYPE, 'advanced', 'default' );
 	}
-
+	
 	public function display( $post ) {
-
+		
 		$form_fields = $this->form();
-
+		
 		$form_data = array('comment_status' => ( $post->comment_status=='open' ? 'open' : '' ) );
 
 		$form = $this->table( $form_fields, $form_data );
-
+		
 		echo $form;
-
+		
 	}
-
+	
 	public function form(){
 		return array(
 			array(
@@ -202,11 +203,11 @@ class VA_Listing_Reviews_Status_Meta extends APP_Meta_Box {
 			),
 		);
 	}
-
+	
 	function save() {
-
+	
 	}
-
+	
 }
 
 class VA_Listing_Claim_Moderation extends APP_Meta_Box {
@@ -217,7 +218,7 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 			return;
 
 		parent::__construct( 'listing-claim-moderation', __( 'Moderation Queue', APP_TD ), VA_LISTING_PTYPE, 'side', 'high' );
-
+		
 		add_action( 'admin_init', array($this, 'reject_claim'), 10, 1 );
 	}
 
@@ -226,9 +227,9 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 		echo html( 'p', array(), __( 'Someone wants to claim this listing.', APP_TD ) );
 
 		$claimee = get_userdata( get_post_meta( $post->ID, 'claimee', true ) );
-
+		
 		echo html( 'p', array(), sprintf( __( '<strong>New Owner:</strong> %s', APP_TD ), html( 'a', array( 'href'=>va_get_the_author_listings_url($claimee->ID), 'target'=>'_blank' ), $claimee->display_name) ) );
-
+		
 		echo html( 'p', array(), html( 'a', array('href'=>'mailto: ' . $claimee->user_email, 'target'=>'_blank' ), sprintf( __( 'Email %s', APP_TD ), $claimee->display_name ) ) );
 
 		echo html( 'input', array(
@@ -250,27 +251,27 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 			), __( 'Rejecting will return it to being published on the site.', APP_TD ) );
 
 	}
-
+	
 	function get_edit_post_link($post_id, $context, $vars) {
 		$link = get_edit_post_link($post_id, $context);
-
+		
 		if ( !empty( $vars ) && is_array( $vars ) ) {
 			$context_and = 'display' == $context ? '&amp;' : '&';
 			foreach($vars as $k=>$v)
 				$link .= $context_and . $k . '=' . $v;
 		}
-
+		
 		return $link;
 	}
-
-	function reject_claim() {
+	
+	function reject_claim() {		
 		if ( !isset( $_GET['reject'] ) ) return;
-
+		
 		if( VA_Listing_Claim::reject_claim() ) {
 			wp_redirect( $this->get_edit_post_link( $_GET['post'], 'url', array('rejected'=>1) ) );
 		}
 	}
-
+	
 	function rejected_claim_success_notice() {
 		echo scb_admin_notice( __( 'You have rejected the claim, and now this listing has been reset to <a href="#listing-claimable">claimable</a>.', APP_TD ) );
 	}
@@ -278,7 +279,7 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 }
 
 class VA_Listing_Contact_Meta extends APP_Meta_Box{
-
+	
 	public function __construct(){
 		parent::__construct( 'listing-contact', __( 'Contact Information', APP_TD ), VA_LISTING_PTYPE, 'normal', 'default' );
 	}
@@ -313,7 +314,7 @@ class VA_Listing_Contact_Meta extends APP_Meta_Box{
 }
 
 class VA_Listing_Pricing_Meta extends APP_Meta_Box{
-
+	
 	public function __construct(){
 		parent::__construct( 'listing-pricing', __( 'Pricing Information', APP_TD ), VA_LISTING_PTYPE, 'normal', 'low' );
 	}
@@ -326,7 +327,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 	}
 
 	public function before_display( $form_data, $post ){
-
+		
 		$form_data['_blank_listing_start_date'] = $post->post_date;
 
 		if( isset ( $form_data['featured-home_start_date'] ) )
@@ -374,7 +375,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 				}
 
 				var get_expiration_time = function(){
-
+					
 					var startDate = $(startDateBox).val();
 					if( startDate == "" ){
 						startDate = new Date();
@@ -384,7 +385,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 					if ( duration == "" ){
 						return "";
 					}
-
+					
 					return getDateString( parseInt( duration, 10 ), startDate );
 				}
 
@@ -524,7 +525,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 }
 
 class VA_Listing_Publish_Moderation extends APP_Meta_Box {
-
+	
 	public function __construct(){
 
 		if( !isset( $_GET['post'] ) || get_post_status( $_GET['post'] ) != 'pending' )

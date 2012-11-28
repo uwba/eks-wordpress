@@ -90,13 +90,12 @@ function va_add_admin_bar_links( $wp_admin_bar ) {
 	if ( !is_user_logged_in() )
 		return;
 
-	$listings_permalink = $va_options->dashboard_listings_permalink;
 	$permalink = $va_options->dashboard_permalink;
 		
 	if ( get_option('permalink_structure') != '' ) {
 		$url = home_url( user_trailingslashit( $permalink ) );
 	} else {
-		$url = home_url( '?dashboard='.$listings_permalink.'&dashboard_author=self' );
+		$url = home_url( '?dashboard=listings&dashboard_author=self' );
 	}
 	
 	$wp_admin_bar->add_node( array(

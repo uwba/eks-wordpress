@@ -46,10 +46,7 @@ function va_cat_menu_drop_down( $location = 'menu' ) {
 	$args['cat_order'] = 'ASC';
 	$args['taxonomy'] = VA_LISTING_CATEGORY;
 
-	$terms_args['pad_counts'] = false;
-	$terms_args['app_pad_counts'] = true;
-
-	return appthemes_categories_list($args, $terms_args);
+	return appthemes_categories_list($args);
 }
 
 /*
@@ -59,4 +56,3 @@ function va_categories_locked() {
 	$disabled = ! current_user_can('administrator');
 	return (bool) apply_filters( 'va_categories_locked' , $disabled );
 }
-

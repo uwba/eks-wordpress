@@ -37,7 +37,7 @@ foreach( $reviews as $review ) {
 			</div>
 			<p class="review-date"><?php echo mysql2date( get_option('date_format'), $review->comment_date ); ?></p>
 			<div class="clear"></div>
-			<p><?php echo nl2br($review->comment_content); ?></p>
+			<p><?php echo $review->comment_content; ?></p>
 			<?php if ( !empty( $reply ) ) { ?>
 			<?php $author = get_userdata( $reply->user_id ); ?>
 				<div class="review-reply" id="review-<?php echo $reply->comment_ID; ?>">

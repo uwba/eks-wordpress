@@ -1,6 +1,6 @@
 <?php
 
-class P2P_Post_Query {
+class P2P_WP_Query {
 
 	static function init() {
 		add_action( 'parse_query', array( __CLASS__, 'parse_query' ), 20 );
@@ -23,6 +23,8 @@ class P2P_Post_Query {
 			return;
 
 		$wp_query->_p2p_query = $p2p_q;
+
+		$p2p_q->alter_qv( $wp_query->query_vars );
 
 		$wp_query->is_home = false;
 		$wp_query->is_archive = true;
@@ -59,5 +61,5 @@ class P2P_Post_Query {
 	}
 }
 
-P2P_Post_Query::init();
+P2P_WP_Query::init();
 

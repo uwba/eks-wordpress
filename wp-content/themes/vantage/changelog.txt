@@ -1,36 +1,3 @@
-Changelog for 1.1.2 - 2012-10-02
-
-Change display order for Popular Listings Categories widget.
-Add missed changes for term count fix.
-Fix javascript bug preventing clicking overview tab after submitting review, in Windows IE, FF, and Safari.
-Make map pin draggable in crete and edit listing pages.
-Fix broken author reviews link url
-Add Bank Transfer payment gateway.
-Fixed default pricing plan not being create during an upgrade.
-Fixed currency changes to be displayed properly.
-Fixed permalinks issues for dashboard and claimed listings in certain scenarios.
-Fixed tags not being able to be saved.
-Reviews now display line breaks to show paragraphs.
-Notes about base64 usage in CSS & link to FAQ.
-Changed "no expiration date" display from "0 days" to "Unlimited Days".
-Fixed bug disallowing puplishing a moderated listing. 
-Fixed bug disallowing accepting a moderated claimed listing.
-Can now quick edit listings as claimable from wp-admin.
-Can now bulk edit listings as claimable from wp-admin.
-Redirect after claimed listing no longer ends in listing not found page.
-Error returned if owner tries to claim their own listing.
-Upgrade listing no longer visible when charging is turned off.
-Pricing plans no longer increase the category count.
-Remove options text from pricing plan when no option available
-Fixed XSS vulnerability.
-Move search refinement preserving logic out of header template.
-Fixed problems with the language pack.
-Fixed fatal error on login page.
-
-Changelog for 1.1.1 - 2012-08-26
-
-Fixed issue with dissapearing images.
-
 Changelog for 1.1 - 2012-08-22
 
 Pricing Plans which offer multiple pricing options to be offered, and are connected to categories.

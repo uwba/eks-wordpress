@@ -119,11 +119,8 @@ class VA_Widget_Categories extends WP_Widget {
 		extract( $args );
 
 		$title = apply_filters( 'widget_title', empty( $instance['title'] ) ? __( 'Categories' , APP_TD ) : $instance['title'], $instance, $this->id_base );
-		$show_count = $instance['count'] ? '1' : '0';
-		$app_pad_counts = $show_count;
-		$pad_counts = false;
-		$hierarchical = 1;
-		$orderby = 'name';
+		$c = $instance['count'] ? '1' : '0';
+		$h = 1;
 
 		echo $before_widget;
 		if ( $title )
@@ -187,7 +184,7 @@ class VA_Widget_Categories extends WP_Widget {
 			$child_of = 0;
 		}
 
-		$cat_args = compact( 'orderby', 'show_count', 'pad_counts', 'app_pad_counts', 'hierarchical', 'taxonomy', 'child_of', 'hide_empty', 'depth' );
+		$cat_args = array( 'orderby' => 'name', 'show_count' => $c, 'hierarchical' => $h, 'taxonomy' => $taxonomy, 'child_of' => $child_of, 'hide_empty' => $hide_empty, 'depth' => $depth );
 ?>
 		<ul>
 <?php
@@ -680,7 +677,7 @@ class VA_Widget_Popular_Categories extends WP_Widget {
 			$a = 1;
 		}
 		$s = 'count';
-		$o = 'desc';
+		$o = 'asc';
 
 		$c = $instance['count'] ? '1' : '0';
 		$h = 1;

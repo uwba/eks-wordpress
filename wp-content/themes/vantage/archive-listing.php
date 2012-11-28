@@ -71,7 +71,7 @@ if ( have_posts() ) : ?>
 	<?php endif; ?>
 <?php endif; ?>
 	<div class="advert">
-		<?php dynamic_sidebar( 'va-listings-ad' ); ?>
+		<?php dynamic_sidebar( 'Listings Pages Ad' ); ?>
 	</div>
 <?php if ( $wp_query->max_num_pages > 1 ) : ?>
 	<nav class="pagination">

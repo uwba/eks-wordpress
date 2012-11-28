@@ -113,7 +113,7 @@ jQuery(function() {
 			current_url: Vantage.current_url,
 			_ajax_nonce: fave_data['ajax_nonce'],
 			favorite: fave_data['favorite'],
-			listing_id: fave_data['listing_id']
+			listing_id: fave_data['listing_id'],
 		}, function(data) {
 
 				jQuery('.notice').fadeOut('slow');

@@ -27,17 +27,6 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 			'title' => __( 'Appearance', APP_TD ),
 			'fields' => array(
 				array(
-					'title' => __( 'Theme Customizer', APP_TD ),
-					'desc' => sprintf( __( '<a href="%s">Customize Vantage</a> design and settings and see the results real-time without opening or refreshing a new browser window.' , APP_TD), 'customize.php' ),
-					'type' => 'text',
-					'name' => '_blank',
-					'extra' => array(
-						'style' => 'display: none;'
-					),
-					'tip' => __( 'Use the WordPress Theme Customizer to try out different design optoins and other Vantage settings.' ),
-					
-				),
-				array(
 					'title' => __( 'Theme Color', APP_TD ),
 					'type' => 'select',
 					'name' => 'color',
@@ -188,23 +177,6 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 				),
 			),
 		);
-
-		$this->tab_sections['general']['permalinks'] = array(
-			'title' => __( 'Permalinks', APP_TD ),
-			'fields' => array(
-				array(
-					'title' => __( 'Manage', APP_TD ),
-					'desc' => sprintf( __( 'Manage <a href="%s">Vantage Permalinks</a>.', APP_TD ), 'options-permalink.php' ),
-					'type' => 'text',
-					'name' => '_blank',
-					'extra' => array( 
-						'style' => 'display: none;',
-					),
-					'tip' => __( 'Manage Vantage\'s permalinks settings for listings, listing categories, listing tags, dashboard pages, etc.', APP_TD )
-				),
-			),
-		);
-
 
 		$this->tab_sections['general']['category_menu_options'] = array(
 			'title' => __( 'Categories Menu Item Options', APP_TD ),

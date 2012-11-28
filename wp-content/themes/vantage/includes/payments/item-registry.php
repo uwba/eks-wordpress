@@ -56,8 +56,4 @@ class APP_Item_Registry{
 
 	}
 
-	public static function is_registered( $id ){
-		return isset( self::$types[ $id ] );
-	}
-
 }

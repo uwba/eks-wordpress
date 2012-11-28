@@ -4,7 +4,7 @@
 			<?php va_display_logo(); ?>
 		</hgroup>
 		<div class="advert">
-			<?php dynamic_sidebar( 'va-header' ); ?>
+			<?php dynamic_sidebar( 'header' ); ?>
 		</div>
 	</div>
 </div>
@@ -52,7 +52,17 @@
 							<button type="submit" id="search-submit" class="rounded-small"><?php _e( 'Search', APP_TD ); ?></button>
 						</div>
 					</div>
-					<?php the_search_refinements(); ?>
+					<?php if ( '' != $orderby = va_get_search_query_var( 'orderby' )){ ?>
+					<input type="hidden" name="orderby" value="<?php echo $orderby; ?>" />
+					<?php } ?>
+					<?php if ( '' != $radius = va_get_search_query_var( 'radius' )){ ?>
+					<input type="hidden" name="radius" value="<?php echo $radius; ?>" />
+					<?php } ?>
+					<?php if ( isset( $_GET['listing_cat'] ) ){ ?>
+						<?php foreach ( $_GET['listing_cat'] as $k=>$listing_cat ) { ?>
+							<input type="hidden" name="listing_cat[]" value="<?php echo $listing_cat; ?>" />
+						<?php } ?>
+					<?php } ?>
 				</form>
 				<?php endif; ?>
 			</div>

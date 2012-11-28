@@ -31,52 +31,41 @@ class P2P_Directed_Connection_Type {
 	}
 
 	public function flip_direction() {
-		return $this->set_direction( _p2p_flip_direction( $this->direction ) );
+		if ( 'any' == $this->direction )
+			return $this;
+
+		$direction = ( 'to' == $this->direction ) ? 'from' : 'to';
+
+		return $this->set_direction( $direction );
 	}
 
-	public function get( $side, $key ) {
-		switch ( $side ) {
-		case 'current':
-			$map = array(
-				'to' => 'to',
-				'from' => 'from',
-				'any' => 'from'
-			);
-			break;
-		case 'opposite':
-			$map = array(
-				'to' => 'from',
-				'from' => 'to',
-				'any' => 'to'
-			);
-			break;
-		}
+	public function get_opposite( $key ) {
+		$direction = ( 'to' == $this->direction ) ? 'from' : 'to';
 
+		return $this->get_arg( $key, $direction );
+	}
+
+	public function get_current( $key ) {
+		$direction = ( 'to' == $this->direction ) ? 'to' : 'from';
+
+		return $this->get_arg( $key, $direction );
+	}
+
+	private function get_arg( $key, $direction ) {
 		$arg = $this->ctype->$key;
 
-		return $arg[ $map[ $this->direction ] ];
+		return $arg[$direction];
 	}
 
-	private function abstract_query( $qv, $which, $output = 'abstract' ) {
-		$side = $this->get( $which, 'side' );
-
-		$qv = $this->get_final_qv( $qv, $which );
+	private function abstract_query( $qv, $side, $output = 'abstract' ) {
 		$query = $side->do_query( $qv );
 
 		if ( 'raw' == $output )
 			return $query;
 
-		return $side->get_list( $query );
-	}
+		$class = str_replace( 'P2P_Side_', 'P2P_List_', get_class( $side ) );
 
-	protected function recognize( $item, $which = 'current' ) {
-		return $this->get( $which, 'side' )->item_recognize( $item );
-	}
-
-	public function get_final_qv( $q, $which = 'current' ) {
-		$side = $this->get( $which, 'side' );
-
-		return $side->get_base_qv( $side->translate_qv( $q ) );
+		return new $class( $query );
 	}
 
 	/**
@@ -106,13 +95,15 @@ class P2P_Directed_Connection_Type {
 	 * @return object
 	 */
 	public function get_connected( $item, $extra_qv = array(), $output = 'raw' ) {
-		$args = array_merge( $extra_qv, array(
+		$side = $this->get_opposite( 'side' );
+
+		$args = array_merge( $side->translate_qv( $extra_qv ), array(
 			'connected_type' => $this->name,
 			'connected_direction' => $this->direction,
 			'connected_items' => $item
 		) );
 
-		return $this->abstract_query( $args, 'opposite', $output );
+		return $this->abstract_query( $args, $side, $output );
 	}
 
 	public function get_orderby_key() {
@@ -132,53 +123,40 @@ class P2P_Directed_Connection_Type {
 	/**
 	 * Get a list of items that could be connected to a given item.
 	 *
-	 * @param mixed $arg The item to find connection candidates for.
+	 * @param int $post_id A post id.
 	 */
-	public function get_connectable( $arg, $extra_qv = array(), $output = 'raw' ) {
-		$side = $this->get( 'opposite', 'side' );
+	public function get_connectable( $item_id, $extra_qv = array() ) {
+		$side = $this->get_opposite( 'side' );
 
-		$item = $this->recognize( $arg );
+		$extra_qv['p2p:exclude'] = $this->get_non_connectable( $item_id, $extra_qv );
 
-		$extra_qv['p2p:exclude'] = $this->get_non_connectable( $item, $extra_qv );
+		$extra_qv = $side->get_base_qv( $side->translate_qv( $extra_qv ) );
 
-		$qv = apply_filters( 'p2p_connectable_args', $extra_qv, $this, $item->get_object() );
+		$qv = apply_filters( 'p2p_connectable_args', $extra_qv, $this, $item_id );
 
-		return $this->abstract_query( $qv, 'opposite', $output );
+		return $this->abstract_query( $qv, $side );
 	}
 
-	protected function get_non_connectable( $item, $extra_qv ) {
+	private function get_non_connectable( $item_id, $extra_qv ) {
 		$to_exclude = array();
 
-		if ( 'one' == $this->get( 'current', 'cardinality' ) ) {
+		if ( $this->indeterminate && !$this->self_connections )
+			$to_exclude[] = $item_id;
+
+		if ( 'one' == $this->get_current( 'cardinality' ) ) {
 			$to_check = 'any';
 		} elseif ( !$this->duplicate_connections ) {
-			$to_check = $item;
+			$to_check = $item_id;
 		} else {
 			return $to_exclude;
 		}
 
 		$extra_qv['fields'] = 'ids';
-		$already_connected = $this->get_connected( $to_check, $extra_qv, 'abstract' )->items;
+		$already_connected = $this->get_connected( 'any', $extra_qv, 'abstract' )->items;
 
 		_p2p_append( $to_exclude, $already_connected );
 
 		return $to_exclude;
-	}
-
-	private function _check_params( $from_arg, $to_arg ) {
-		$from = $this->recognize( $from_arg, 'current' );
-		if ( !$from )
-			return new WP_Error( 'first_parameter', 'Invalid first parameter.' );
-
-		if ( 'any' == $to_arg ) {
-			$to = 'any';
-		} else {
-			$to = $this->recognize( $to_arg, 'opposite' );
-			if ( !$to )
-				return new WP_Error( 'second_parameter', 'Invalid second parameter.' );
-		}
-
-		return compact( 'from', 'to' );
 	}
 
 	/**
@@ -191,27 +169,25 @@ class P2P_Directed_Connection_Type {
 	 * @return int|object p2p_id or WP_Error on failure
 	 */
 	public function connect( $from, $to, $meta = array() ) {
-		$r = $this->_check_params( $from, $to );
-		if ( is_wp_error( $r ) )
-			return $r;
+		$from = $this->get_current( 'side' )->item_id( $from );
+		if ( !$from )
+			return new WP_Error( 'first_parameter', 'Invalid first parameter.' );
 
-		extract( $r );
+		$to = $this->get_opposite( 'side' )->item_id( $to );
+		if ( !$to )
+			return new WP_Error( 'second_parameter', 'Invalid second parameter.' );
 
-		if ( !$this->self_connections && $from->get_id() == $to->get_id() )
+		if ( !$this->self_connections && $from == $to )
 			return new WP_Error( 'self_connection', 'Connection between an element and itself is not allowed.' );
 
 		if ( !$this->duplicate_connections && $this->get_p2p_id( $from, $to ) )
 			return new WP_Error( 'duplicate_connection', 'Duplicate connections are not allowed.' );
 
-		if ( 'one' == $this->get( 'opposite', 'cardinality' ) ) {
-			if ( $this->has_connections( $from ) )
-				return new WP_Error( 'cardinality_opposite', 'Cardinality problem (opposite).' );
-		}
+		if ( 'one' == $this->get_opposite( 'cardinality' ) && $this->connection_exists( compact( 'from' ) ) )
+			return new WP_Error( 'cardinality_opposite', 'Cardinality problem.' );
 
-		if ( 'one' == $this->get( 'current', 'cardinality' ) ) {
-			if ( $this->flip_direction()->has_connections( $to ) )
-				return new WP_Error( 'cardinality_current', 'Cardinality problem (current).' );
-		}
+		if ( 'one' == $this->get_current( 'cardinality' ) && $this->connection_exists( compact( 'to' ) ) )
+			return new WP_Error( 'cardinality_current', 'Cardinality problem.' );
 
 		$p2p_id = $this->create_connection( array(
 			'from' => $from,
@@ -228,14 +204,6 @@ class P2P_Directed_Connection_Type {
 		}
 
 		return $p2p_id;
-	}
-
-	protected function has_connections( $item ) {
-		$extra_qv = array( 'p2p:per_page' => 1 );
-
-		$connections = $this->get_connected( $item, $extra_qv, 'abstract' );
-
-		return !empty( $connections->items );
 	}
 
 	protected function get_default( $args, $p2p_id ) {
@@ -257,17 +225,23 @@ class P2P_Directed_Connection_Type {
 	 * @return int|object count or WP_Error on failure
 	 */
 	public function disconnect( $from, $to ) {
-		$r = $this->_check_params( $from, $to );
-		if ( is_wp_error( $r ) )
-			return $r;
+		$from = $this->get_current( 'side' )->item_id( $from );
+		if ( !$from )
+			return new WP_Error( 'first_parameter', 'Invalid first parameter.' );
 
-		return $this->delete_connections( $r );
+		if ( 'any' != $to ) {
+			$to = $this->get_opposite( 'side' )->item_id( $to );
+			if ( !$to )
+				return new WP_Error( 'second_parameter', 'Invalid second parameter.' );
+		}
+
+		return $this->delete_connections( compact( 'from', 'to' ) );
 	}
 
 	public function get_p2p_id( $from, $to ) {
 		return _p2p_first( $this->get_connections( array(
-			'from' => $from,
-			'to' => $to,
+			'from' => $this->get_current( 'side' )->item_id( $from ),
+			'to' => $this->get_opposite( 'side' )->item_id( $to ),
 			'fields' => 'p2p_id'
 		) ) );
 	}

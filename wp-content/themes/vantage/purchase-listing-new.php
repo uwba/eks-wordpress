@@ -17,9 +17,9 @@
 		    	    				<?php echo $plan['description'][0]; ?>
 		    	    			</div>
 		    	    			<div class="featured-options">
-		    	    			<?php if( _va_no_featured_available( $plan, $listing ) ) { ?>	    			
+		    	    			<?php if( !empty($plan['disable_featured'][0])) { ?>
 		    	    				<div class="option-header">
-		    	    					<?php _e( 'Featured Listings are not available for this price plan.', APP_TD ); ?>
+		    	    					<?php _e( 'Featured Listings are not available for this price option.', APP_TD ); ?>
 		    	    				</div>		    	    				
 		    	    			<?php } else { ?>
 		    	    			
@@ -67,7 +67,6 @@
 		</fieldset>
 		<fieldset>
 			<?php do_action( 'va_after_purchase_listing_new_form', $listing ); ?>	 
-			<?php do_action( 'app_purchase_fields' ); ?>	 
 			<input type="hidden" name="action" value="purchase-listing">
 			<input type="hidden" name="ID" value="<?php echo $listing->ID; ?>">
 			<div classess="form-field">

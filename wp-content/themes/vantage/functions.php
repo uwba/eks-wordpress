@@ -9,7 +9,7 @@
  */
 
 // Constants
-define( 'VA_VERSION', '1.1.2' );
+define( 'VA_VERSION', '1.1.1' );
 
 define( 'VA_LISTING_PTYPE', 'listing' );
 define( 'VA_LISTING_CATEGORY', 'listing_category' );
@@ -140,11 +140,6 @@ add_theme_support( 'app-payments', array(
 	),
 	'items_post_types' => array( VA_LISTING_PTYPE ),
 	'options' => $va_options,
-) );
-
-add_theme_support( 'app-term-counts', array(
-	'post_type' => array( VA_LISTING_PTYPE ),
-	'post_status' => array( 'publish' ),
 ) );
 
 new APP_User_Profile;

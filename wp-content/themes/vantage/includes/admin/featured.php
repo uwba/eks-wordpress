@@ -1,12 +1,6 @@
 <?php
 
-add_action('admin_init', 'va_featured_setup_tab_init');
-
-function va_featured_setup_tab_init() {
-	global $admin_page_hooks;
-
-	add_action( 'tabs_'.$admin_page_hooks['app-payments'].'_page_app-payments-settings', array( 'VA_Featured_Settings_Tab', 'init' ) );
-}
+add_action( 'tabs_payments_page_app-payments-settings', array( 'VA_Featured_Settings_Tab', 'init' ) );
 
 class VA_Featured_Settings_Tab {
 

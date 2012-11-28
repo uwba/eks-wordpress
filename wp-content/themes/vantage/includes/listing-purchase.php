@@ -120,31 +120,6 @@ function _va_show_featured_addon( $addon, $listing_id ){
 	}
 }
 
-function _va_no_featured_available( $plan ) {
-	if( empty($plan[VA_ITEM_FEATURED_HOME][0] ) && empty($plan[VA_ITEM_FEATURED_CAT][0] ) &&  empty($plan['disable_featured'][0]) ) {
-		if( _va_addon_disabled( VA_ITEM_FEATURED_HOME ) && _va_addon_disabled( VA_ITEM_FEATURED_CAT )) {
-			return true;
-		} else {
-			return false;
-		}
-	} else {
-		return false;
-	}
-}
-
-function _va_no_featured_purchasable( $plan, $listing ) {
-	if( _va_no_featured_available( $plan ) ){
-		return true;
-	} 
-	
-	foreach ( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ) {
-		if( !_va_already_featured( $addon, $listing->ID ) && !_va_addon_disabled( $addon ) ) {
-			return false;
-		}		
-	}
-	return true;
-}
-
 function _va_already_featured( $addon, $listing_id ){
 
 	$meta = get_post_meta( $listing_id, $addon, true );

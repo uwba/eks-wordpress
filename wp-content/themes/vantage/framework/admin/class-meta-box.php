@@ -16,12 +16,9 @@ class APP_Meta_Box{
 
 		$this->post_types = $post_types;
 
-		if( is_admin() && ( isset( $_GET['post'] ) || isset( $_POST['post_ID'] ) || (isset($_GET['post_type']) && in_array($_GET['post_type'], $this->post_types)) ) ){
-
-			add_action( 'add_meta_boxes', array( $this, 'register' ) );
-			add_action( 'load-post.php', array( $this, 'register_externals' ) );
-			add_action( 'load-post-new.php', array( $this, 'register_externals' ) );
-
+		if( is_admin() ){
+			add_action( 'load-post.php', array( $this, 'register' ) );
+			add_action( 'load-post-new.php', array( $this, 'register' ) );
 		}
 
 	}
@@ -30,22 +27,10 @@ class APP_Meta_Box{
 
 		if( $this->context == 'standalone' ){
 			add_action( 'edit_form_advanced', array( $this, 'edit_form_advanced' ) );
-			return;
+		}else{
+			foreach( $this->post_types as $post_type )
+				add_meta_box( $this->identifier, $this->display_name, array( $this, 'display' ), $post_type, $this->context, $this->priority );
 		}
-
-		if( ! method_exists( $this, 'conditional' ) || $this->conditional() ){
-			$this->register_meta_box();
-		}
-
-	}
-
-	protected function register_meta_box(){
-		foreach( $this->post_types as $post_type ){
-			add_meta_box( $this->identifier, $this->display_name, array( $this, 'display' ), $post_type, $this->context, $this->priority );
-		}
-	}
-
-	public function register_externals(){
 
 		if( isset( $_GET['post'] ) )
 			$this->post_data = $this->get_meta( intval( $_GET['post'] ) );

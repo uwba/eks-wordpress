@@ -85,30 +85,22 @@ function va_geocode_address( $listing_id ) {
 	if ( $coord )
 		return $coord;
 
+	$base_url = 'http://maps.google.com/maps/geo?output=json';
+
 	$address = get_post_meta( $listing_id, 'address', true );
 	if ( empty( $address ) )
 		return false;
 
-	list( $region ) = get_theme_support( 'app-geo' );
-
-	$args = array(
-		'address' => urlencode($address),
-		'sensor' => 'false',
-		'region' => $region
-	);
-
-	$response = wp_remote_get( add_query_arg( $args, 'http://maps.googleapis.com/maps/api/geocode/json' ) );
+	$response = wp_remote_get( add_query_arg( 'q', urlencode( $address ), $base_url ) );
 
 	if ( 200 != wp_remote_retrieve_response_code( $response ) )
 		return false;
 
 	$results = json_decode( wp_remote_retrieve_body( $response ), true );
-
-	if ( !$results || 'OK' != $results['status'] )
+	if ( !$results )
 		return false;
 
-	$lat = $results['results'][0]['geometry']['location']['lat'];
-	$lng = $results['results'][0]['geometry']['location']['lng'];
+	list( $lng, $lat ) = $results['Placemark'][0]['Point']['coordinates'];
 
 	appthemes_set_coordinates( $listing_id, $lat, $lng );
 

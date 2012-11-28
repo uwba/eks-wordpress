@@ -44,10 +44,10 @@ function the_listing_fields( $listing_id = 0 ) {
 
 		if ( !$value )
 			continue;
-
+		
 		$field['id_tag'] = va_make_custom_field_id_tag( $field['desc'] );
-
-		echo html( 'p', array('class' => 'listing-custom-field', 'id' => $field['id_tag']),
+		
+		echo html( 'p', array('class' => 'listing-custom-field', 'id' => $field['id_tag']), 
 			html('span', array('class' => 'custom-field-label'), $field['desc'] ). html('span', array('class' => 'custom-field-sep'), ': ' ) . html('span', array('class' => 'custom-field-value'), $value ) );
 	}
 }
@@ -95,7 +95,7 @@ function the_listing_edit_link( $listing_id = 0, $text = '' ) {
 function the_listing_claimable_link( $listing_id = '', $text = '' ) {
 	$listing_id = !empty( $listing_id ) ? $listing_id : get_the_ID();
 	if( !_va_is_claimable( $listing_id ) ) return;
-
+	
 	if( empty( $text ) )
 		$text = __( 'Claim Listing', APP_TD );
 
@@ -110,23 +110,14 @@ function va_get_listing_edit_url( $listing_id ) {
 	global $wp_rewrite, $va_options;
 
 	if ( $wp_rewrite->using_permalinks() ) {
-		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->edit_listing_permalink;
-		return home_url( user_trailingslashit( "$listing_permalink/$permalink/$listing_id" ) );
+		return home_url( user_trailingslashit( "listings/$permalink/$listing_id" ) );
 	}
 
 	return home_url( "?listing_edit=$listing_id" );
 }
 
 function the_listing_purchase_link( $listing_id = 0, $text = '' ) {
-	global $va_options;
-
-	if( ! $va_options->listing_charge )
-		return;
-
-	if( !va_any_featured_addon_enabled() )
-		return;
-
 	$listing_id = $listing_id ? $listing_id : get_the_ID();
 
 	if ( !current_user_can( 'edit_post', $listing_id ) )
@@ -145,9 +136,8 @@ function va_get_listing_purchase_url( $listing_id ) {
 	global $wp_rewrite, $va_options;
 
 	if ( $wp_rewrite->using_permalinks() ) {
-		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->purchase_listing_permalink;
-		return home_url( user_trailingslashit( "$listing_permalink/$permalink/$listing_id" ) );
+		return home_url( user_trailingslashit( "listings/$permalink/$listing_id" ) );
 	}
 
 	return home_url( "?listing_purchase=$listing_id" );
@@ -158,9 +148,8 @@ function va_get_listing_claim_url( $listing_id ) {
 	global $wp_rewrite, $va_options;
 
 	if ( $wp_rewrite->using_permalinks() ) {
-		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->claim_listing_permalink;
-		return home_url( user_trailingslashit( "$listing_permalink/$permalink/$listing_id" ) );
+		return home_url( user_trailingslashit( "listings/$permalink/$listing_id" ) );
 	}
 
 	return home_url( "?listing_claim=$listing_id" );
@@ -172,7 +161,7 @@ function the_listing_faves_link( $listing_id = 0 ) {
 }
 
 function va_get_listing_create_url() {
-	return get_permalink( VA_Listing_Create::get_id() );
+	return get_permalink( APP_Page_Template::get_id( 'create-listing.php' ) );
 }
 
 function the_listing_star_rating( $post_id = '' ) {
@@ -212,15 +201,15 @@ function the_refine_distance_ui() {
 	global $va_options, $wp_query;
 
 	$current_radius = (int) get_query_var( 'radius' );
-
+	
 	$geo_query = $wp_query->get( 'app_geo_query' );
-
-	if ( $geo_query['rad'] )
+	
+	if ( $geo_query['rad'] ) 
 		$current_radius = round( $geo_query['rad'], 0 );
 
 	if ( !$current_radius )
 		$current_radius = 50;
-
+		
 	$min = $current_radius >= 5 ? 5 : 1;
 	$max = $current_radius <= 200 ? 200 : ($current_radius * 1.25);
 
@@ -249,22 +238,18 @@ function the_refine_category_ui() {
 	echo html( 'ul', $output );
 }
 
-function the_search_refinements() {
-	appthemes_pass_request_var( 'orderby' );
-	appthemes_pass_request_var( 'radius' );
-	appthemes_pass_request_var( 'listing_cat' );
-}
-
 function va_display_logo(){
 	$header_image = '' != get_header_image() ? get_header_image() : get_template_directory_uri().'/images/vantage-logo.png';
 ?>
 	<h1 id="site-title">
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="custom-header-image" style="height:<?php echo get_custom_header()->height; ?>px;width:<?php echo get_custom_header()->width; ?>px;background: transparent url('<?php echo $header_image; ?>') no-repeat 0 0;"><?php bloginfo( 'title' ); ?></a>
+		<!--a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="custom-header-image" style="height:<?php echo get_custom_header()->height; ?>px;width:<?php echo get_custom_header()->width; ?>px;background: transparent url('<?php echo $header_image; ?>') no-repeat 0 0;"><?php bloginfo( 'title' ); ?></a-->
+
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" ><?php bloginfo( 'title' ); ?></a>
 	</h1>
 	<?php if( display_header_text() ) { ?>
 	<h2 id="site-description" style="color:#<?php header_textcolor(); ?>;"><?php bloginfo( 'description' ); ?></h2>
 	<?php } ?>
-<?php
+<?php		
 }
 
 /**

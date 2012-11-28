@@ -13,20 +13,15 @@ function va_handle_completed_transaction( $order ){
 	
 	$listing_id = _va_get_order_listing_id( $order );
 	
-	if ( _va_is_claimed( $order ) && $va_options->moderate_claimed_listings ){
-		va_update_post_status( $listing_id, 'pending-claimed' );
-		va_js_redirect_to_claimed_listing( $listing_id );
-		return;
-
-	} else if ( _va_is_claimed( $order ) ) {
-		$order->activate();
-		va_js_redirect_to_listing( $listing_id );
-		return;
-	}
-		
 	if( _va_order_has_plan( $order ) && $va_options->moderate_listings ){
 		va_update_post_status( $listing_id, 'pending' );
 		va_js_redirect_to_listing( $listing_id );
+		return;
+
+	}
+	elseif ( _va_is_claimed( $order ) && $va_options->moderate_claimed_listings ){
+		va_update_post_status( $listing_id, 'pending-claimed' );
+		va_js_redirect_to_claimed_listing( $listing_id );
 		return;
 
 	}
