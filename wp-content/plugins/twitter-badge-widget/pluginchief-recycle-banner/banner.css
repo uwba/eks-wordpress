@@ -1,0 +1,85 @@
+#pluginchief-list-container,#pluginchief-list-container-two{
+  width:100%;
+}
+ul.pluginchief-list-one {
+  display:inline;
+  float:left;
+  width:74%;
+  margin:0;
+  padding:0;
+}
+ul.pluginchief-list-two {
+  width:24%;
+  padding:0;
+  margin:0;
+  display:inline;
+  float:left;
+}
+
+.pluginchief-plugin-admin-connect{
+	padding:10px 0 5px !important;
+}
+
+.pluginchief-plugin-admin-message {
+	position: relative;
+	z-index: 100;
+	border: 1px solid #2A8CBA !important;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	background: url(plugin-chief-logo.png) 100% 0% no-repeat;
+	background-color: purple !important;
+	-webkit-box-shadow: inset 0 0 15px rgba( 0, 0, 0, 0.04 );
+	-moz-box-shadow: inset 0 0 15px rgba( 0,0,0,0.04 );
+	box-shadow: inset 0 0 15px rgba( 0, 0, 0, 0.04 );
+	padding: 18px 90px 8px 15px !important;
+	overflow: hidden;
+	line-height: 180%;
+	color: white;
+}
+
+.pluginchief-hidden-form{
+	clear:both;
+	padding:1em;
+	display: none;
+	width:90%;
+	margin-bottom:5em;
+}
+
+.pluginchief-list-one > li > h2{
+	color:orange;
+}
+.img-margin {
+margin-left: 5em;
+margin-right: 3em;
+}
+.close{
+	bottom: 0px;
+	right: 0px;
+	padding:1em;
+	position: absolute;
+	color:white;
+	cursor: pointer;
+}
+
+.pluginchief-plugin-admin-connect-button{
+margin-top:1em;
+margin-bottom:1em;
+}
+
+.pluginchief-plugin-admin-message > p, .pluginchief-hidden-form > p{
+	border-bottom: 1px dotted #c9c9c9;
+	display: inline-block;
+	width: 70%;
+
+}
+
+
+.pluginchief-plugin-admin-message > p{
+	font-family: "Helvetica Neue",Helvetica,Arial,"Lucida Grande",Verdana,"Bitstream Vera Sans",sans-serif;
+	font-weight: normal;
+	text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.4);
+	width: 80%;
+	font-size:1.2em;
+}
+
