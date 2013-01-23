@@ -19,6 +19,7 @@ add_action( 'wp_ajax_nopriv_myajax-submit', 'myajax_submit' );
 add_action( 'wp_ajax_myajax-submit', 'myajax_submit' );
  
 function myajax_submit() {
+    
     // get the submitted parameters
     $step = $_POST['step'];
 	$valid = FALSE;
@@ -58,6 +59,8 @@ function myajax_submit() {
 				'data' => $_SESSION['volunteer'],//
 				));
 
+                        error_log(print_r($_SESSION, true));
+                        
 			break;
 
 		case 2: // Position
@@ -149,12 +152,15 @@ function myajax_submit() {
 			
 			// Select trainings from $county where type in ($training_types) attached to selected tax sites
 //			echo $html, $new;
-			$sql = "SELECT p.*, m.meta_value training, t.name  FROM `wp_posts` p
-left join wp_term_relationships r ON r.object_id = p.ID
-left join wp_term_taxonomy tt ON tt.term_taxonomy_id = r.term_taxonomy_id AND tt.taxonomy='listing_category'
-left join wp_terms t ON t.term_id = tt.term_id
-inner join wp_postmeta m on m.post_id = p.ID and m.meta_key='type' AND (m.meta_value like '%".implode("%' OR m.meta_value like '%", $training_types)."%')
-left join wp_postmeta tax_site on tax_site.post_id = p.ID AND tax_site.meta_key='tax_site'
+                        
+                        global $table_prefix;
+                        
+                        $sql = "SELECT p.*, m.meta_value training, t.name  FROM `{$table_prefix}posts` p
+left join {$table_prefix}term_relationships r ON r.object_id = p.ID
+left join {$table_prefix}term_taxonomy tt ON tt.term_taxonomy_id = r.term_taxonomy_id AND tt.taxonomy='listing_category'
+left join {$table_prefix}terms t ON t.term_id = tt.term_id
+inner join {$table_prefix}postmeta m on m.post_id = p.ID and m.meta_key='type' AND (m.meta_value like '%".implode("%' OR m.meta_value like '%", $training_types)."%')
+left join {$table_prefix}postmeta tax_site on tax_site.post_id = p.ID AND tax_site.meta_key='tax_site'
 where p.post_type='training' AND 
 ((t.name = '{$main_county}') OR (tax_site.meta_value IN (".implode(',', $tax_sites).")))
 ORDER BY t.name, p.post_title";
@@ -217,11 +223,14 @@ ORDER BY t.name, p.post_title";
 			break;
 			
 		case 4: // Training
-			$_SESSION['volunteer']['training'] = $_POST["training"];
+			$_SESSION['volunteer']['training'] = empty($_POST["training"]) ? array() : $_POST["training"];
+                    
+                        
 			
 			// TODO: save 
 			global $current_user, $user_ID;
 			get_currentuserinfo();
+
 			// Create post object
 			$my_post = array(
 			   'post_title' => wp_strip_all_tags($_SESSION['volunteer']['name']),
@@ -241,8 +250,9 @@ ORDER BY t.name, p.post_title";
 			foreach($_SESSION['volunteer']['training'] as $training) {
 				add_post_meta($post_id, "training", $training);
 			}
-			foreach($_SESSION['volunteer']['position'] as $site_id => $positions) {
-				foreach($positions as $position) {
+                        
+			foreach($_SESSION['volunteer']['position'] as $position) {
+				foreach($_SESSION['volunteer']['tax_sites'] as $site_id) {
 					add_post_meta($post_id, $position, $site_id);
 				}
 			}
@@ -418,23 +428,25 @@ function register_role_custom() {
 add_action('user_register', 'custom_user_role');
 function custom_user_role($user_id, $password = "", $meta = array()) {
 
-	$userdata = array();
-	$userdata['ID'] = $user_id;
-	$userdata['role'] = $_REQUEST['role'];
+    
+    $role = empty($_REQUEST['role']) ? 'volunteer' : $_REQUEST['role'];
+    $userdata = array();
+    $userdata['ID'] = $user_id;
+    $userdata['role'] = $role;
 
-	if ( $_REQUEST['role'] == "coordinator" || strpos(getenv("HTTP_REFERER"), 'role=coordinator') !== FALSE) {
-		$userdata['role'] = "coordinator";
-	} else {
-		$userdata['role'] = "volunteer";
-	}
-	
-	$data = date('Y-m-d--h-i-s') . ' ' . getenv("HTTP_REFERER") . ' ' . getenv("REQUEST_URI") . " = {$userdata['role']}\n\n";
-	file_put_contents('registration.log', $data, FILE_APPEND);
+    if ( $role == "coordinator" || strpos(getenv("HTTP_REFERER"), 'role=coordinator') !== FALSE) {
+            $userdata['role'] = "coordinator";
+    } else {
+            $userdata['role'] = "volunteer";
+    }
+
+//	$data = date('Y-m-d--h-i-s') . ' ' . getenv("HTTP_REFERER") . ' ' . getenv("REQUEST_URI") . " = {$userdata['role']}\n\n";
+//	file_put_contents('registration.log', $data, FILE_APPEND);
 
 
-	if (in_array($userdata['role'], array('volunteer', 'coordinator'))) {
-		wp_update_user($userdata);
-	}
+    if (in_array($userdata['role'], array('volunteer', 'coordinator'))) {
+            wp_update_user($userdata);
+    }
 }
 
 
@@ -442,30 +454,34 @@ function custom_user_role($user_id, $password = "", $meta = array()) {
 add_action('save_post', 'add_gmap' );
 function add_gmap($post_id){
 
-  $address = urlencode($_REQUEST['address']);
-  $url = "http://maps.googleapis.com/maps/api/geocode/json?address={$address}&sensor=false";
-  $curl = curl_init($url);
-//  $cookieJar = 'cookies.txt';
-//  curl_setopt($this->curl, CURLOPT_COOKIEJAR, $cookieJar);
-//  curl_setopt($this->curl, CURLOPT_COOKIEFILE, $cookieJar);
-  curl_setopt($curl, CURLOPT_AUTOREFERER, true);
-  curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-  curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 25);
-//  curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-  $result = curl_exec($curl);
-  $result = json_decode($result);
-//  var_dump($result->results[0]->geometry->location);exit;
-  if (isset($result->results[0]->geometry->location->lat)) {
-	  $lat = $result->results[0]->geometry->location->lat;
-	  update_post_meta($post_id, 'lat', $lat);
-//	  echo $lat;
-  }
-  if (isset($result->results[0]->geometry->location->lng)) {
-	  $lng = $result->results[0]->geometry->location->lng;
-	  update_post_meta($post_id, 'lng', $lng);
-//	  echo $lng;
+  if (!empty($_REQUEST['address']))
+  {
+    $address = urlencode($_REQUEST['address']);
+
+    $url = "http://maps.googleapis.com/maps/api/geocode/json?address={$address}&sensor=false";
+    $curl = curl_init($url);
+  //  $cookieJar = 'cookies.txt';
+  //  curl_setopt($this->curl, CURLOPT_COOKIEJAR, $cookieJar);
+  //  curl_setopt($this->curl, CURLOPT_COOKIEFILE, $cookieJar);
+    curl_setopt($curl, CURLOPT_AUTOREFERER, true);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 25);
+  //  curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+    $result = curl_exec($curl);
+    $result = json_decode($result);
+  //  var_dump($result->results[0]->geometry->location);exit;
+    if (isset($result->results[0]->geometry->location->lat)) {
+            $lat = $result->results[0]->geometry->location->lat;
+            update_post_meta($post_id, 'lat', $lat);
+  //	  echo $lat;
+    }
+    if (isset($result->results[0]->geometry->location->lng)) {
+            $lng = $result->results[0]->geometry->location->lng;
+            update_post_meta($post_id, 'lng', $lng);
+  //	  echo $lng;
+    }
   }
 }
 
@@ -620,27 +636,32 @@ function tax_search() {
 	header( "Content-Type: text/html" );
 
     global $wpdb;
+    global $table_prefix;
+
     $query = "SELECT p.*, bart.meta_value as bartstations, t.name as county,
         GROUP_CONCAT(DISTINCT l.meta_value) as languages, a.meta_value as address,
-        CONCAT_WS('; ', ID, post_title, post_excerpt, post_content, bart.meta_value, t.name, GROUP_CONCAT(DISTINCT l.meta_value), a.meta_value) as search"
-        . " FROM `wp_posts` as p"
-        . " LEFT JOIN wp_postmeta as bart ON ID = bart.post_id AND bart.meta_key = 'app_closestbartstations'"
-        . " LEFT JOIN wp_postmeta as ada ON ID = ada.post_id AND ada.meta_key = 'app_adaaccessible'"
-        . " LEFT JOIN wp_postmeta as l ON ID = l.post_id AND l.meta_key = 'app_additionallanguagescheckallthatapply'"
-        . " LEFT JOIN wp_postmeta as a ON ID = a.post_id AND a.meta_key = 'address'"
+        CONCAT_WS('; ', ID, post_title, post_excerpt, post_content, bart.meta_value, t.name, GROUP_CONCAT(DISTINCT l.meta_value), a.meta_value) as search
+        FROM {$table_prefix}posts as p
+        LEFT JOIN {$table_prefix}postmeta as bart ON ID = bart.post_id AND bart.meta_key = 'app_closestbartstations'
+        LEFT JOIN {$table_prefix}postmeta as ada ON ID = ada.post_id AND ada.meta_key = 'app_adaaccessible'
+        LEFT JOIN {$table_prefix}postmeta as l ON ID = l.post_id AND l.meta_key = 'app_additionallanguagescheckallthatapply'
+        LEFT JOIN {$table_prefix}postmeta as a ON ID = a.post_id AND a.meta_key = 'address'
 
-        . " LEFT JOIN wp_term_relationships ON ID = object_id"
-        . " LEFT JOIN wp_term_taxonomy ON wp_term_relationships.term_taxonomy_id = wp_term_taxonomy.term_taxonomy_id AND wp_term_taxonomy.taxonomy = 'listing_category'"
-        . " LEFT JOIN wp_terms AS t USING(term_id)" //for full text search
+        LEFT JOIN {$table_prefix}term_relationships ON ID = object_id
+        LEFT JOIN {$table_prefix}term_taxonomy ON (
+            {$table_prefix}term_relationships.term_taxonomy_id = {$table_prefix}term_taxonomy.term_taxonomy_id 
+            AND {$table_prefix}term_taxonomy.taxonomy = 'listing_category'
+        )
+        LEFT JOIN {$table_prefix}terms AS t USING(term_id) -- for full text search
 			
-		. " LEFT JOIN wp_postmeta m1 ON m1.meta_key = 'app_numberoftaxpreparersneeded' AND p.ID=m1.post_id "
-		. " LEFT JOIN wp_postmeta m2 ON m2.meta_key = 'app_numberofinterpretersneeded' AND p.ID=m2.post_id "
-		. " LEFT JOIN wp_postmeta m3 ON m3.meta_key = 'app_numberofgreetersneeded' AND p.ID=m3.post_id "
+		LEFT JOIN {$table_prefix}postmeta m1 ON m1.meta_key = 'app_numberoftaxpreparersneeded' AND p.ID=m1.post_id 
+		LEFT JOIN {$table_prefix}postmeta m2 ON m2.meta_key = 'app_numberofinterpretersneeded' AND p.ID=m2.post_id 
+		LEFT JOIN {$table_prefix}postmeta m3 ON m3.meta_key = 'app_numberofgreetersneeded' AND p.ID=m3.post_id 
 
-        . " WHERE post_status = 'publish' AND post_type = 'listing'"
-		. " AND CONVERT((SELECT count(*) c FROM wp_postmeta WHERE meta_value=p.ID AND meta_key='preparer'), UNSIGNED INTEGER) <= (CONVERT(m1.meta_value, UNSIGNED INTEGER))"
-		. " AND CONVERT((SELECT count(*) c FROM wp_postmeta WHERE meta_value=p.ID AND meta_key='interpreter'), UNSIGNED INTEGER) <= (CONVERT(m2.meta_value, UNSIGNED INTEGER))"
-		. " AND CONVERT((SELECT count(*) c FROM wp_postmeta WHERE meta_value=p.ID AND meta_key='greeter'), UNSIGNED INTEGER) <= (CONVERT(m3.meta_value, UNSIGNED INTEGER))"
+        WHERE post_status = 'publish' AND post_type = 'listing'
+		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='preparer'), UNSIGNED INTEGER) <= (CONVERT(m1.meta_value, UNSIGNED INTEGER))
+		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='interpreter'), UNSIGNED INTEGER) <= (CONVERT(m2.meta_value, UNSIGNED INTEGER))
+		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='greeter'), UNSIGNED INTEGER) <= (CONVERT(m3.meta_value, UNSIGNED INTEGER))"
 
 //        ." AND meta_key = 'app_closestbartstations'  "
     ;

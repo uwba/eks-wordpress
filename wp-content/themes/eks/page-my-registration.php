@@ -48,14 +48,14 @@ $_SESSION['role'] = "volunteer";
 		<div id="volunteer_dialog">
 			<form id="step1" class="step" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
 				<div class="errors"></div>
-				<label>Name: <input type="text" name="name" id="name" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['name'] ?>" minlength="2" required /></label>
-				<label>Username <input type="text" name="username" id="username" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['username'] ?>" required /></label>
-				<label>Daytime Phone: <input type="text" name="phone" id="phone" size="30" maxlength="14" value="<?= $_SESSION['volunteer']['phone'] ?>" /></label>
-				<label>E-mail Address: <input type="text" name="email" id="email" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['email'] ?>" required/></label>
-				<label>Confirm E-mail Address: <input type="text" name="email_confirm" id="email_confirm" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['email_confirm'] ?>" required /></label>
+				<label>Name: <input type="text" name="name" id="name" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['name']) ? '' : $_SESSION['volunteer']['name'] ?>" minlength="2" required /></label>
+				<label>Username <input type="text" name="username" id="username" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['username']) ? '' : $_SESSION['volunteer']['username'] ?>" required /></label>
+				<label>Daytime Phone: <input type="text" name="phone" id="phone" size="30" maxlength="14" value="<?php echo empty($_SESSION['volunteer']['phone']) ? '' : $_SESSION['volunteer']['phone'] ?>" /></label>
+				<label>E-mail Address: <input type="text" name="email" id="email" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['email']) ? '' : $_SESSION['volunteer']['email'] ?>" required/></label>
+				<label>Confirm E-mail Address: <input type="text" name="email_confirm" id="email_confirm" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['email_confirm']) ? '' : $_SESSION['volunteer']['email_confirm'] ?>" required /></label>
 				
-				<label>Password: <input type="text" name="password" id="password" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['password'] ?>" required /></label>
-				<label>Confirm Password: <input type="text" name="password_confirm" id="password_confirm" size="30" maxlength="100" value="<?= $_SESSION['volunteer']['password_confirm'] ?>" required /></label>
+				<label>Password: <input type="text" name="password" id="password" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['password']) ? '' : $_SESSION['volunteer']['password'] ?>" required /></label>
+				<label>Confirm Password: <input type="text" name="password_confirm" id="password_confirm" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['password_confirm']) ? '' : $_SESSION['volunteer']['password_confirm'] ?>" required /></label>
 
 				<input type="submit" value="Next"/>	
 			<? 
@@ -68,26 +68,18 @@ $_SESSION['role'] = "volunteer";
 			<form id="step2" class="step" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
 				<h2>POSITION: I am interested in volunteering as a...</h2>
 				<div class="errors"></div>
-				<label><input type="checkbox" name="position[]" value="preparer" id="position" class="position" <?php if ($_SESSION['volunteer']['position'][0] == 'preparer') echo 'selected="selected" ' ?>/> Tax Preparer<br/><span>Tax preparers assist taxpayers with their tax returns during the tax season. Volunteers will complete a training course and become IRS certified to prepare taxes. Bilingual tax preparers are always in high demand.</span></label><br/>
+				<label><input type="checkbox" name="position[]" value="preparer" id="position" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'preparer') echo 'selected="selected" ' ?>/> Tax Preparer<br/><span>Tax preparers assist taxpayers with their tax returns during the tax season. Volunteers will complete a training course and become IRS certified to prepare taxes. Bilingual tax preparers are always in high demand.</span></label><br/>
 				<div id="preparer-sub">Experience:  
-					<label><input type="radio" name="preparer" value="new" <?php if ($_SESSION['volunteer']['preparer'] == 'new') echo 'checked ' ?> />New tax preparer</label>
-					<label><input type="radio" name="preparer" value="returning" <?php if ($_SESSION['volunteer']['preparer'] == 'returning') echo 'checked ' ?> />Returning tax preparer</label><br/>
-	<!--				<label><input type="radio" name="preparer" value="professional" <?php if ($_SESSION['volunteer']['preparer'] == 'professional') echo 'checked ' ?> />Tax Professional</label><br/>-->
+					<label><input type="radio" name="preparer" value="new" <?php if (!empty($_SESSION['volunteer']['preparer']) && $_SESSION['volunteer']['preparer'] == 'new') echo 'checked ' ?> />New tax preparer</label>
+					<label><input type="radio" name="preparer" value="returning" <?php if (!empty($_SESSION['volunteer']['preparer']) && $_SESSION['volunteer']['preparer'] == 'returning') echo 'checked ' ?> />Returning tax preparer</label><br/>
 				</div>
-				<label><input type="checkbox" name="position[]" value="screener" id="screener" class="position" <?php if ($_SESSION['volunteer']['position'][0]=='screener') echo 'selected="selected" ' ?>/> Screener<br/><span>Screeners are responsible for assisting clients with the intake form and ensuring taxpayers have the correct tax documents and identification. This is a critical role as it is the initial point at which important tax return information is gathered and verified.</span></label><br/>
-				<label><input type="checkbox" name="position[]" value="greeter" id="greeter" class="position" <?php if ($_SESSION['volunteer']['position'][0]=='greeter') echo 'selected="selected" ' ?>/> Greeter<br/><span>Greeters welcome tax filers to the tax site during the tax season, and may also inform taxpayers about other available community resources. Training is provided by each tax site.</span></label><br/>
-				<label><input type="checkbox" name="position[]" value="interpreter" id="interpreter" class="position" <?php if ($_SESSION['volunteer']['position'][0]=='interpreter') echo 'selected="selected" ' ?>/> Interpreter<br/><span>Interpreters aid taxpayers by working alongside the tax clients and tax preparers. Spanish speaking Volunteers are always needed. Training is provided by each tax site.</span></label><br/>
+				<label><input type="checkbox" name="position[]" value="screener" id="screener" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0]=='screener') echo 'selected="selected" ' ?>/> Screener<br/><span>Screeners are responsible for assisting clients with the intake form and ensuring taxpayers have the correct tax documents and identification. This is a critical role as it is the initial point at which important tax return information is gathered and verified.</span></label><br/>
+				<label><input type="checkbox" name="position[]" value="greeter" id="greeter" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0]=='greeter') echo 'selected="selected" ' ?>/> Greeter<br/><span>Greeters welcome tax filers to the tax site during the tax season, and may also inform taxpayers about other available community resources. Training is provided by each tax site.</span></label><br/>
+				<label><input type="checkbox" name="position[]" value="interpreter" id="interpreter" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0]=='interpreter') echo 'selected="selected" ' ?>/> Interpreter<br/><span>Interpreters aid taxpayers by working alongside the tax clients and tax preparers. Spanish speaking Volunteers are always needed. Training is provided by each tax site.</span></label><br/>
 				<input type="submit" value="Next"/>
 				<?php if (false && $step == 1) { ?><input type="button" class="back" value="Back"/><?php } ?>
 			</form>
 
-<!--			<form  method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
-				<label>Enter zipcode or keyword for a tax site<br/>
-					<input type="text" name="location" id="location" size="10" maxlength="100" value="<?= $_SESSION['volunteer']['location'] ?>"/></label>
-				<input type="button" name="search" id="search" value="Search"/>
-				<br/>
-				<input type="submit" value="Next"/>
-			</form>-->
 			<div id="step3" class="step">
 				<form id="step31" action="<?php echo admin_url('admin-ajax.php'); ?>" method="get" class="mti_font_element">
 					<h2>LOCATION: I want to volunteer near...</h2>
@@ -117,7 +109,7 @@ $_SESSION['role'] = "volunteer";
                                 'hide_empty' => false,
                                 'hierarchical' => true,
                                 'name' => VA_LISTING_CATEGORY,
-                                'selected' => $_GET[VA_LISTING_CATEGORY],
+                                'selected' => empty($_GET[VA_LISTING_CATEGORY]) ? '' : $_GET[VA_LISTING_CATEGORY],
                                 'show_option_none' => __('Select County', APP_TD),
                                 'class' => 'required',
                                 'orderby' => 'name',

@@ -24,7 +24,7 @@ function vantage_child_setup() {
 
 }
 
-define( 'VA_MAX_IMAGES', 3 );
+//define( 'VA_MAX_IMAGES', 3 );
 
 //REGISTER WIDGETS for HOME PAGE
 // Before Content Area
@@ -158,11 +158,11 @@ function get_volunteer_tax_sites($volunteer_ID = null) {
 //	var_dump($volunteer);
 
 	$volunteer_meta = get_post_meta($volunteer->ID);
-
+        
 	//		$tax_sites_position = get_post_meta($volunteer->ID, 'preparer') + get_post_meta($volunteer->ID, 'interpreter') + get_post_meta($volunteer->ID, 'screener') + get_post_meta($volunteer->ID, 'greeter');
 	$tax_sites = array();
 	foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
-		if (is_array($volunteer_meta[$position])) {
+		if (!empty($volunteer_meta[$position])) {
 			foreach ($volunteer_meta[$position] as $tax_site) {
 				$tax_sites[$tax_site][] = $position;
 			}
@@ -400,15 +400,6 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
 //		}
 	}
 }
-
-function log_register($user_id) {
-//    global $wpdb;
-    
-    $data = date('Y-m-d--h-i-s') . " register as {$userdata['role']} " . getenv("HTTP_REFERER") . ' ' . getenv("REQUEST_URI") . "\n\n";
-	file_put_contents('registration.log', $data, FILE_APPEND);
-}
-add_action( 'user_register', 'log_register');
-
 
 function log_login($user_login, $user) {
     // your code
