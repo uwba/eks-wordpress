@@ -195,26 +195,6 @@ function get_volunteers() {
 	return get_posts($arg);
 }
 
-function your_function() {
-//    echo '<p>This is inserted at the bottom for development</p>';
-//	if (!is_search()) { //'archive-listing.php'
-		global $wpdb;
-		echo "<pre>";
-		print_r($wpdb->queries);
-		echo "</pre>";
-//	}
-}
-//if ($_SERVER['REMOTE_ADDR'] == '176.8.124.190') {
-//add_action('wp_footer', 'your_function', 1);	
-//}
-
-//add_action('wp_init', 'your_function2', 1);
-//your_function2
-
-
-
-
-
 /**
  * Truncate string
  * @param string $string
@@ -395,11 +375,6 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
 //		}
 	}
 }
-
-function log_login($user_login, $user) {
-    // your code
-}
-add_action('wp_login', 'log_login', 10, 2);
 
 //function registration_redirect($location, $status) {
 //	echo 'rrrrrrrrrrrrrr';
