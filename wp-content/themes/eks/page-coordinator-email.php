@@ -3,10 +3,10 @@
 ?>
 <?php 
 // embed the javascript file that makes the AJAX request
-wp_enqueue_script('volunteer-registration', plugin_dir_url() . '/volunteer/js/registration.js', array('jquery','jquery-ui-dialog'));
+wp_enqueue_script('volunteer-registration', '/wp-content/plugins/volunteer/js/registration.js', array('jquery','jquery-ui-dialog'));
 
 /* form proccessing */
-wp_enqueue_script('json-form', plugin_dir_url() . '/volunteer/js/jquery.form.js', array('jquery'));
+wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js', array('jquery'));
 
 // declare the URL to the file that handles the AJAX request (wp-admin/admin-ajax.php)
 // http://site.local/wp-admin/admin-ajax.php?action=myajax-submit&postID=1

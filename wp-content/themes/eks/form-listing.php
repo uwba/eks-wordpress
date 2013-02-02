@@ -18,7 +18,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 	<div class="featured-head"><h3><?php _e( 'Essential info', APP_TD ); ?></h3></div>
 
 	<div class="form-field"><label>
-		<?php _e( 'Title', APP_TD ); ?>
+		<?php _e( 'Tax Site Name', APP_TD ); ?>
 		<input name="post_title" type="text" value="<?php echo esc_attr( $listing->post_title ); ?>" class="required" />
 	</label></div>
 
@@ -28,7 +28,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 		<input name="lng" type="hidden" value="<?php echo esc_attr( $coord->lng ); ?>" />
 
 		<label>
-			<?php _e( 'Address (street nr., street, city, state, country)', APP_TD ); ?>
+			<?php _e( 'Address (street, city, state)', APP_TD ); ?>
 			<input id="listing-address" name="address" type="text" value="<?php echo esc_attr( $listing->address ); ?>" class="required" />
 		</label>
 		<input id="listing-find-on-map" type="button" value="<?php esc_attr_e( 'Find on map', APP_TD ); ?>">
@@ -80,7 +80,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 	<div class="featured-head"><h3><?php _e( 'Public Contact Information for Site', APP_TD ); ?></h3></div>
 
 	<div class="form-field phone"><label>
-		<?php _e( 'Phone Number (123-456-7890)', APP_TD ); ?>
+		<?php _e( 'Phone Number (415-555-5555)', APP_TD ); ?>
 		<input name="phone" type="text" value="<?php echo esc_attr( $listing->phone ); ?>" />
 	</label></div>
 
@@ -114,22 +114,11 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 </fieldset>
 
 <fieldset id="misc-fields">
-	<div class="featured-head"><h3><?php _e( 'Additional info', APP_TD ); ?></h3></div>
+	<div class="featured-head"><h3><?php _e( 'Listing Images', APP_TD ); ?></h3></div>
 
 	<div class="form-field images">
-		<?php _e( 'Listing Images', APP_TD ); ?>
 		<?php the_listing_image_editor( $listing->ID ); ?>
 	</div>
-
-<!--	<div class="form-field"><label>
-		<?php //_e( 'Business Description', APP_TD ); ?>
-		<textarea name="post_content"><?php //echo esc_textarea( $listing->post_content ); ?></textarea>
-	</label></div>-->
-
-<!--	<div class="form-field"><label>
-		<?php //_e( 'Tags', APP_TD ); ?>
-		<input name="tax_input[<?php //echo VA_LISTING_TAG; ?>]" type="text" value="<?php //the_listing_tags_to_edit( $listing->ID ); ?>" />
-	</label></div>-->
 </fieldset>
 
 <?php do_action( 'va_after_create_listing_form' ); ?>
@@ -242,3 +231,5 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
         });
     });
 </script>
+
+<?php get_sidebar(); ?>

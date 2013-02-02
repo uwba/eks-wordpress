@@ -70,17 +70,3 @@
 <div id="sidebar">
 <?php get_sidebar( 'single-listing' ); ?>
 </div>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function($){
-            var text = $('#listing-custom-field-hours-of-operation span.custom-field-value').html().split(' ');
-            console.log(text);
-            var new_next = '';
-            for(var i=0;i<text.length;i++){
-                if(i%12 == 0) { new_next += '<br>'}
-                new_next += text[i] + ' ';
-            }
-            $('#listing-custom-field-hours-of-operation span.custom-field-value').html(new_next);
-
-        });
-    </script>

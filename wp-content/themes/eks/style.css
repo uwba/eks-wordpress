@@ -1137,7 +1137,11 @@ article.training {
 	padding: 0 26px;
 }
 .custom-field-label {
-	font-style: italic;
+	font-weight: bold;
+}
+
+.listing-fields p {
+    padding: 0.5em 0;
 }
 
 .error{
@@ -1210,4 +1214,14 @@ padding: 0;
 }
 #schedule-editor td{
     width: auto;
+}
+
+.notice span
+{
+    margin: 10px 5px;
+}
+
+textarea
+{
+    height:50px;
 }

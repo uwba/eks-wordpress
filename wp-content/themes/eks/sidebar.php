@@ -83,7 +83,6 @@ Last year’s tax return
 						<li><a href="<?php echo site_url('my-calendar'); ?>"><?php echo __('My Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Upload documents', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-playlist'); ?>"><?php echo __('VITA Video Playlist', APP_TD); ?></a></li>
-						<li><a href="<?php echo wp_logout_url(); ?>" title="Logout">Logout</a></li>
 						<?php
 				break;
 
@@ -95,7 +94,6 @@ Last year’s tax return
 						echo html_link(va_get_the_author_listings_url($dashboard_user->ID), __('View Tax Sites', APP_TD));
 					}
 					?></li>
-				<?php ?>
 					<li class="add-listings"><?php echo html_link(va_get_listing_create_url(), __('New Tax Site', APP_TD)); ?></li>
 					<?php if (false && $dashboard_user->has_claimed) { ?>
 					<li class="claimed-listings"><?php echo html_link(va_get_claimed_listings_url(), __('Claimed Listings', APP_TD)); ?></li>
@@ -106,8 +104,8 @@ Last year’s tax return
 						<!--<li><a href="<?php echo site_url('coordinator-calendar'); ?>"><?php echo __('Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('coordinator-documents'); ?>"><?php echo __('View Documents', APP_TD); ?></a></li>
 					</ul></li>
-					<li><a href="<?php echo wp_logout_url(); ?>" title="Logout">Logout</a></li>
-							<?php
+					
+				<?php
 
 				break;
 			default:

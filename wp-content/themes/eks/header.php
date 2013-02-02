@@ -32,8 +32,7 @@
 					'fallback_cb' => false,
 					'walker' => new ZG_Nav_Walker(),
 				) ); ?>
-				<?php if(is_post_type_archive('listing') || is_search()){
-					if ( true || !is_page_template( 'create-listing.php' ) ) : ?>
+				<?php if(is_post_type_archive('listing') || is_search()){ ?>
 				<form method="get" action="<?php bloginfo( 'url' ); ?>">
 					<div id="main-search">
 						<div class="search-for">
@@ -79,7 +78,6 @@
 						<?php } ?>
 					<?php } ?>
 				</form>
-				<?php endif;  ?>
                 <?php } ?>
 			</div>
 		</div>
