@@ -4,7 +4,7 @@
             <?php 
             if (!eks_is_admin()) {
                 if (!is_user_logged_in()) { ?>          
-                    <a href="<?php echo wp_login_url( '/dashboard/' ); ?>">Login</a></a>           
+                    <a href="/volunteer-registration">Volunteer Login</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/coordinators">Coordinator Login</a>         
                 <?php } else { ?>
                     <a href="<?php echo wp_logout_url(home_url()) ?>">Logout</a>
                 <?php } 

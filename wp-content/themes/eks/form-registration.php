@@ -25,7 +25,7 @@ if (is_user_logged_in()) {
 
 <div id="main" class="list">
 	<div class="section-head">
-		<h1><?php _e( 'Register', APP_TD ); ?></h1>
+		<h1><?php _e( 'Coordinator Registration', APP_TD ); ?></h1>
 	</div>
 
 	<?php do_action( 'appthemes_notices' ); ?>

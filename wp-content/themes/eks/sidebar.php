@@ -118,38 +118,35 @@ Last year’s tax return
 		?></ul></div><?php
 	} elseif (is_page_template('page-my-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'volunteer') || is_page_template('form-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'coordinator')) { ?>
 		<div id="sidebar" class="threecol last">
-			<h3>Welcome, Guest</h3>
-			<ul class="links">
-				<?php 
-				if (is_page_template('page-my-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'volunteer')): ?>
-				<li><a href="<?php echo site_url(); ?>/volunteer-registration/"><?php echo __('Volunteer Sign Up', APP_TD); ?></a></li>
-				<?php endif; ?>
-				<?php  
-				if (is_page_template('form-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'coordinator')): ?>
-				<li><a href="<?php echo site_url(); ?>/register/?role=coordinator"><?php echo __('Coordinator Registration', APP_TD); ?></a></li>
-				<?php endif; ?>
-			</ul>
-			<p>If you already have an account with us, please <a href="<?php echo site_url('login'); ?>">login</a></p>
-		
+                        <h3>Login</h3>
+                    	<?php if (is_page_template('page-my-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'volunteer')) { ?>
+                            <p>Volunteers, if you already have an account, please login below to review or make changes.</p>
+
+                            <?php if (strstr($_SERVER["REQUEST_URI"], "volunteer-registration") == null) { ?>
+                            <p>Otherwise, <a href="/volunteer-registration/">create an account now</a>.</p>
+
+                            <?php } ?>
+                            <p>Tax Site Coordinators, <a href="/coordinators">click here</a>.</p>
+                        <?php } ?>
+                                
+                        <?php if (is_page_template('form-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'coordinator')) { ?>
+                            <p>Tax Site Coordinators, if you already have tax site or sites, please login below to review or make changes.</p>
+
+                            <?php if (strstr($_SERVER["REQUEST_URI"], "register") == null) { ?>
+                            <p>Otherwise, <a href="/register/?role=coordinator">create an account now</a>.</p>
+                            <?php } ?>
+
+                            <p>Volunteers, <a href="/volunteer-registration">click here</a>.</p>
+                        <?php } ?>
 		
 			<?php do_action( 'appthemes_notices' ); 
 			
 
 // set a redirect for after logging in
+$redirect = site_url('dashboard');
 if ( isset( $_REQUEST['redirect_to'] ) ) {
 	$redirect = $_REQUEST['redirect_to'];
-}
-
-if (!isset($redirect)) {
-	if (isset($_GET['role']) && $_GET['role'] == 'coordinator') {
-		$redirect = site_url('dashboard');
-	} else {
-		//$redirect = home_url();
-		$redirect = site_url('edit-profile');
-//		$redirect = site_url('dashboard');
-	}
-}
-			
+}		
 			?>
 	
 			<form action="<?php echo APP_Login::get_url(); ?>" method="post" class="login-form" id="login-form">
@@ -192,11 +189,11 @@ if (!isset($redirect)) {
 				<script type="text/javascript">try{document.getElementById('login_username').focus();}catch(e){}</script>
 			</form>
 		</div>
-	<?php } else if (is_page_template('form-login.php')) { ?>
+	<?php } else if (is_page_template('form-login.php')) { // In practice, you only get here upon failed login I think ?>
 		<div id="sidebar" class="threecol last">
 			<!--<h3>Welcome, Guest</h3>-->
 
-			<p>If you don't have an account, register <a href="<?php echo site_url('register'); ?>">here</a></p>
+			<p>If you don't have an account, you can create one as a <a href="/volunteer-registration">volunteer</a> or <a href="/coordinators">coordinator</a>.</p>
 		</div>
 	<?php	
 	} elseif(is_page_template('page-search.php')) {
