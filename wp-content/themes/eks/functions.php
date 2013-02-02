@@ -457,3 +457,21 @@ function recent_searches() {
 	
 	return $html;
 }
+
+/**
+ * Return whether or not the current user is an admin.
+ * 
+ * @global int $user_ID
+ * @return boolean
+ */
+function eks_is_admin()
+{
+    $ret = false;
+    global $user_ID; 
+
+    if( $user_ID ) {
+        if( current_user_can('level_10') ) 
+            $ret = true;
+    }
+    return $ret;
+}

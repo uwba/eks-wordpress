@@ -29,13 +29,7 @@ if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
             // Remove the Admin Bar if the user is not an Admin
             // As per http://wordpress.org/support/topic/hiding-admin-bar-in-wordpress-33 it now can only be done via CSS, and must be done here to get the priority right.
             // Tried http://wordpress.org/extend/plugins/global-admin-bar-hide-or-remove but it didn't work
-            global $user_ID; 
-            $show_admin_bar = false;
-            if( $user_ID ) {
-                if( current_user_can('level_10') ) 
-                    $show_admin_bar = true;
-            }
-            if (!$show_admin_bar)
+            if (!eks_is_admin())
             {
                 ?>
         <style type="text/css">

@@ -1,9 +1,22 @@
 <div id="masthead" class="container">
-	<div class="row">
+        <div class="row">
+            <div style="text-align:right">
+            <?php 
+            if (!eks_is_admin()) {
+                if (!is_user_logged_in()) { ?>          
+                    <a href="/login">Login</a></a>           
+                <?php } else { ?>
+                    <a href="/wp-login.php?action=logou">Logout</a>
+                <?php } 
+            } ?>
+            </div>
+        </div>
+	<div class="row" style="margin-top:0">     
 		<hgroup>
 			<?php va_display_logo(); ?>
 		</hgroup>
 		<div class="advert">
+                                
 			<?php dynamic_sidebar( 'header' ); ?>
 		</div>
 	</div>
