@@ -4,9 +4,9 @@
             <?php 
             if (!eks_is_admin()) {
                 if (!is_user_logged_in()) { ?>          
-                    <a href="/login">Login</a></a>           
+                    <a href="<?php echo wp_login_url( home_url() ); ?>">Login</a></a>           
                 <?php } else { ?>
-                    <a href="/wp-login.php?action=logou">Logout</a>
+                    <a href="<?php echo wp_logout_url(home_url()) ?>">Logout</a>
                 <?php } 
             } ?>
             </div>
