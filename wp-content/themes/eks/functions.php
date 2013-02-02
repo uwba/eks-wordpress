@@ -10,10 +10,6 @@ wp_enqueue_style('wp-jquery-ui',
 
 add_action('after_setup_theme', 'vantage_child_setup');
 
-// Remove Admin Bar Front End
-add_filter('show_admin_bar', '__return_false');
-
-
 function vantage_child_setup() {
 	remove_filter('excerpt_length', 'va_excerpt_length');
 	add_filter('excerpt_length', 'va_child_excerpt_length');
@@ -21,7 +17,6 @@ function vantage_child_setup() {
 	function va_child_excerpt_length() {
 		return 1;
 	}
-
 }
 
 //define( 'VA_MAX_IMAGES', 3 );
