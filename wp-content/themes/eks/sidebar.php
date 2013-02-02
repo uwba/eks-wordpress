@@ -74,15 +74,13 @@ Last year’s tax return
 					<p class="smaller"><?php _e('Member Since: ', APP_TD); ?><?php echo mysql2date(get_option('date_format'), $dashboard_user->user_registered); ?></p>
 				</div>
 				<ul class="links">
-					<?php if ($is_own_dashboard) { ?>
-						<li class="edit-profile"><?php echo html_link(appthemes_get_edit_profile_url(), __('My Info', APP_TD)); ?></li>
-					<? }
+<?php
 		switch ($role) {
 			case 'volunteer':
 					?>
 						<li><a href="<?php echo site_url('my-tax-sites'); ?>"><?php echo __('My Tax Sites', APP_TD); ?></a></li>
-						<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
-						<li><a href="<?php echo site_url('my-calendar'); ?>"><?php echo __('My Schedule', APP_TD); ?></a></li>
+						<!--<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
+						<li><a href="<?php echo site_url('my-calendar'); ?>"><?php echo __('My Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Upload documents', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-playlist'); ?>"><?php echo __('VITA Video Playlist', APP_TD); ?></a></li>
 						<li><a href="<?php echo wp_logout_url(); ?>" title="Logout">Logout</a></li>
@@ -102,10 +100,10 @@ Last year’s tax return
 					<?php if (false && $dashboard_user->has_claimed) { ?>
 					<li class="claimed-listings"><?php echo html_link(va_get_claimed_listings_url(), __('Claimed Listings', APP_TD)); ?></li>
 					<?php } ?>
-					<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>
+					<!--<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>-->
 					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a><ul>
 						<li><a href="<?php echo site_url('email-all'); ?>"><?php echo __('Email All', APP_TD); ?></a></li>
-						<li><a href="<?php echo site_url('coordinator-calendar'); ?>"><?php echo __('Schedule', APP_TD); ?></a></li>
+						<!--<li><a href="<?php echo site_url('coordinator-calendar'); ?>"><?php echo __('Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('coordinator-documents'); ?>"><?php echo __('View Documents', APP_TD); ?></a></li>
 					</ul></li>
 					<li><a href="<?php echo wp_logout_url(); ?>" title="Logout">Logout</a></li>
@@ -115,7 +113,10 @@ Last year’s tax return
 			default:
 				break;
 		}
-		?></ul></div><?php
+                    if ($is_own_dashboard) { ?>
+                    <li class="edit-profile"><?php echo html_link(appthemes_get_edit_profile_url(), __('My Account', APP_TD)); ?></li>
+                    <?php } ?>
+                 </ul></div><?php
 	} elseif (is_page_template('page-my-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'volunteer') || is_page_template('form-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'coordinator')) { ?>
 		<div id="sidebar" class="threecol last">
                         <h3>Login</h3>
