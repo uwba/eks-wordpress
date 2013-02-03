@@ -68,7 +68,7 @@ Last year’s tax return
 
 		?><div id="sidebar" class="threecol last">
 			<?php if (is_page_template('page-search.php')) echo recent_searches();?>
-			<h3><?php echo ucfirst($role); ?> dashboard</h3>
+			<h3><?php echo ucfirst($role); ?> Dashboard</h3>
 				<div class="user_meta">
 					<p><?php $is_own_dashboard ? _e('Welcome, ', APP_TD) : ''; ?><b><?php echo $dashboard_user->display_name; ?></b></p>
 					<p class="smaller"><?php _e('Member Since: ', APP_TD); ?><?php echo mysql2date(get_option('date_format'), $dashboard_user->user_registered); ?></p>

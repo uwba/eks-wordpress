@@ -450,3 +450,114 @@ function eks_is_admin()
     }
     return $ret;
 }
+
+/**
+ * Form builder helper
+ *
+ * @param string $label         Field label
+ * @param array $myposts        Optional array of tax sites display in poplist
+ * @return none
+ */
+function fileupload($label, $myposts = array()) {
+    ?>
+    <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';  ?>" accept-charset="utf-8" >
+        
+        <?php if (count($myposts) > 0) { ?>
+        <label>Tax Site: <select name="tax_site">
+                <?php foreach ($myposts as $post) {
+                    ?><option value="<?= $post->ID ?>"><?php echo $post->post_title ?></option>
+                <?php } ?>
+            </select> <span></span></label><span>Uploaded documents will be displayed at volunteers attached to selected Tax Site</span><br/>
+        <?php } ?>
+        <label><?php echo $label; ?><input type="file" name="uploadfiles[]" id="uploadfiles" size="35" class="uploadfiles" /></label>
+        <input class="button-primary" type="submit" name="uploadfile" id="uploadfile_btn" value="Upload"  />
+    </form>
+    <?php
+}
+
+/**
+ * Handle file uploads
+ *
+ * @todo check nonces
+ * @todo check file size
+ *
+ * @return none
+ */
+function fileupload_process() {
+    $uploadfiles = isset($_FILES['uploadfiles']) ? $_FILES['uploadfiles'] : null;
+    
+    $response = '';
+
+    if (is_array($uploadfiles)) {
+
+        try {
+
+            foreach ($uploadfiles['name'] as $key => $value) {
+
+                // look only for uploaded files
+                if ($uploadfiles['error'][$key] == 0) {
+
+                    $filetmp = $uploadfiles['tmp_name'][$key];
+
+                    //clean filename and extract extension
+                    $filename = $uploadfiles['name'][$key];
+
+                    // get file info
+                    // @fixme: wp checks the file extension....
+                    $filetype = wp_check_filetype(basename($filename), null);
+                    $filetitle = preg_replace('/\.[^.]+$/', '', basename($filename));
+                    $filename = $filetitle . '.' . $filetype['ext'];
+
+                    $upload_dir = wp_upload_dir();
+
+                    if (!empty($upload_dir['error']))
+                        throw new exception($upload_dir['error']);
+
+                    /**
+                     * Check if the filename already exist in the directory and rename the
+                     * file if necessary
+                     */
+                    $i = 0;
+                    while (file_exists($upload_dir['path'] . '/' . $filename)) {
+                        $filename = $filetitle . '_' . $i . '.' . $filetype['ext'];
+                        $i++;
+                    }
+                    $filedest = $upload_dir['path'] . '/' . $filename;
+
+                    /**
+                     * Check write permissions
+                     */
+                    if (!is_writeable($upload_dir['path'])) {
+                        //$this->msg_e('Unable to write to directory %s. Is this directory writable by the server?');
+                        throw new exception ($upload_dir['path'] . ' is not writable.');
+                    }
+
+                    /**
+                     * Save temporary file to uploads dir
+                     */
+                    if (!@move_uploaded_file($filetmp, $filedest)) {
+                        throw new exception ($filedest . ' could not be saved.');
+                    }
+
+                    $attachment = array(
+                        'post_mime_type' => $filetype['type'],
+                        'post_title' => $filetitle,
+                        'post_content' => '',
+                        'post_status' => 'inherit'
+                );
+                    if (!empty($_REQUEST['tax_site']))
+                        $attachment['post_parent'] = $_REQUEST['tax_site'];
+
+                    $attach_id = wp_insert_attachment($attachment, $filedest);
+                    require_once( ABSPATH . "wp-admin" . '/includes/image.php' );
+                    $attach_data = wp_generate_attachment_metadata($attach_id, $filedest);
+                    wp_update_attachment_metadata($attach_id, $attach_data);
+                    $response .= '<div class="notice success"><span>'.$filename.' was uploaded successfully.</span></div>';
+                }
+            }
+        } catch (exception $ex) {
+            $response .= '<div class="notice error"><span>' . $ex->getMessage() . '</span></div>';
+        }
+    }
+    return $response;
+}

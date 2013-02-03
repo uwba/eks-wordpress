@@ -14,6 +14,13 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 	<input type="hidden" name="action" value="<?php echo ( get_query_var('listing_edit') ? 'edit-listing' : 'new-listing' ); ?>" />
 	<input type="hidden" name="ID" value="<?php echo esc_attr( $listing->ID ); ?>" />
 
+        <?php 
+        // Workaround a major bug in Vantage - default values for radio groups are not honored, and it's not setting a default hidden value (as a result?).  
+        // So hardcode a hidden field with of the valid values configured on the Form Builder admin screen.
+        ?>
+        <input type="hidden" name="app_adaaccessible" value="No" />
+        <input type="hidden" name="app_certifyingacceptanceagent" value="No" />
+
 <fieldset id="essential-fields">
 	<div class="featured-head"><h3><?php _e( 'Essential info', APP_TD ); ?></h3></div>
 

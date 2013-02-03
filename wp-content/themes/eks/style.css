@@ -248,6 +248,10 @@ small {
 	background: none;
 	color:#f05e25;
 }
+
+#sidebar p {
+    margin: 5px 0;
+}
 /* ============ /Navigation Tweaks ============ */
 
 /* Navigation */
@@ -941,7 +945,16 @@ font-weight: bold;*/
 	line-height:21px;
 }
 
+table.table th {
+    font-weight:bold;
+    border-bottom: 1px solid #dfdfdf;
+}
 
+table.table td, table.table th
+{
+    padding: 5px 10px;
+    text-align: left;
+}
 
 
 
@@ -957,9 +970,7 @@ font-weight: bold;*/
 #email_all {
 	float: right;
 }
-.table td {
-	padding: 5px 10px;
-}
+
 #wp-admin-bar-register {
 	display: none;
 }
