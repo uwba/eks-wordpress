@@ -463,12 +463,16 @@ function fileupload($label, $myposts = array()) {
     <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';  ?>" accept-charset="utf-8" >
         
         <?php if (count($myposts) > 0) { ?>
+        <p>Uploaded documents will be displayed to volunteers assigned to this Tax Site.</p>
         <label>Tax Site: <select name="tax_site">
                 <?php foreach ($myposts as $post) {
                     ?><option value="<?= $post->ID ?>"><?php echo $post->post_title ?></option>
                 <?php } ?>
-            </select> <span></span></label><span>Uploaded documents will be displayed at volunteers attached to selected Tax Site</span><br/>
+            </select>
+        </label>
+        <br/>
         <?php } ?>
+        
         <label><?php echo $label; ?><input type="file" name="uploadfiles[]" id="uploadfiles" size="35" class="uploadfiles" /></label>
         <input class="button-primary" type="submit" name="uploadfile" id="uploadfile_btn" value="Upload"  />
     </form>
