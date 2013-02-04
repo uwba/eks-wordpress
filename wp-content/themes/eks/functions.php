@@ -168,33 +168,47 @@ function get_volunteer_tax_sites($volunteer_ID = null) {
 	return $tax_sites;
 }
 
+/**
+ * Return all the volunteers associated with Tax Sites of the current user.
+ * 
+ * @global object $current_user
+ * @global int $user_ID
+ * @return array                    Array of volunteers
+ */
 function get_volunteers() {
-//	if (! $user_ID) {
-//
-//	}
 	global $current_user, $user_ID;
 	
 	get_currentuserinfo();
 //	var_dump($current_user);
-//echo $user_ID;
+//var_dump( $user_ID );
+
+//$my_tax_sites = get_posts(array('numberposts' => -1, 'post_author' => $user_ID, 'post_type' => 'listing'));
 	// Get my tax sites
-	$my_tax_sites = get_posts(array('numberposts' => -1, 'post_author' => $user_ID, 'post_type' => 'listing'));
+	$my_tax_sites = get_posts(array(
+            'numberposts' => -1, 
+            'author' => $user_ID, 
+            'post_type' => 'listing', 
+            'post_status' => array('publish', 'pending')
+            ));
 	$my_tax_sites_ids = array();
 	foreach ($my_tax_sites as $tax_site) {
 		$my_tax_sites_ids[] = $tax_site->ID;
 	}
 
-//	var_dump($my_tax_sites_ids);
+	//var_dump($my_tax_sites_ids);
 	$arg = array(
 		'numberposts' => -1,
-		'post_author' => $user_ID,
+		'author' => $user_ID,
 		'post_type' => 'volunteer',
+                'post_status' => array('publish', 'pending'),
 		'meta_query' => array('relation' => 'OR'),
 			);
 	foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
 		$arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
 	}
+        //var_dump($arg);
 	return get_posts($arg);
+//        /die();
 }
 
 /**

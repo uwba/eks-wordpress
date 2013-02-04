@@ -1,5 +1,5 @@
 jQuery(document).ready(function($){
-	$('#volunteer_dialog').dialog({autoOpen:false, width: 980, height: 600});
+	$('#volunteer_dialog').dialog({autoOpen:false, width: 600, top:50});
 	$('#facebook_dialog').dialog({autoOpen:false, width: 500, height: 400});
 	
 	

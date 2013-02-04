@@ -40,10 +40,9 @@ class Debug_Bar_Queries extends Debug_Bar_Panel {
 
 				$debug = explode( ', ', $debug );
 				$debug = array_diff( $debug, array( 'require_once', 'require', 'include_once', 'include' ) );
-				$debug = implode( ', ', $debug );
+				$debug = implode( '<br/> ', $debug );
 				$debug = str_replace( array( 'do_action, call_user_func_array' ), array( 'do_action' ), $debug );
 				$query = nl2br(esc_html($query));
-
 				$out .= "<li>$query<br/><div class='qdebug'>$debug <span>#{$counter} (" . number_format(sprintf('%0.1f', $elapsed * 1000), 1, '.', ',') . "ms)</span></div></li>\n";
 			}
 			$out .= '</ol>';

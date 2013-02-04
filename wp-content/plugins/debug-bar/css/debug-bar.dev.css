@@ -262,6 +262,7 @@ body.debug-bar-maximized.debug-bar-visible {
 	padding: 10px;
 	background: #f0f0f0;
 	margin: 0 0 10px 0;
+        border: 1px solid #ccc;
 }
 
 #querylist ol.wpd-queries li div.qdebug {

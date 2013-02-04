@@ -3587,7 +3587,7 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 		}
 	}
 	if ( $pretty )
-		return join( '<br/>', array_reverse( $caller ) );
+		return join( ', ', array_reverse( $caller ) );
 	else
 		return $caller;
 }

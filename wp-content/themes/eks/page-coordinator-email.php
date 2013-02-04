@@ -14,9 +14,13 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 ?>
 <div id="main">
 	<div class="section-head">
-		<h1><?php _e('Email All', APP_TD); ?></h1>
+		<h1><?php _e('Email All Volunteers', APP_TD); ?></h1>
 	</div>
+    		
 	<div class="categories-list">
+        <?php
+        $volunteers = get_volunteers();
+        if (count($volunteers) > 0) { ?>
 		<div id="result"></div>
 		
 		<form method="post" action="<?php echo admin_url('admin-ajax.php'); ?>" class="email-form" id="email-form">
@@ -24,9 +28,8 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 			<div class="action">
 				<input id="select_all" type="button" value="Select All" />
 			</div>
-		
-		<?php
-		$volunteers = get_volunteers();
+                <?php
+                
 		$u = wp_get_current_user();
 		foreach ($volunteers as $post) {
 			if ($post->post_author) {
@@ -36,6 +39,7 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 			}
 		}
 		set_current_user($u->ID);
+                
 		?>
 			<div class="clearfix"></div>
 			<label>Subject:
@@ -48,6 +52,7 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 			</label>
 			<input id="email_all" type="submit" value="email" class="clearfix"/>
 		</form>
+                <?php } else { ?><p>You do not yet have any volunteers assigned to your Tax Sites.</p><?php } ?>
 	</div>
 	<script>
 		jQuery(document).ready(function($){
@@ -80,6 +85,6 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 			});
 		});
 	</script>
-
+        
 </div>
 <?php get_sidebar(); ?>
