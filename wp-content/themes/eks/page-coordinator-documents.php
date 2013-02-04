@@ -28,7 +28,7 @@ foreach ($myposts as $post) {
     $filename = basename ( get_attached_file( $post->ID ) );
     $items[] = array(
         'tax_site' => $post->post_parent ? "<a href='" . get_permalink($post->post_parent) . "'>" . get_the_title($post->post_parent) . "</a>" : 'None',
-        'document' => "<a href='" . get_permalink($post->ID) . "'>" . truncate(rawurldecode($filename), 40, FALSE, TRUE) . "</a>",
+        'file' => "<a href='" . get_permalink($post->ID) . "'>" . $filename . "</a>",
         'date_modified' => strftime('%c', strtotime($post->post_modified))
     );
 }
@@ -41,22 +41,10 @@ echo OutputArrayToTable($items, $headers);
         if (count($myposts)) {
             fileupload('File:', $myposts);
         } else {
-            echo "<p>Please create at least one Tax Site</p>";
+            echo "<p>Please create at least one Tax Site first.</p>";
         }
         ?>
-
-
     </div>
-    <script>
-
-//		jQuery(document).ready(function($){
-////			$('.trickbox').tricbox();
-//			$('.trickbox').click(function(){
-//				tb_show('', '<?php echo site_url(); ?>/wp-admin/media-upload.php?type=image&amp;TB_iframe=true');
-//				return false;
-//			});
-//		});
-    </script>
 
 </div>
 
