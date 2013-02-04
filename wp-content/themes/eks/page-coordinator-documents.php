@@ -15,8 +15,11 @@ echo fileupload_process();
 
 global $user_ID;
 get_currentuserinfo();
+
+// This appears to also show attachments on any Tax Sites.  Not sure if this is desired or not.
 $args = array('numberposts' => -1, 'post_type' => 'attachment', 'author' => $user_ID, 'post_status' => 'inherit');
 $myposts = get_posts($args);
+
 $items = array();
 $headers = array('Tax Site', 'File', 'Date Modified');
 foreach ($myposts as $post) {
