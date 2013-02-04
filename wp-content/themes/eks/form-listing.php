@@ -1,5 +1,6 @@
 <?php global $va_options; 
 wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinput-1.3.min.js', array('jquery'));
+wp_enqueue_script('jquery-ui-datepicker');
 ?>
 <div id="main">
 
@@ -35,7 +36,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 		<input name="lng" type="hidden" value="<?php echo esc_attr( $coord->lng ); ?>" />
 
 		<label>
-			<?php _e( 'Address (street, city, state)', APP_TD ); ?>
+			<?php _e( 'Address (Street, City, State, Zip code)', APP_TD ); ?>
 			<input id="listing-address" name="address" type="text" value="<?php echo esc_attr( $listing->address ); ?>" class="required" />
 		</label>
 		<input id="listing-find-on-map" type="button" value="<?php esc_attr_e( 'Find on map', APP_TD ); ?>">
@@ -88,7 +89,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 
 	<div class="form-field phone"><label>
 		<?php _e( 'Phone Number (415-555-5555)', APP_TD ); ?>
-		<input name="phone" type="text" value="<?php echo esc_attr( $listing->phone ); ?>" />
+		<input id="app_contactphone" name="phone" type="text" value="<?php echo esc_attr( $listing->phone ); ?>" />
 	</label></div>
 
 	<div class="form-field listing-urls web">
@@ -139,11 +140,15 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
 </div><!-- #content -->
 
 <script type="text/javascript">
-	jQuery(document).ready(function($){
-		$('input[name="phone"], #app_sitecoordinatorphonenumber').mask("999-999-9999");
-	});
-
+    
+// Called when the user has selected a County (Category)
+function onCompleteCallback()
+{
     jQuery(document).ready(function($){
+        $('#app_contactphone,#app_sitecoordinatorphonenumberoptional').mask("999-999-9999");
+
+        $( "#app_openingdateoptionaleg01012013,#app_closingdateoptionaleg04152013" ).datepicker();
+
         $('#app_hoursofoperation').wrap('<div id="schedule-wrapper">').parent().prepend('<div id="schedule-editor">');
 
         var text = $('#app_hoursofoperation').text().split(' ');
@@ -168,9 +173,6 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
             }
         });
 
-
-
-
         $('#schedule-editor').append('<div id="schedule-add">add</div>');
 
         $('#schedule-add').click(function(){
@@ -178,10 +180,6 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
             $(this).before(row(n));
             $('#schedule-wrapper').height($('#schedule-editor').height());
         });
-
-
-
-
 
         function row(i){
             function days(i){
@@ -237,6 +235,7 @@ wp_enqueue_script('maskedinput', plugins_url() . '/volunteer/js/jquery.maskedinp
             $('#app_hoursofoperation').html(text);
         });
     });
+}
 </script>
 
 <?php get_sidebar(); ?>

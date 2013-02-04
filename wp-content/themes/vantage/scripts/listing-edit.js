@@ -68,6 +68,7 @@ function vantage_map_edit() {
 		});
 	}
 
+        // Added by EKS, 2/4/13 - If the global-scope function onCompleteCallback exists, call it upon load complete 
 	function loadFormFields() {
 		var data = {
 			action: 'app-render-form',
@@ -76,13 +77,14 @@ function vantage_map_edit() {
 
 		jQuery.post(VA_i18n.ajaxurl, data, function(response) {
 			jQuery('#custom-fields').html(response);
+                        if (typeof (onCompleteCallback) == 'function')
+                            onCompleteCallback();
 		});
 	}
-
 	jQuery('#listing_category')
 		.change(loadFormFields)
 		.find('option').eq(0).val(''); // needed for jQuery.validate()
-
+        
 	jQuery('.uploaded').sortable();
 
 	jQuery('#create-listing').validate({

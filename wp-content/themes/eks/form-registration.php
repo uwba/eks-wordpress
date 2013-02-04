@@ -1,5 +1,5 @@
 <?php
-// Template Name: Register
+// Template Name: Register - Coordinator/Admin Registration
 
 
 // set a redirect for after logging in

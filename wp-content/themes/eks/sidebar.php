@@ -153,14 +153,14 @@ if ( isset( $_REQUEST['redirect_to'] ) ) {
 					<div class="form-field">
 						<label>
 							<?php _e('Username:', APP_TD ); ?>
-							<input type="text" name="log" class="text regular-text required" tabindex="1" id="login_username" value="" />
+							<input type="text" name="log" class="text regular-text required" tabindex="1001" id="login_username" value="" />
 						</label>
 					</div>
 
 					<div class="form-field">
 						<label>
 							<?php _e('Password:', APP_TD ); ?>
-							<input type="password" name="pwd" class="text regular-text required" tabindex="2" id="login_password" value="" />
+							<input type="password" name="pwd" class="text regular-text required" tabindex="1002" id="login_password" value="" />
 						</label>
 					</div>	
 
