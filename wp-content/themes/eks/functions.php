@@ -1,12 +1,14 @@
 <?php
-//wp_enqueue_script('site',   '/wp-content/themes/eks/scripts/site.js', array('jquery'));
-//wp_enqueue_style('jquery-ui-dialog');
-//wp_enqueue_style( 'wp-jquery-ui' );
-//wp_enqueue_style( 'wp-jquery-ui-dialog' );
+add_action( 'wp_enqueue_scripts', 'eks_add_jqueryui_stylesheet' );
 
-wp_enqueue_style('wp-jquery-ui',
+/**
+ * Enqueue plugin style-file
+ */
+function eks_add_jqueryui_stylesheet() {
+    wp_enqueue_style('wp-jquery-ui',
                 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css',
                 false);
+}
 
 add_action('after_setup_theme', 'vantage_child_setup');
 

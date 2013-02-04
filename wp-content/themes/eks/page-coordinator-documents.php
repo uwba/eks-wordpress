@@ -24,7 +24,8 @@ $items = array();
 $headers = array('Tax Site', 'File', 'Date Modified');
 foreach ($myposts as $post) {
     setup_postdata($post);
-    $filename = pathinfo($post->guid, PATHINFO_BASENAME);
+    // As per http://wordpress.stackexchange.com/questions/20081/how-to-get-attachment-file-name-not-attachment-url
+    $filename = basename ( get_attached_file( $post->ID ) );
     $items[] = array(
         'tax_site' => $post->post_parent ? "<a href='" . get_permalink($post->post_parent) . "'>" . get_the_title($post->post_parent) . "</a>" : 'None',
         'document' => "<a href='" . get_permalink($post->ID) . "'>" . truncate(rawurldecode($filename), 40, FALSE, TRUE) . "</a>",
@@ -34,7 +35,7 @@ foreach ($myposts as $post) {
 echo OutputArrayToTable($items, $headers);
 ?><br/><h2><?php _e('Upload New Document', APP_TD); ?></h2><?php
         wp_reset_query();
-        $args = array('numberposts' => -1, 'post_type' => 'listing', 'author' => $user_ID, 'post_status' => array('publish', 'pending', 'draft', 'trash'));
+        $args = array('numberposts' => -1, 'post_type' => 'listing', 'author' => $user_ID, 'post_status' => array('publish', 'pending'));
         $myposts = get_posts($args);
 
         if (count($myposts)) {
