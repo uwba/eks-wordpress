@@ -27,7 +27,8 @@ class Debug_Bar {
 	}
 
 	function init() {
-		if ( ! is_super_admin() || ! is_admin_bar_showing() || $this->is_wp_login() )
+                // If WP_DEBUG = true, display it even for non-admins
+		if ( (!WP_DEBUG && ! is_super_admin()) || ! is_admin_bar_showing() || $this->is_wp_login() )
 			return;
 
 		add_action( 'admin_bar_menu',               array( &$this, 'admin_bar_menu' ), 1000 );

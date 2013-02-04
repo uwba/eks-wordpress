@@ -26,10 +26,10 @@ if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQU
 	<link rel="stylesheet" type="text/css" media="all" href="<?php bloginfo( 'stylesheet_url' ); ?>" />
         
         <?php
-            // Remove the Admin Bar if the user is not an Admin
+            // Remove the Admin Bar if the user is not an Admin and we're not in DEBUG mode
             // As per http://wordpress.org/support/topic/hiding-admin-bar-in-wordpress-33 it now can only be done via CSS, and must be done here to get the priority right.
             // Tried http://wordpress.org/extend/plugins/global-admin-bar-hide-or-remove but it didn't work
-            if (!eks_is_admin())
+            if (!WP_DEBUG && !eks_is_admin())
             {
                 ?>
         <style type="text/css">
