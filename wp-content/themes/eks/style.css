@@ -1097,6 +1097,12 @@ button, input[type="button"] {
     padding-right: 24px;
     padding-top: 8px;
 }
+
+input[type="button"].btn-small {
+    padding:4px;
+    font-size:inherit;
+}
+
 .map {float:left;margin: 0 12px 40px 0;width:160px; height: 160px;}
 .map > img {
 	cursor: pointer;
@@ -1205,26 +1211,6 @@ padding: 0;
 .drop-location {
     float: left;
     margin: 35px 10px;
-}
-
-#app_hoursofoperation{
-    width: 452px;
-    height: 50px;
-}
-
-#schedule-wrapper{
-    position: relative;
-}
-
-#schedule-editor{
-    position: absolute;
-    width: 464px;
-    min-height: 80px;
-    z-index: 10;
-    background: white;
-}
-#schedule-editor td{
-    width: auto;
 }
 
 .notice span

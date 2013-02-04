@@ -20,8 +20,11 @@
 	<?php $twitter = get_post_meta( get_the_ID(), 'twitter', true ); ?>
 
 	<ul>
-		<li class="address"><?php the_listing_address(); ?></li>
-		<li class="phone"><strong><?php echo esc_html( get_post_meta( get_the_ID(), 'phone', true ) ); ?></strong></li>
+		<li><p class="listing-custom-field"><span class="custom-field-label">Address</span><span class="custom-field-sep">: </span><span class="custom-field-value"><?php the_listing_address(); ?></span></p></li>
+
+                <li><p class="listing-custom-field"><span class="custom-field-label">Phone</span><span class="custom-field-sep">: </span><span class="custom-field-value"><?php echo esc_html( get_post_meta( get_the_ID(), 'phone', true ) ); ?></span></p>
+                </li>
+                
 	<?php if ( $website ) : ?>
 		<li id="listing-website"><a href="<?php echo esc_url( 'http://' . $website ); ?>" title="<?php _e( 'Website', APP_TD ); ?>" target="_blank"><?php echo esc_html( $website ); ?></a></li>
 		<li id="listing-email"><a href="<?php echo  'mailto:' . $email ; ?>" title="<?php _e( 'Email', APP_TD ); ?>" target="_blank"><?php echo esc_html( $email ); ?></a></li>
@@ -70,3 +73,15 @@
 <div id="sidebar">
 <?php get_sidebar( 'single-listing' ); ?>
 </div>
+<script type="text/javascript">
+
+        jQuery(document).ready(function($) {
+            $('span.custom-field-label').each(function(){
+               if ($(this).text() == 'Hours of Operation')
+                {
+                    // TODO - format the field better.
+                    //$(this).siblings('span.custom-field-value').css('font-family', 'monospace');
+                }
+            });
+        });
+</script>
