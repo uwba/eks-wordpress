@@ -518,10 +518,8 @@ small {
 	font-size: 18px;
 	color: #5e5e5e;
 	width: 92%;
-	height: 35px;
 	border: none;
 	background: transparent;
-	margin-top: 2px;
 }
 #main-search .h3 {
 	height: 39px;
@@ -1145,7 +1143,13 @@ article {
 	margin:0 26px;
 	padding: 25px 10px 25px 76px;
 	position: relative;
-	border-bottom: 1px solid #E5E5E5;
+        border-bottom: 1px solid #e5e5e5
+}
+
+article.tax-search-dialog
+{        
+    margin: 0 0 20px 0;
+    padding: 0 0 20px 0; 
 }
 article.training {
 	padding-left: 20px;
@@ -1221,4 +1225,12 @@ padding: 0;
 textarea
 {
     height:50px;
+}
+
+/* Copy vantage/style.css:2092 */
+input[type="password"]
+{
+	display: block;
+	clear: left;
+	font-style: normal;
 }
