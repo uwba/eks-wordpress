@@ -142,12 +142,15 @@ wp_enqueue_script('jquery-ui-datepicker');
 
 <script type="text/javascript">
 
-<?php if (!empty($listing->ID)) { ?>
-        onCompleteCallback();
+<?php if (!empty($listing->ID)) { // Call onCategoryLoadComplete() as soon as the map is loaded, as this is an edit ?>
+    function onMapLoadComplete()
+    {
+        onCategoryLoadComplete();
+    }      
 <?php } ?>
 
     // Called when the user has selected a County (Category), or upon load in an "edit" scenario
-    function onCompleteCallback()
+    function onCategoryLoadComplete()
     {
         jQuery(document).ready(function($) {
             

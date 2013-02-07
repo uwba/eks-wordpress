@@ -1,4 +1,5 @@
 function vantage_map_edit() {
+
 	var geocoder = new google.maps.Geocoder();
 
 	var map = new google.maps.Map(document.getElementById('listing-map'), {
@@ -68,7 +69,7 @@ function vantage_map_edit() {
 		});
 	}
 
-        // Added by EKS, 2/4/13 - If the global-scope function onCompleteCallback exists, call it upon load complete 
+        // Added by EKS: If the global-scope function onCategoryLoadComplete exists, call it upon load complete 
 	function loadFormFields() {
 		var data = {
 			action: 'app-render-form',
@@ -77,8 +78,8 @@ function vantage_map_edit() {
 
 		jQuery.post(VA_i18n.ajaxurl, data, function(response) {
 			jQuery('#custom-fields').html(response);
-                        if (typeof (onCompleteCallback) == 'function')
-                            onCompleteCallback();
+                        if (typeof (onCategoryLoadComplete) == 'function')
+                            onCategoryLoadComplete();
 		});
 	}
 	jQuery('#listing_category')
@@ -90,6 +91,10 @@ function vantage_map_edit() {
 	jQuery('#create-listing').validate({
 		submitHandler: ensureMapInit
 	});
+        
+        // Added by EKS: If the global-scope function onMapLoadComplete exists, call it now
+        if (typeof (onMapLoadComplete) == 'function')
+            onMapLoadComplete();
 }
 
 	jQuery('#create-listing input[type="file"]').after('<input type="button" class="clear-file" value="' + VA_i18n.clear + '">');
