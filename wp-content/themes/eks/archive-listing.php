@@ -152,7 +152,12 @@ if ( have_posts() ) : ?>
 	
 	<?php if ( is_search() ) : ?>
 	<article class="listing">
-		<h2><?php printf( __( 'Tax sitess found for "%s" near "%s"', APP_TD ), va_get_search_query_var( 'ls' ), va_get_search_query_var( 'location' ) ); ?></h2>
+		<h2><?php 
+                $subheader = 'Matching "'.va_get_search_query_var( 'ls' ).'"';
+                $location = va_get_search_query_var( 'location' );
+                if (!empty($location))
+                    $subheader .= ' near "'.$location.'"';
+                echo $subheader; ?></h2>
 	</article>
 	<?php endif; ?>
 	
