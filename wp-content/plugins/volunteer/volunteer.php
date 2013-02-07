@@ -65,7 +65,7 @@ function myajax_submit() {
             $_SESSION['volunteer']['position'] = !empty($_POST['position']) ? $_POST['position'] : '';
         
             if (empty($_SESSION['volunteer']['position'][0])) {
-                $errors[] = 'Please select a position.';
+                $errors[] = '<strong>ERROR</strong>: Please select a position.';
             }
             $valid = !count($errors);
             $_SESSION['volunteer']['steps'][2] = 2;
@@ -503,10 +503,6 @@ function register_role_custom() {
 //    var_dump($_GET);
 
 
-            if ($_GET['listing_category'] > 0)
-                $query .= " AND term_id = '" . $wpdb->escape($_GET['listing_category']) . "'";
-            if ($_GET['field_city'])
-                $query .= " AND a.meta_value like '%" . $wpdb->escape($_GET['field_city']) . "%'";
 //    if ($_GET['zip_code']) $query .= " AND a.meta_value like '%" . $wpdb->escape($_GET['zip_code']) . "%'";
 
             $query .= " GROUP BY ID";
