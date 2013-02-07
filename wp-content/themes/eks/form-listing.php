@@ -133,7 +133,7 @@ wp_enqueue_script('jquery-ui-datepicker');
 <?php do_action('va_after_create_listing_form'); ?>
 
         <fieldset>
-            <div class="form-field"><input type="submit" value="<?php echo esc_attr($action); ?>" /></div>
+            <div class="form-field"><input type="submit" id="btn-submit" style="display:none" value="<?php echo esc_attr($action); ?>" /></div>
         </fieldset>
 
     </form>
@@ -150,17 +150,25 @@ wp_enqueue_script('jquery-ui-datepicker');
     function onCompleteCallback()
     {
         jQuery(document).ready(function($) {
+            
+            $('#app_numberoftaxpreparersneeded,#app_numberofinterpretersneeded,#app_numberofgreetersneeded').rules("add", {
+                'required' : true,
+                'min': 0
+            });
+            
             $('#app_contactphone,#app_sitecoordinatorphonenumber').mask("999-999-9999");
 
             $("#app_openingdate,#app_closingdate").datepicker();
 
-            $('#app_hoursofoperation').wrap('<div id="schedule-wrapper">').parent().prepend('<div id="schedule-editor">');
-            
             renderScheduleCreatorWidget();
+            
+            $('#btn-submit').show();
 
             // Render "Hours of Operation" schedule creator widget
             function renderScheduleCreatorWidget()
-            {              
+            {     
+                $('#app_hoursofoperation').wrap('<div id="schedule-wrapper">').parent().prepend('<div id="schedule-editor">');
+                
                 var text = $('#app_hoursofoperation').hide().text().split(' ');
                 var n = (text.length - 1) / 12;
                 n = Math.max(3, n);
@@ -178,7 +186,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                             q++;
                         }
                         $(this).val(text[q]);
-                        console.log('[' + q + '] = ' + text[q]);
+                        //console.log('[' + q + '] = ' + text[q]);
                         q++;
                     }
                 });
