@@ -54,7 +54,7 @@
                 }
                 ?>
 
-                <h2>Documents</h2>
+                <h2>Volunteer Documents</h2>
                     <?
                     $files = get_posts(array('post_type' => 'attachment', 'author' => $post->post_author));
                     $items = array();
@@ -63,12 +63,11 @@
                         // As per http://wordpress.stackexchange.com/questions/20081/how-to-get-attachment-file-name-not-attachment-url
                         $filename = basename(get_attached_file($post->ID));
                         $items[] = array(
-                            'tax_site' => $post->post_parent ? "<a href='" . get_permalink($post->post_parent) . "'>" . get_the_title($post->post_parent) . "</a>" : 'None',
                             'file' => "<a href='" . get_permalink($post->ID) . "'>" . $filename . "</a>",
                             'date_modified' => strftime('%c', strtotime($post->post_modified))
                         );
                     }
-                    echo OutputArrayToTable($items, array('Tax Site', 'File', 'Date Modified'));
+                    echo OutputArrayToTable($items, array('File', 'Date Modified'));
                     ?>
                 </p>
 
