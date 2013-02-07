@@ -32,7 +32,6 @@ function myajax_submit() {
 
     switch ($step) {
         case 1: // Submit name, username, password, and email
-            // TODO: display errors
 
             $_SESSION['volunteer']['name'] = $wpdb->escape($_POST['name']);
             $_SESSION['volunteer']['phone'] = $wpdb->escape($_POST['phone']);
@@ -78,18 +77,6 @@ function myajax_submit() {
             break;
 
         case 3: // Select desired Tax Site
-            //global $current_user, $user_ID;
-            
-//            $creds = array();
-//            $creds['user_login'] = $_SESSION['volunteer']['username'];
-//            $creds['user_password'] = $_SESSION['volunteer']['password'];
-//            $creds['remember'] = true;
-//            $user = wp_signon( $creds, true );
-
-            //get_currentuserinfo();
-            
-                            global $current_user;
-                get_currentuserinfo();
 
             // Create post object for the Volunteer/Tax Site association
             $my_post = array(
@@ -122,22 +109,10 @@ function myajax_submit() {
                 'step' => $valid ? 0 : 4,
                 'data' => $_SESSION['volunteer'],
             ));
-//            if ($valid) {
-//                unset($_SESSION['volunteer']);
-//            }
             break;
         default:
             break;
     }
-//	} elseif ($_POST['action'] == 'email_all') {
-//		$response = json_encode(array( 
-//				'success' => 1,
-//				'errors' => 2,
-//				));
-//	}
-    // generate the response
-//    $response = json_encode( array( 'success' => true ) );
-    // response output
     header("Content-Type: application/json");
     echo $response;
 

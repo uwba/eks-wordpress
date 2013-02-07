@@ -11,18 +11,18 @@
         <?php
         $volunteers = get_volunteers();
         if (count($volunteers) > 0) {
+            
+            // Store the current Coordinator user. We'll temporarily set the user to each Volunteer below, so we can render the Display Name.
             $u = wp_get_current_user();
             foreach ($volunteers as $post) {
+                
                 if ($post->post_author) {
                     wp_set_current_user($post->post_author);
-                    //			setup_postdata(get_userdata($post->post_author));
-                    //				get_template_part('content-volunteer');
                     ?>
                     <article>
                         <div class="info">
-                            <a href="<?php the_permalink($post->ID); ?>" rel="bookmark"><?php echo ($current_user->data->display_name ? $current_user->data->display_name : $current_user->data->name); ?></a>
+                            <a href="<?php the_permalink($post->ID); ?>" rel="bookmark"><?php echo $current_user->data->display_name ?></a> (<?php echo $current_user->data->user_nicename; ?>)
                         </div>
-            <!--			<div class="action"><input type="checkbox" name="volunteers[]" value="<?php echo $user_ID ?>" /></div>-->
                     </article>
                     <?php
                 }

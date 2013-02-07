@@ -1,105 +1,103 @@
 <?php
-add_action( 'wp_enqueue_scripts', 'eks_add_jqueryui_stylesheet' );
+add_action('wp_enqueue_scripts', 'eks_add_jqueryui_stylesheet');
 
 /**
  * Enqueue plugin style-file
  */
 function eks_add_jqueryui_stylesheet() {
-    wp_enqueue_style('wp-jquery-ui',
-                'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css',
-                false);
+    wp_enqueue_style('wp-jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css', false);
 }
 
 add_action('after_setup_theme', 'vantage_child_setup');
 
 function vantage_child_setup() {
-	remove_filter('excerpt_length', 'va_excerpt_length');
-	add_filter('excerpt_length', 'va_child_excerpt_length');
+    remove_filter('excerpt_length', 'va_excerpt_length');
+    add_filter('excerpt_length', 'va_child_excerpt_length');
 
-	function va_child_excerpt_length() {
-		return 1;
-	}
+    function va_child_excerpt_length() {
+        return 1;
+    }
+
 }
 
 //define( 'VA_MAX_IMAGES', 3 );
-
 //REGISTER WIDGETS for HOME PAGE
 // Before Content Area
 // Location: at the top of the content
 register_sidebar(array(
-	'name' => 'Before Content Area',
-	'id' => 'before-content-area',
-	'description' => __('Located at the top of the content.'),
-	'before_widget' => '<div id="%1$s" class="art-banners">',
-	'after_widget' => '</div>',
-	'before_title' => '<h3>',
-	'after_title' => '</h3>',
+    'name' => 'Before Content Area',
+    'id' => 'before-content-area',
+    'description' => __('Located at the top of the content.'),
+    'before_widget' => '<div id="%1$s" class="art-banners">',
+    'after_widget' => '</div>',
+    'before_title' => '<h3>',
+    'after_title' => '</h3>',
 ));
 // Top Content Area
 // Location: at the middle of the content
 register_sidebar(array(
-	'name' => 'Top Content Area',
-	'id' => 'top-content-area',
-	'description' => __('Located at the middle of the content.'),
-	'before_widget' => '<div id="%1$s" class="who-are-you">',
-	'after_widget' => '</div></span>',
-	'before_title' => '<span class="allgnleft"><h3>',
-	'after_title' => '</h3>',
+    'name' => 'Top Content Area',
+    'id' => 'top-content-area',
+    'description' => __('Located at the middle of the content.'),
+    'before_widget' => '<div id="%1$s" class="who-are-you">',
+    'after_widget' => '</div></span>',
+    'before_title' => '<span class="allgnleft"><h3>',
+    'after_title' => '</h3>',
 ));
 // Top Content Area buttons
 // Location: at the middle of the content
 register_sidebar(array(
-	'name' => 'Top Content Buttons',
-	'id' => 'top-content-buttons',
-	'description' => __('Located under the middle of the content.'),
-	'before_widget' => '<div id="%1$s" class="action-buttons">',
-	'after_widget' => '</div>',
-	'before_title' => '<span><h3>',
-	'after_title' => '</h3></span>',
+    'name' => 'Top Content Buttons',
+    'id' => 'top-content-buttons',
+    'description' => __('Located under the middle of the content.'),
+    'before_widget' => '<div id="%1$s" class="action-buttons">',
+    'after_widget' => '</div>',
+    'before_title' => '<span><h3>',
+    'after_title' => '</h3></span>',
 ));
 // Left Content Area
 // Location: at the left of the content
 register_sidebar(array(
-	'name' => 'Left Content Area',
-	'id' => 'left-content-area',
-	'description' => __('Located at the left of the content.'),
-	'before_widget' => '<div id="%1$s" class="featured-article">',
-	'after_widget' => '</div>',
-	'before_title' => '<h3>',
-	'after_title' => '</h3>',
+    'name' => 'Left Content Area',
+    'id' => 'left-content-area',
+    'description' => __('Located at the left of the content.'),
+    'before_widget' => '<div id="%1$s" class="featured-article">',
+    'after_widget' => '</div>',
+    'before_title' => '<h3>',
+    'after_title' => '</h3>',
 ));
 // Right Content Area
 // Location: at the right of the content
 register_sidebar(array(
-	'name' => 'Right Content Area',
-	'id' => 'right-content-area',
-	'description' => __('Located at the right of the content.'),
-	'before_widget' => '<div id="%1$s" class="featured-news">',
-	'after_widget' => '</div>',
-	'before_title' => '<h3>',
-	'after_title' => '</h3>',
+    'name' => 'Right Content Area',
+    'id' => 'right-content-area',
+    'description' => __('Located at the right of the content.'),
+    'before_widget' => '<div id="%1$s" class="featured-news">',
+    'after_widget' => '</div>',
+    'before_title' => '<h3>',
+    'after_title' => '</h3>',
 ));
 // 	After Content Area
 // Location: at the bottom of the content
 register_sidebar(array(
-	'name' => 'After Content Area',
-	'id' => 'after-content-area',
-	'description' => __('Located at the bottom of the content.'),
-	'before_widget' => '<div id="%1$s" class="featured-services">',
-	'after_widget' => '</div>',
-	'before_title' => '<h5>',
-	'after_title' => '</h5>',
+    'name' => 'After Content Area',
+    'id' => 'after-content-area',
+    'description' => __('Located at the bottom of the content.'),
+    'before_widget' => '<div id="%1$s" class="featured-services">',
+    'after_widget' => '</div>',
+    'before_title' => '<h5>',
+    'after_title' => '</h5>',
 ));
 // Before Footer Widget
 // Location: at the top of the footer, above the copyright
 register_sidebar(array(
-	'name' => 'Before Footer Area',
-	'id' => 'before-footer-area',
-	'description' => __('Located at the bottom of pages.'),
-	'before_widget' => '<div id="%1$s" class="featured-sponsors">',
-	'after_widget' => '</div>',
-	'before_title' => '<h4>',
-	'after_title' => '</h4>',
+    'name' => 'Before Footer Area',
+    'id' => 'before-footer-area',
+    'description' => __('Located at the bottom of pages.'),
+    'before_widget' => '<div id="%1$s" class="featured-sponsors">',
+    'after_widget' => '</div>',
+    'before_title' => '<h4>',
+    'after_title' => '</h4>',
 ));
 
 //// Use this code to create new admin user
@@ -118,54 +116,54 @@ register_sidebar(array(
 
 
 function is_volunteer() {
-	if (is_user_logged_in()) {
-		global $user_ID;
-		get_currentuserinfo();
-		// TODO: add year
-		$posts = get_posts(array('post_type' => 'volunteer', 'author' => $user_ID));
-		if (count($posts)) {
-			return TRUE;
-		}
-	}
-	return FALSE;
+    if (is_user_logged_in()) {
+        global $user_ID;
+        get_currentuserinfo();
+        // TODO: add year
+        $posts = get_posts(array('post_type' => 'volunteer', 'author' => $user_ID));
+        if (count($posts)) {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 function get_volunteer($volunteer_ID = null) {
-	if (!$volunteer_ID) {
-		if (is_user_logged_in()) {
-			global $user_ID; //echo $user_ID;
-			get_currentuserinfo();
-			$volunteer_ID = $user_ID;
-		}
-	}
-	
-	if ($volunteer_ID) {
-		// TODO: add year
-		$posts = get_posts(array('post_type' => 'volunteer', 'author' => $volunteer_ID));
+    if (!$volunteer_ID) {
+        if (is_user_logged_in()) {
+            global $user_ID; //echo $user_ID;
+            get_currentuserinfo();
+            $volunteer_ID = $user_ID;
+        }
+    }
+
+    if ($volunteer_ID) {
+        // TODO: add year
+        $posts = get_posts(array('post_type' => 'volunteer', 'author' => $volunteer_ID));
 //		var_dump($posts);
-		if (count($posts)) {
-			return $posts[0];
-		} 
-	}
-	return FALSE;
+        if (count($posts)) {
+            return $posts[0];
+        }
+    }
+    return FALSE;
 }
 
 function get_volunteer_tax_sites($volunteer_ID = null) {
-	$volunteer = get_volunteer($volunteer_ID);
+    $volunteer = get_volunteer($volunteer_ID);
 //	var_dump($volunteer);
 
-	$volunteer_meta = get_post_meta($volunteer->ID);
-        
-	//		$tax_sites_position = get_post_meta($volunteer->ID, 'preparer') + get_post_meta($volunteer->ID, 'interpreter') + get_post_meta($volunteer->ID, 'screener') + get_post_meta($volunteer->ID, 'greeter');
-	$tax_sites = array();
-	foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
-		if (!empty($volunteer_meta[$position])) {
-			foreach ($volunteer_meta[$position] as $tax_site) {
-				$tax_sites[$tax_site][] = $position;
-			}
-		}
-	}
-	return $tax_sites;
+    $volunteer_meta = get_post_meta($volunteer->ID);
+
+    //		$tax_sites_position = get_post_meta($volunteer->ID, 'preparer') + get_post_meta($volunteer->ID, 'interpreter') + get_post_meta($volunteer->ID, 'screener') + get_post_meta($volunteer->ID, 'greeter');
+    $tax_sites = array();
+    foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
+        if (!empty($volunteer_meta[$position])) {
+            foreach ($volunteer_meta[$position] as $tax_site) {
+                $tax_sites[$tax_site][] = $position;
+            }
+        }
+    }
+    return $tax_sites;
 }
 
 /**
@@ -173,42 +171,36 @@ function get_volunteer_tax_sites($volunteer_ID = null) {
  * 
  * @global object $current_user
  * @global int $user_ID
- * @return array                    Array of volunteers
+ * @return array                    Array of posts, each representing a volunteer
  */
 function get_volunteers() {
-	global $current_user, $user_ID;
-	
-	get_currentuserinfo();
-//	var_dump($current_user);
-//var_dump( $user_ID );
+    global $current_user, $user_ID;
 
-//$my_tax_sites = get_posts(array('numberposts' => -1, 'post_author' => $user_ID, 'post_type' => 'listing'));
-	// Get my tax sites
-	$my_tax_sites = get_posts(array(
-            'numberposts' => -1, 
-            'author' => $user_ID, 
-            'post_type' => 'listing', 
-            'post_status' => array('publish', 'pending')
-            ));
-	$my_tax_sites_ids = array();
-	foreach ($my_tax_sites as $tax_site) {
-		$my_tax_sites_ids[] = $tax_site->ID;
-	}
+    get_currentuserinfo();
 
-	//var_dump($my_tax_sites_ids);
-	$arg = array(
-		'numberposts' => -1,
-		'author' => $user_ID,
-		'post_type' => 'volunteer',
-                'post_status' => array('publish', 'pending'),
-		'meta_query' => array('relation' => 'OR'),
-			);
-	foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
-		$arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
-	}
-        //var_dump($arg);
-	return get_posts($arg);
-//        /die();
+    $my_tax_sites = get_posts(array(
+        'numberposts' => -1,
+        'author' => $user_ID,
+        'post_type' => 'listing',
+        'post_status' => array('publish', 'pending')
+    ));
+    $my_tax_sites_ids = array();
+    foreach ($my_tax_sites as $tax_site) {
+        $my_tax_sites_ids[] = $tax_site->ID;
+    }
+
+    $arg = array(
+        'numberposts' => -1,
+        'post_type' => 'volunteer',
+        'post_status' => array('publish', 'pending'),
+        'meta_query' => array('relation' => 'OR'),
+    );
+    
+    foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
+        $arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
+    }
+
+    return get_posts($arg);
 }
 
 /**
@@ -221,75 +213,80 @@ function get_volunteers() {
  */
 function truncate($string, $len, $wordsafe = FALSE, $dots = FALSE) {
 
-	if (strlen($string) <= $len) {
-		return $string;
-	}
+    if (strlen($string) <= $len) {
+        return $string;
+    }
 
-	if ($dots) {
-		$len -= 4;
-	}
+    if ($dots) {
+        $len -= 4;
+    }
 
-	if ($wordsafe) {
-		$string = substr($string, 0, $len + 1); // leave one more character
-		if ($last_space = strrpos($string, ' ')) { // space exists AND is not on position 0
-			$string = substr($string, 0, $last_space);
-		} else {
-			$string = substr($string, 0, $len);
-		}
-	} else {
-		$string = substr($string, 0, $len);
-	}
+    if ($wordsafe) {
+        $string = substr($string, 0, $len + 1); // leave one more character
+        if ($last_space = strrpos($string, ' ')) { // space exists AND is not on position 0
+            $string = substr($string, 0, $last_space);
+        } else {
+            $string = substr($string, 0, $len);
+        }
+    } else {
+        $string = substr($string, 0, $len);
+    }
 
-	if ($dots) {
-		$string .= ' ...';
-	}
+    if ($dots) {
+        $string .= ' ...';
+    }
 
-	return $string;
+    return $string;
 }
 
-function OutputArrayToTable($items, $header=null, $i=1, $no_message = 'No Items Found') {
-        ob_start();
+function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No Items Found') {
+    ob_start();
+    ?>
+    <?php if (count($items)): ?>
+        <!-- Loop through the entries that were provided to us by the controller -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+        <?php
+        if ($header) {
+            foreach ($header as $title) {
+                echo "<th>$title</th>";
+            }
+        } else {
+            $item = current($items);
+            foreach ($item as $title => $entry) {
+                echo "<th>" . ucwords(str_replace('_', ' ', $title)) . "</th>";
+            }
+        }
         ?>
-        <?php if (count($items)): ?>
-<!-- Loop through the entries that were provided to us by the controller -->
-<table class="table">
-    <thead>
-        <tr>
-            <th>#</th>
-                        <?php if($header) {
-                            foreach ($header as $title) {
-                                echo "<th>$title</th>";
-                            }
-                        }else {
-                            $item = current($items);
-                            foreach ($item	 as $title => $entry) {
-                                echo "<th>".ucwords(str_replace('_', ' ', $title))."</th>";
-                            }
-                        }?>
-        </tr>
-    </thead>
+                </tr>
+            </thead>
 
-                <? //$i=1;
-                foreach ($items as $row): ?>
-    <tr>
-        <td><?= $i++ ?> </td>
-                        <? foreach ($row as $entry) {
-                            echo "<td>$entry</td>";
-                        }?>
-    </tr>
-                <? endforeach ?>
-</table>
-        
-
-        <?php else: ?>
-<div id="about"><div class="not_found"><?php echo $no_message?></div></div>
-        <?php endif; ?>
+            <? //$i=1;
+            foreach ($items as $row):
+                ?>
+                <tr>
+                    <td><?= $i++ ?> </td>
+                    <?
+                    foreach ($row as $entry) {
+                        echo "<td>$entry</td>";
+                    }
+                    ?>
+                </tr>
+        <? endforeach ?>
+        </table>
 
 
-        <?
-        $output=ob_get_clean();
-        return $output;
-    }
+    <?php else: ?>
+        <div id="about"><div class="not_found"><?php echo $no_message ?></div></div>
+    <?php endif; ?>
+
+
+    <?
+    $output = ob_get_clean();
+    return $output;
+}
 
 /**
  * 
@@ -298,33 +295,32 @@ function OutputArrayToTable($items, $header=null, $i=1, $no_message = 'No Items 
  * @param array $attributes
  * @param bool $none none option
  * @return string
- */	
+ */
 function html_options($options = array(), $selected = NULL, $attributes = array(), $none = false) {
-	if (!is_array($selected)) {
-		$selected = array($selected);
-	}
-	$output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-	foreach ($options as $value => $label) {
-		$is_selected = in_array($value, $selected) ? ' selected' : '';
-		$output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
-	}
-	$output .= '</select';
-	return $output;
+    if (!is_array($selected)) {
+        $selected = array($selected);
+    }
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($options as $value => $label) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
+    }
+    $output .= '</select';
+    return $output;
 }
 
 function html_options_val($values = array(), $selected = NULL, $attributes = array(), $none = false) {
-	if (!is_array($selected)) {
-		$selected = array($selected);
-	}
-	$output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-	foreach ($values as $value) {
-		$is_selected = in_array($value, $selected) ? ' selected' : '';
-		$output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
-	}
-	$output .= '</select';
-	return $output;
+    if (!is_array($selected)) {
+        $selected = array($selected);
+    }
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($values as $value) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
+    }
+    $output .= '</select';
+    return $output;
 }
-
 
 //add_filter( 'site_url', 'custom_site_url', 10, 4 );
 //function custom_site_url( $url, $path, $scheme, $blog_id ) {
@@ -337,8 +333,9 @@ function html_options_val($values = array(), $selected = NULL, $attributes = arr
 //}
 
 
-add_filter( 'site_url', 'custom_site_url', 10, 4 );
-function custom_site_url( $url, $path, $scheme, $blog_id ) {
+add_filter('site_url', 'custom_site_url', 10, 4);
+
+function custom_site_url($url, $path, $scheme, $blog_id) {
 //	echo $path;
 //    if ( strpos($path, '/volunteer') !== FALSE  && strpos($path, 'action=edit') !== FALSE) {
 //		$url = str_replace ('/wp-admin/post.php?post=', 'edit?postid=', $url);
@@ -348,48 +345,55 @@ function custom_site_url( $url, $path, $scheme, $blog_id ) {
     return $url;
 }
 
+function insert_attachment($file_handler, $post_id, $setthumb = 'false') {
+    // check to make sure its a successful upload
+    if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK)
+        __return_false();
 
-function insert_attachment($file_handler,$post_id,$setthumb='false') {
-	// check to make sure its a successful upload
-	if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK) __return_false();
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 
-	require_once(ABSPATH . "wp-admin" . '/includes/image.php');
-	require_once(ABSPATH . "wp-admin" . '/includes/file.php');
-	require_once(ABSPATH . "wp-admin" . '/includes/media.php');
+    $attach_id = media_handle_upload($file_handler, $post_id);
 
-	$attach_id = media_handle_upload( $file_handler, $post_id );
-
-	if ($setthumb) update_post_meta($post_id,'_thumbnail_id',$attach_id);
-	return $attach_id;
+    if ($setthumb)
+        update_post_meta($post_id, '_thumbnail_id', $attach_id);
+    return $attach_id;
 }
 
 //http://www.tomauger.com/2011/web-development/wordpress/wordpress-hiding-menu-items-from-users-based-on-their-roles-using-a-custom-walker
 /* Custom Walker to prevent password-protected pages from appearing in the list */
 class ZG_Nav_Walker extends Walker_Nav_Menu {
- 
-	function start_el(&$output, $item, $depth, $args) {
-		// does this menu item refer to a page that is using our protected template?
-//		$is_private = get_post_meta($item->object_id, '_wp_page_template', true) == ZG_PROTECTED_PAGE_TEMPLATE;
-//		$page_is_visible = !$is_private || ($is_private && current_user_can(ZG_PROTECTED_PAGE_CAPABILITY));
-//		var_dump($item);
-//		{
-//			$item->ID = 'login';
-//			$item->attr_title = "";
-//			$item->target = "";
-//			$item->xfn = "";
-//			$item->url = site_url("wp-login.php");
-//			$item->title = __("Member's Login");
-// 
-		if ( $item->object_id == 165 && is_volunteer()) {
-			$item->url = site_url("edit-profile");
-			$item->title = __("Volunteer Dashboard");
-			// skip menu item
-		} 
-		parent::start_el(&$output, $item, $depth, $args);
-	
-			
-//		}
-	}
+
+    protected $page_is_visible = true;
+
+    function start_el(&$output, $item, $depth, $args) {
+
+        $this->page_is_visible = true;
+
+        if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
+            if (is_volunteer()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Volunteer Dashboard");
+            }
+            else
+                $this->page_is_visible = false;
+        }
+
+        if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
+            if (!is_volunteer()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Coordinator Dashboard");
+            }
+            else
+                $this->page_is_visible = false;
+        }
+
+        // If it's not visible, skip the menu item
+        if ($this->page_is_visible)
+            parent::start_el(&$output, $item, $depth, $args);
+    }
+
 }
 
 //function registration_redirect($location, $status) {
@@ -403,50 +407,48 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
 //add_filter('wp_redirect', 'registration_redirect', 10, 2);
 
 function recent_searches() {
-	// Save search at Recent Searches
-	
-	$current_search = $_SERVER["REQUEST_URI"];
-	
-	// Read
-	if (is_user_logged_in()) {
-		global $user_ID;
-		get_currentuserinfo();
-		$recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
-	} else {
-		$recent_searches = $_SESSION['recent_searches'];
-	}
+    // Save search at Recent Searches
+
+    $current_search = $_SERVER["REQUEST_URI"];
+
+    // Read
+    if (is_user_logged_in()) {
+        global $user_ID;
+        get_currentuserinfo();
+        $recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
+    } else {
+        $recent_searches = $_SESSION['recent_searches'];
+    }
 //	var_dump($recent_searches);
-	
-	// View Recent Searches
-	$html = '<h3>Recent Searches</h3><ul class="links">';
-	for($i = 0; $i < count($recent_searches);) {
-		$html .= '<li><a href="'. $recent_searches[$i] . '">Search '.(++$i).'</a></li>';
-	}
-	$html .= '</ul>';
-	
-	// Modify
-	if ($current_search !== '/find-free-tax-help/') {
-		if (is_array($recent_searches)) {
-			if (in_array($current_search, $recent_searches)) {
-				$recent_searches = array_diff($recent_searches, array($current_search));
-			}
-			array_unshift($recent_searches, $current_search);
-		} else {
-			$recent_searches = array($current_search);	
-		}
-		$recent_searches = array_slice($recent_searches, 0, 10);
-	}
+    // View Recent Searches
+    $html = '<h3>Recent Searches</h3><ul class="links">';
+    for ($i = 0; $i < count($recent_searches);) {
+        $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
+    }
+    $html .= '</ul>';
+
+    // Modify
+    if ($current_search !== '/find-free-tax-help/') {
+        if (is_array($recent_searches)) {
+            if (in_array($current_search, $recent_searches)) {
+                $recent_searches = array_diff($recent_searches, array($current_search));
+            }
+            array_unshift($recent_searches, $current_search);
+        } else {
+            $recent_searches = array($current_search);
+        }
+        $recent_searches = array_slice($recent_searches, 0, 10);
+    }
 //	var_dump($recent_searches);
-	
-	// Save
-	if (is_user_logged_in()) {
-		update_user_meta($user_ID, 'recent_searches', $recent_searches);
-	} else {
-		$_SESSION['recent_searches'] = $recent_searches;
-	}
-	
-	
-	return $html;
+    // Save
+    if (is_user_logged_in()) {
+        update_user_meta($user_ID, 'recent_searches', $recent_searches);
+    } else {
+        $_SESSION['recent_searches'] = $recent_searches;
+    }
+
+
+    return $html;
 }
 
 /**
@@ -455,13 +457,12 @@ function recent_searches() {
  * @global int $user_ID
  * @return boolean
  */
-function eks_is_admin()
-{
+function eks_is_admin() {
     $ret = false;
-    global $user_ID; 
+    global $user_ID;
 
-    if( $user_ID ) {
-        if( current_user_can('level_10') ) 
+    if ($user_ID) {
+        if (current_user_can('level_10'))
             $ret = true;
     }
     return $ret;
@@ -477,19 +478,19 @@ function eks_is_admin()
 function fileupload($label, $myposts = array()) {
     ?>
     <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';  ?>" accept-charset="utf-8" >
-        
-        <?php if (count($myposts) > 0) { ?>
-        
-        <label>Tax Site: <select name="tax_site">
-                <?php foreach ($myposts as $post) {
-                    ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
-                <?php } ?>
-            </select>
-        </label>
-        <p>Uploaded documents will be displayed to volunteers assigned to this Tax Site.</p>
-        <br/>
-        <?php } ?>
-        
+
+    <?php if (count($myposts) > 0) { ?>
+
+            <label>Tax Site: <select name="tax_site">
+        <?php foreach ($myposts as $post) {
+            ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
+                    <?php } ?>
+                </select>
+            </label>
+            <p>Uploaded documents will be displayed to volunteers assigned to this Tax Site.</p>
+            <br/>
+    <?php } ?>
+
         <label><?php echo $label; ?><input type="file" name="uploadfiles[]" id="uploadfiles" size="35" class="uploadfiles" /></label>
         <input class="button-primary" type="submit" name="uploadfile" id="uploadfile_btn" value="Upload"  />
     </form>
@@ -506,7 +507,7 @@ function fileupload($label, $myposts = array()) {
  */
 function fileupload_process() {
     $uploadfiles = isset($_FILES['uploadfiles']) ? $_FILES['uploadfiles'] : null;
-    
+
     $response = '';
 
     if (is_array($uploadfiles)) {
@@ -550,14 +551,14 @@ function fileupload_process() {
                      */
                     if (!is_writeable($upload_dir['path'])) {
                         //$this->msg_e('Unable to write to directory %s. Is this directory writable by the server?');
-                        throw new exception ($upload_dir['path'] . ' is not writable.');
+                        throw new exception($upload_dir['path'] . ' is not writable.');
                     }
 
                     /**
                      * Save temporary file to uploads dir
                      */
                     if (!@move_uploaded_file($filetmp, $filedest)) {
-                        throw new exception ($filedest . ' could not be saved.');
+                        throw new exception($filedest . ' could not be saved.');
                     }
 
                     $attachment = array(
@@ -565,7 +566,7 @@ function fileupload_process() {
                         'post_title' => $filetitle,
                         'post_content' => '',
                         'post_status' => 'inherit'
-                );
+                    );
                     if (!empty($_REQUEST['tax_site']))
                         $attachment['post_parent'] = $_REQUEST['tax_site'];
 
@@ -573,7 +574,7 @@ function fileupload_process() {
                     require_once( ABSPATH . "wp-admin" . '/includes/image.php' );
                     $attach_data = wp_generate_attachment_metadata($attach_id, $filedest);
                     wp_update_attachment_metadata($attach_id, $attach_data);
-                    $response .= '<div class="notice success"><span>'.$filename.' was uploaded successfully.</span></div>';
+                    $response .= '<div class="notice success"><span>' . $filename . ' was uploaded successfully.</span></div>';
                 }
             }
         } catch (exception $ex) {
