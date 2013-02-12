@@ -2,6 +2,9 @@
 // Template Name: Coordinator: Email all
 ?>
 <?php 
+
+wp_enqueue_style('grid', '/wp-content/themes/eks/styles/grid.css', false);
+
 // embed the javascript file that makes the AJAX request
 wp_enqueue_script('volunteer-registration', '/wp-content/plugins/volunteer/js/registration.js', array('jquery','jquery-ui-dialog'));
 
@@ -14,7 +17,7 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 ?>
 <div id="main">
 	<div class="section-head">
-		<h1><?php _e('Email All Volunteers', APP_TD); ?></h1>
+		<h1><?php _e('Email Volunteers', APP_TD); ?></h1>
 	</div>
     		
 	<div class="categories-list">
@@ -24,9 +27,9 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
 		<div id="result"></div>
 		
 		<form method="post" action="<?php echo admin_url('admin-ajax.php'); ?>" class="email-form" id="email-form">
-			<div class="info">Volunteers</div>
+			<div class="info"><p>Select the volunteers and enter your message below.<p/></div>
 			<div class="action">
-				<input id="select_all" type="button" value="Select All" />
+				&nbsp;
 			</div>
                 <?php
                 
@@ -42,15 +45,14 @@ wp_localize_script('volunteer-registration', 'Coordinator', array('ajaxurl' => a
                 
 		?>
 			<div class="clearfix"></div>
-			<label>Subject:
-				<input type="text" id="subject" name="subject"/>
+			<label>Email Subject:
+				<input type="text" id="subject" name="subject" style="width:100%"/>
 			</label>
-			<label>Message:
-				<textarea id="message" name="message">Hello !user
-</textarea>
-				<span class="description">Replacement: !user will be replaced with real user name.</span>
+			<label>Email Message:
+				<textarea id="message" name="message" style="width:100%;height:100px"></textarea>
 			</label>
-			<input id="email_all" type="submit" value="email" class="clearfix"/>
+                        <p>&nbsp</p>
+			<input type="submit" value="Send Email"/>
 		</form>
                 <?php } else { ?><p>You do not yet have any volunteers assigned to your Tax Sites.</p><?php } ?>
 	</div>

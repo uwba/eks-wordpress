@@ -100,7 +100,7 @@ Last year’s tax return
 					<?php } ?>
 					<!--<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>-->
 					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a><ul>
-						<li><a href="<?php echo site_url('email-all'); ?>"><?php echo __('Email All', APP_TD); ?></a></li>
+						<li><a href="<?php echo site_url('email-all'); ?>"><?php echo __('Email Volunteers', APP_TD); ?></a></li>
 						<!--<li><a href="<?php echo site_url('coordinator-calendar'); ?>"><?php echo __('Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('coordinator-documents'); ?>"><?php echo __('View Documents', APP_TD); ?></a></li>
 					</ul></li>

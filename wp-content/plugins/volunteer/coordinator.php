@@ -9,13 +9,13 @@ add_action( 'wp_ajax_email-all', 'email_all' );
 function email_all() {
 	$errors = array();
 	if (!isset($_POST['subject']) ||empty($_POST['subject'])) {
-		$errors[] = 'Please enter subject';
+		$errors[] = 'The email subject is empty.';
 	}
 	if (!isset($_POST['message']) ||empty($_POST['message'])) {
-		$errors[] = 'Please enter message';
+		$errors[] = 'The email message is empty.';
 	}
 	if (!isset($_POST['volunteers']) || !count($_POST['volunteers'])) {
-		$errors[] = 'Please select at least one volunteer';
+		$errors[] = 'Please select at least one volunteer to email.';
 	}
 
 	if (!count($errors)) {

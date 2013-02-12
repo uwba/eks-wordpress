@@ -377,7 +377,14 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
                 $item->title = __("Volunteer Dashboard");
             }
             else
-                $this->page_is_visible = false;
+            {
+                // User is anonymous, or a coordinator
+                if (is_user_logged_in())
+                {
+                    // User is a coordinator
+                    $this->page_is_visible = false;
+                }
+            }
         }
 
         if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
@@ -391,7 +398,7 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
 
         // If it's not visible, skip the menu item
         if ($this->page_is_visible)
-            parent::start_el(&$output, $item, $depth, $args);
+            parent::start_el($output, $item, $depth, $args);
     }
 
 }
