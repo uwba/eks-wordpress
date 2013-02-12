@@ -247,7 +247,6 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
         <table class="table">
             <thead>
                 <tr>
-                    <th>#</th>
         <?php
         if ($header) {
             foreach ($header as $title) {
@@ -267,7 +266,6 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
             foreach ($items as $row):
                 ?>
                 <tr>
-                    <td><?= $i++ ?> </td>
                     <?
                     foreach ($row as $entry) {
                         echo "<td>$entry</td>";

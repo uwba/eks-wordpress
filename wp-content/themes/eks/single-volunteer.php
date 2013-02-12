@@ -1,4 +1,10 @@
 <div id="main">
+    
+    <?php if (!is_user_logged_in()) { ?>
+    <div class="notice error">
+        <span>You do not have access to this page.</span>
+    </div>
+    <?php } else { // logged in, so display the volunteer information ?>
 
     <?php appthemes_before_blog_loop(); ?>
 
@@ -160,6 +166,8 @@
     <?php endwhile; ?>
 
     <?php appthemes_after_blog_loop(); ?>
+    
+    <?php } ?>
 
 </div><!-- /#main -->
 
