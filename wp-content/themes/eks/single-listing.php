@@ -26,23 +26,23 @@
                 </li>
                 
 	<?php if ( $website ) : ?>
-		<li id="listing-website"><a href="<?php echo esc_url( 'http://' . $website ); ?>" title="<?php _e( 'Website', APP_TD ); ?>" target="_blank"><?php echo esc_html( $website ); ?></a></li>
-		<li id="listing-email"><a href="<?php echo  'mailto:' . $email ; ?>" title="<?php _e( 'Email', APP_TD ); ?>" target="_blank"><?php echo esc_html( $email ); ?></a></li>
+                <li><p class="listing-custom-field"><span class="custom-field-label">Website</span><span class="custom-field-sep">: </span><span class="custom-field-value"><a href="<?php echo esc_url( 'http://' . $website ); ?>" title="<?php _e( 'Website', APP_TD ); ?>" target="_blank"><?php echo esc_html( $website ); ?></a></span></li>
+		<li><p class="listing-custom-field"><span class="custom-field-label">Email</span><span class="custom-field-sep">: </span><span class="custom-field-value"><a href="<?php echo  'mailto:' . $email ; ?>" title="<?php _e( 'Email', APP_TD ); ?>" target="_blank"><?php echo esc_html( $email ); ?></a></li>
 	<?php endif; ?>
-	</ul>
+
 
 	<?php if ( $facebook or $twitter ) : ?>
-		<div id="listing-follow">
-			<p><?php _e( 'Follow:', APP_TD ); ?></p>
+		<li><p class="listing-custom-field"><span class="custom-field-label">Follow</span><span class="custom-field-sep">: </span>
 			<?php if ( $facebook ) : ?>
-			<a href="<?php echo esc_url( 'http://facebook.com/' . $facebook ); ?>" title="<?php _e( 'Facebook', APP_TD ); ?>" target="_blank"><div class="facebook-icon">Facebook</div></a>
+			<br/><a href="<?php echo esc_url( 'http://facebook.com/' . $facebook ); ?>" title="<?php _e( 'Facebook', APP_TD ); ?>" target="_blank"><div class="facebook-icon">Facebook</div></a>
 			<?php endif; ?>
 			<?php if ( $twitter ) : ?>
-			<a href="<?php echo esc_url( 'http://twitter.com/' . $twitter ); ?>" title="<?php _e( 'Twitter', APP_TD ); ?>" target="_blank"><div class="twitter-icon">Twitter -</div> <span class="twitter-handle">@<?php echo esc_html( $twitter ); ?></span></a>
+			<br/><a href="<?php echo esc_url( 'http://twitter.com/' . $twitter ); ?>" title="<?php _e( 'Twitter', APP_TD ); ?>" target="_blank"><div class="twitter-icon">Twitter -</div> <span class="twitter-handle">@<?php echo esc_html( $twitter ); ?></span></a>
 			<?php endif; ?>
-		</div>
+                </li>
 	<?php endif; ?>
 
+        </ul>
 	<div class="listing-fields">
 		<?php the_listing_fields(); ?>
 	</div>
@@ -76,11 +76,19 @@
 <script type="text/javascript">
 
         jQuery(document).ready(function($) {
+
+            var privateFields = ['Site Coordinator Name', 'Site Coordinator Email Address', 'Site Coordinator Phone Number', 'New Tax Preparer Training Required', 'Returning Tax Preparer Training Required', 'Number of Tax Preparers Needed', 'Number of Interpreters Needed', 'Number of Greeters Needed'];
+
             $('span.custom-field-label').each(function(){
-               if ($(this).text() == 'Hours of Operation')
+                
+                if ($.inArray($(this).text(), privateFields) > -1)
+                    $(this).parent().hide();
+                
+                if ($(this).text() == 'Hours of Operation')
                 {
-                    // TODO - format the field better.
-                    //$(this).siblings('span.custom-field-value').css('font-family', 'monospace');
+                    // To improve readability, precede each day name with a line break
+                    var str = $(this).siblings('span.custom-field-value').html();
+                    $(this).siblings('span.custom-field-value').html(str.replace(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/g, ' <br/>$1'));
                 }
             });
         });
