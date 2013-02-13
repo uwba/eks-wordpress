@@ -1,11 +1,27 @@
 <div id="main">
+          
+    <?php   
+    if ('POST' == $_SERVER['REQUEST_METHOD']) {
+     global $wpdb;
+
+     foreach (array_keys($_POST) as $k)
+     {   
+         update_post_meta($post->ID, $k, $wpdb->escape($_POST[$k]));
+     }
+     ?>
+         <div class="notice success">
+             <span>The volunteer notes have been updated.</span>
+         </div>
+     <?php
+     } 
+     ?>
     
     <?php if (!is_user_logged_in()) { ?>
     <div class="notice error">
         <span>You do not have access to this page.</span>
     </div>
-    <?php } else { // logged in, so display the volunteer information ?>
-
+    <?php } else { // logged in, so display the volunteer information 
+    ?>
     <?php appthemes_before_blog_loop(); ?>
 
     <?php while (have_posts()) : the_post(); ?>
@@ -64,30 +80,20 @@
                     <?
                     $files = get_posts(array('post_type' => 'attachment', 'author' => $post->post_author));
                     $items = array();
-                    foreach ($files as $post) {
-                        setup_postdata($post);
+                    foreach ($files as $f) {
+                        setup_postdata($f);
                         // As per http://wordpress.stackexchange.com/questions/20081/how-to-get-attachment-file-name-not-attachment-url
-                        $filename = basename(get_attached_file($post->ID));
+                        $filename = basename(get_attached_file($f->ID));
                         $items[] = array(
-                            'file' => "<a href='" . get_permalink($post->ID) . "'>" . $filename . "</a>",
-                            'date_modified' => strftime('%c', strtotime($post->post_modified))
+                            'file' => "<a href='" . get_permalink($f->ID) . "'>" . $filename . "</a>",
+                            'date_modified' => strftime('%c', strtotime($f->post_modified))
                         );
                     }
                     echo OutputArrayToTable($items, array('File', 'Date Modified'));
                     ?>
                 </p>
 
-                <?php
-                if ('POST' == $_SERVER['REQUEST_METHOD']) {
-                    global $wpdb;
-//	 foreach(array() as $)
-                    if (isset($_POST['contacted'])) {
-                        update_post_meta($post->ID, 'contacted', $wpdb->escape($_POST['contacted']));
-                    }
-                }
-                ?>
-
-                <h2>Notes</h2>
+                <h2>Volunteer Notes</h2>
                 <form method="POST">
                     <fieldset class="contacted">
                         <label for="contacted">Contacted - enter date:</label><br/>
