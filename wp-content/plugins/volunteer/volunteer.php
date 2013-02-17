@@ -102,6 +102,20 @@ function myajax_submit() {
             $valid = count($errors) == 0;
             if ($valid) {
                 $_SESSION['volunteer']['steps'][4] = 4;
+                
+                // Email the coordinator of the selected tax site.
+                $tax_site = get_post($_POST['tax_sites']);
+
+                $coordinator = get_user_by('id', $tax_site->post_author);
+
+                $to = $coordinator->data->user_email;
+                $from_email = 'noreply@' . $_SERVER["HTTP_HOST"];
+                $subject = "New Volunteer Registration";
+                $message = sprintf("Hello.  The following person has registered to volunteer at your tax site:\r\n\r\n%s \r\n%s \r\n%s \r\n", $_SESSION['volunteer']['name'], $_SESSION['volunteer']['phone'], $_SESSION['volunteer']['email']);
+                $headers = "From: {$from_email}\r\n";
+                if (!wp_mail($to, $subject, $message, $headers)) {
+                    // There was an error sending the email - swallow it and move on.
+                }
             }
             $response = json_encode(array(
                 'success' => $valid,

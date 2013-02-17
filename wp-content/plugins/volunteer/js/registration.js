@@ -55,7 +55,7 @@ jQuery(document).ready(function($) {
         $('#step31').ajaxForm({
             data: TaxSearch,
             dataType: 'html',
-            beforeSubmit: function() {
+            beforeSubmit: function(arr, $form, options) {
             },
             success: function(response, statusText, xhr, $form) {
                 $('#step32 #results').html(toHTML(response));
@@ -66,11 +66,11 @@ jQuery(document).ready(function($) {
         $('#step32').ajaxForm({
             data: Volunteer,
             dataType: 'json',
-            beforeSubmit: function() {
+            beforeSubmit: function(arr, $form, options) {
+                return confirm("Are you sure you want to select this Tax Site?  Click OK to finish creating your account and log in.");
             },
             success: function(response, statusText, xhr, $form) {
-                if (response.success) {
-                    // Log the person in by filling out the form
+                if (response.success) {             
                     $('#login_username').val(response.data.username);
                     $('#login_password').val(response.data.password);
                     $('#login').click();
@@ -79,6 +79,7 @@ jQuery(document).ready(function($) {
                 {
                     // Shouldn't ever happen!
                     alert('There was a problem creating your account.  Please try again later.');
+                    document.location.href = '/';
                 }
             }
         });
