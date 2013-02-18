@@ -8,6 +8,20 @@
 if (!session_id())
     session_start();
 
+// Add the new submenus item for Admins, as per http://codex.wordpress.org/Function_Reference/add_submenu_page
+add_action('admin_menu', 'eks_add_menu_items');
+
+function eks_add_menu_items() {
+    add_submenu_page('edit.php?post_type=listing', 'Export All Tax Sites', 'Export All Tax Sites', 'export', '../export-sites');
+    
+    add_submenu_page('edit.php?post_type=volunteer', 'Export All Volunteers', 'Export All Volunteers', 'export', '../export-volunteers');
+    add_submenu_page('edit.php?post_type=volunteer', 'Registration Email', 'Registration Email', 'administrator', __FILE__, 'eks_settings_page');
+
+    //call register settings function
+    add_action( 'admin_init', 'eks_register_mysettings' );
+}
+
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'options.php';
 
 // Redefine user notification function, as per http://wordpress.stackexchange.com/questions/15304/how-to-change-the-default-registration-email-plugin-and-or-non-plugin
 if ( !function_exists('wp_new_user_notification') ) {
@@ -25,16 +39,14 @@ if ( !function_exists('wp_new_user_notification') ) {
 
         if ( empty($plaintext_pass) )
             return;
+        
+        $message = get_option('volunteer_email_body');
+        
+        // Replace the tokens
+        $message = str_replace('[USERNAME]', $user_login, $message);
+        $message = str_replace('[PASSWORD]', $plaintext_pass, $message);
 
-        $message  = __('Hi there,') . "\r\n\r\n";
-        $message .= sprintf(__("Welcome to %s! Here's how to log in:"), get_option('blogname')) . "\r\n\r\n";
-        $message .= wp_login_url() . "\r\n";
-        $message .= sprintf(__('Username: %s'), $user_login) . "\r\n";
-        $message .= sprintf(__('Password: %s'), $plaintext_pass) . "\r\n\r\n";
-        $message .= sprintf(__('If you have any problems, please contact me at %s.'), get_option('admin_email')) . "\r\n\r\n";
-        $message .= __('Adios!');
-
-        wp_mail($user_email, sprintf(__('[%s] Your username and password'), get_option('blogname')), $message);
+        wp_mail($user_email, get_option('volunteer_email_subject'), $message);
 
     }
 }

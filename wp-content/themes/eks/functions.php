@@ -234,14 +234,6 @@ function eks_handle_download_document() {
     }
 }
 
-// Add the new submenus item for Admins, as per http://codex.wordpress.org/Function_Reference/add_submenu_page
-add_action('admin_menu', 'eks_add_menu_items');
-
-function eks_add_menu_items() {
-    add_submenu_page('edit.php?post_type=volunteer', 'Export All Volunteers', 'Export All Volunteers', 'export', '../export-volunteers');
-    add_submenu_page('edit.php?post_type=listing', 'Export All Tax Sites', 'Export All Tax Sites', 'export', '../export-sites');
-}
-
 //define( 'VA_MAX_IMAGES', 3 );
 //REGISTER WIDGETS for HOME PAGE
 // Before Content Area
