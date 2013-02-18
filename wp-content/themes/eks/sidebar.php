@@ -19,7 +19,18 @@ Last year’s tax return
 </li>
 </ul>
 		</aside>
-		
+		<aside class="widget">
+                    <h4>Find Tax Sites by County</h4>
+                    <ul>
+                        <li><a href="/?ls=&county=Alameda">Alameda</a></li>
+                        <li><a href="/?ls=&county=Contra Costa">Contra Costa</a></li>
+                        <li><a href="/?ls=&county=Marin">Marin</a></li>
+                        <li><a href="/?ls=&county=Napa">Napa</a></li>
+                        <li><a href="/?ls=&county=San Francisco">San Francisco</a></li>
+                        <li><a href="/?ls=&county=San Mateo">San Mateo</a></li>
+                        <li><a href="/?ls=&county=Solano">Solano</a></li>
+                    </ul>
+		</aside>		
 	</div>
 	<?php dynamic_sidebar('search-listing'); ?>
 

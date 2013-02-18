@@ -158,11 +158,13 @@ if ( have_posts() ) : ?>
 	<article class="listing">
 		<h2><?php 
                 
-                $subheader = 'Tax Sites matching ' . (empty($term) ? 'anything' : '"' . $term . '"');
+                $subheader = 'Tax Sites';             
+                if (!empty($term))
+                    $subheader .= ' matching "' . $term . '"';
                 if (!empty($city))
                     $subheader .= " in $city";                             
                 elseif (!empty($county))
-                    $subheader .= " in $county county";
+                    $subheader .= " in $county County";
                 echo $subheader; ?></h2>
 	</article>
 	<?php endif; ?>
