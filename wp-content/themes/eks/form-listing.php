@@ -174,7 +174,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                 
                 var text = $('#app_hoursofoperation').hide().text().split(' ');
                 var n = (text.length - 1) / 12;
-                n = Math.max(3, n);
+                n = Math.max(1, n);
 
                 for (var i = 1; i <= n; i++) {
                     $('#schedule-editor').append(row(i));
@@ -216,9 +216,10 @@ wp_enqueue_script('jquery-ui-datepicker');
                     function time(i, j) {
                         var minutes = ['00', '15', '30', '45'];
                         var select = '<select name="time' + i + '_' + j + '" id="time' + i + '_' + j + '">';
-                        for (var h = 0; h < 12; h++) {
+                        var hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+                        for (var h in hours) {
                             for (var key in minutes) {
-                                var val = h + ':' + minutes [key];
+                                var val = hours[h] + ':' + minutes [key];
                                 select += '<option value="' + val + '">' + val + '</option>'
                             }
                         }
@@ -236,8 +237,12 @@ wp_enqueue_script('jquery-ui-datepicker');
                         return select;
                     }
 
-                    var html = '<tr><td>' + days(i) + '</td><td>' + time(i, 1) + '</td><td>' + ampm(i, 1) + '</td><td> &nbsp;to&nbsp; </td><td>' + time(i, 2) + '</td><td>' + ampm(i, 2) + '</td>'
-                            + '<td> &nbsp;and&nbsp; </td><td>' + time(i, 3) + '</td><td>' + ampm(i, 3) + '</td><td>&nbsp;to&nbsp;</td><td>' + time(i, 4) + '</td><td>' + ampm(i, 4) + '</td></tr>';
+                    var html = 
+                            '<tr>' +
+                                '<td>' + days(i) + '</td><td>' + time(i, 1) + '</td><td>' + ampm(i, 1) + '</td><td> &nbsp;to&nbsp; </td><td>' + time(i, 2) + '</td><td>' + ampm(i, 2) + '</td>' + 
+                                '<td> &nbsp;and&nbsp; </td><td>' + time(i, 3) + '</td><td>' + ampm(i, 3) + '</td><td>&nbsp;to&nbsp;</td><td>' + time(i, 4) + '</td><td>' + ampm(i, 4) + '</td>' +
+                              //  '<td><input type="button" id="schedule-delete" value="-" class="btn-small" /></td>' +
+                            '</tr>';
                     return html;
                 }
 
@@ -246,13 +251,15 @@ wp_enqueue_script('jquery-ui-datepicker');
                     var text = '';
                     var i = 1;
                     $('#schedule-editor tr').each(function() {
-                        text += $('#day' + i).val() + ' ' + $('#time' + i + '_1').val() + ' ' + $('#ampm' + i + '_1').val() + ' to ' + $('#time' + i + '_2').val() + ' ' + $('#ampm' + i + '_2').val()
-                                + ' and ' + $('#time' + i + '_3').val() + ' ' + $('#ampm' + i + '_3').val() + ' to ' + $('#time' + i + '_4').val() + ' ' + $('#ampm' + i + '_4').val() + ' <br>'
-//                text += $(this).val() + ' ';
+                        var line = $('#day' + i).val() + ' ' + $('#time' + i + '_1').val() + ' ' + $('#ampm' + i + '_1').val() + ' to ' + $('#time' + i + '_2').val() + ' ' + $('#ampm' + i + '_2').val()
+                                + ' and ' + $('#time' + i + '_3').val() + ' ' + $('#ampm' + i + '_3').val() + ' to ' + $('#time' + i + '_4').val() + ' ' + $('#ampm' + i + '_4').val() + ' <br>';
+                        // Only add the line if something has been changed from the default
+                        if (line != 'Monday 0:00 am to 0:00 am and 0:00 am to 0:00 am <br>')
+                            text += line;
+                        
                         i++;
+                        
                     });
-                    //console.log(text);
-
                     $('#app_hoursofoperation').html(text);
                 });
             }
