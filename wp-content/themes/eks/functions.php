@@ -55,7 +55,7 @@ function eks_handle_download_document() {
             'Phone',
             'Email',
             'Status',
-            'Position'
+            'Positions'
         );
         $e = new EksExcel();
         $e->downloadExcel('EKS Volunteer Export.xlsx', $arr, $header);
@@ -644,7 +644,7 @@ class EksExcel {
         $filename = preg_replace("/[^a-zA-Z0-9-\.]/", "_", $filename);
         $tmpfname = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "export_xlsx" . time();
 
-        require_once ABSPATH . 'wp-content/plugins/volunteer/lib/PHPExcel/classes/PHPExcel.php';
+        require_once ABSPATH . 'wp-content/plugins/volunteer/lib/PHPExcel/Classes/PHPExcel.php';
         require_once ABSPATH . 'wp-content/plugins/volunteer/lib/PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
 
         $objPHPExcel = new PHPExcel();
