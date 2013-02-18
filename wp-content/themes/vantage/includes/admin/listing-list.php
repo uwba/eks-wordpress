@@ -17,7 +17,8 @@ function va_listing_manage_columns( $columns ) {
 		$columns['claimee'] = __( 'Claimee', APP_TD );
 	}
 	
-	$columns['expire'] = __( 'Expire Date', APP_TD );
+        // EKS hack - remove this unwanted column
+	//$columns['expire'] = __( 'Expire Date', APP_TD );
 	$columns['comments'] = $comments;
 	$columns['date'] = $date;
 	$columns['thumbnail'] = '';
