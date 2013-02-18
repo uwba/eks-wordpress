@@ -118,8 +118,12 @@ Bart stations: <?php echo esc_html( get_post_meta( get_the_ID(), 'app_closestbar
 	<div class="section-head">
 		<h1><?php _e( 'Tax Sites', APP_TD ); ?></h1>
 	</div>
-
 <?php
+$term = va_get_search_query_var( 'ls' );
+$county = empty($_GET['county']) ? '' : $_GET['county'];
+$city = empty($_GET['city']) ? '' : $_GET['city'];
+if (!empty($term) || !empty($county) || !empty($city))
+{
 if ( $featured = va_get_featured_listings() ) :
 	while ( $featured->have_posts() ) : $featured->the_post();
 ?>
@@ -153,25 +157,30 @@ if ( have_posts() ) : ?>
 	<?php if ( is_search() ) : ?>
 	<article class="listing">
 		<h2><?php 
-                $subheader = 'Matching "'.va_get_search_query_var( 'ls' ).'"';
-                $location = va_get_search_query_var( 'location' );
-                if (!empty($location))
-                    $subheader .= ' near "'.$location.'"';
+                
+                $subheader = 'Tax Sites matching ' . (empty($term) ? 'anything' : '"' . $term . '"');
+                if (!empty($city))
+                    $subheader .= " in $city";                             
+                elseif (!empty($county))
+                    $subheader .= " in $county county";
                 echo $subheader; ?></h2>
 	</article>
 	<?php endif; ?>
 	
-<?php while ( have_posts() ) : the_post(); ?>
+<?php 
+while ( have_posts() ) {
+        the_post(); 
+        ?>
 	<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 		<?php get_template_part( 'content-listing' ); ?>
 	</article>
-<?php endwhile; ?>
+<?php } ?>
 
 <?php elseif ( !$featured ) : ?>
 
 	<?php if ( is_search() ) : ?>
 	<article class="listing">
-		<h2><?php printf( __( 'Sorry, No Tax Sites Found For "%s" Near "%s"', APP_TD ), va_get_search_query_var( 'ls' ), va_get_search_query_var( 'location' ) ); ?></h2>
+		<h2><?php printf( __( 'Sorry, no Tax Sites were found.', APP_TD )); ?></h2>
 	</article>
 	<?php elseif ( is_archive() ) : ?>	
 	<article class="listing">
@@ -187,6 +196,11 @@ if ( have_posts() ) : ?>
 	</nav>
 <?php endif; ?>
 
+<?php } else { // First time you hit the page, prior to submitting a search query ?>
+    
+    <article class="listing"><p>Search for a Tax Site above.</p></article>
+    
+<?php } ?>
 </div>
 
 <div id="sidebar">

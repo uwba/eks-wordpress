@@ -109,6 +109,11 @@ class VA_Listing_Search extends APP_View {
 		// BEGIN COPY FROM WP_Query
 		$n = !empty($q['exact']) ? '' : '%';
 		$searchand = '';
+                
+                // EKS hack to avoid undefined variable error if search terms are not set
+                if (!isset($q['search_terms']))
+                    $q['search_terms'] = array();
+                
 		foreach( (array) $q['search_terms'] as $term ) {
 			$term = esc_sql( like_escape( $term ) );
 
@@ -121,12 +126,20 @@ class VA_Listing_Search extends APP_View {
 
 			$searchand = ' AND ';
 		}
-
+                
 		if ( !empty($search) ) {
 			$search = " AND ({$search}) ";
 			if ( !is_user_logged_in() )
 				$search .= " AND ($wpdb->posts.post_password = '') ";
 		}
+                
+                // EKS hack to add additional search filters               
+                if (!empty($_GET['county']))
+                    $search .= " AND tter.name = '".esc_sql($_GET['county'])."'";
+                                
+                if (!empty($_GET['city']))
+                    $search .= " AND $wpdb->posts.id IN (SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'address' AND meta_value LIKE '%".esc_sql(like_escape($_GET['city']))."%')";
+                
 		// END COPY
 
 		return $search;
