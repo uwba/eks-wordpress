@@ -716,10 +716,12 @@ If (isset($_GET['cpt_msg']) && $_GET['cpt_msg']=='del') { ?>
                 <h2><?php _e('Additional Custom Post Types', 'cpt-plugin') ?></h2>
                 <p><?php _e('The custom post types below are registered in WordPress but were not created by the Custom Post Type UI Plugin.', 'cpt-plugin') ?></p>
                     <?php
+                    // EKS hack to make the table display
+                    $cpt_first = false;
                     foreach ($post_types  as $post_type ) {
 
                           if ( !in_array( strtolower( $post_type->name ), $cpt_names ) ) {
-                            if ( isset( $cpt_first ) && !$cpt_first ) {
+                            if ( isset( $cpt_first ) && !$cpt_first) {
                                 ?>
                                 <table width="100%" class="widefat">
                                     <thead>
@@ -758,7 +760,9 @@ If (isset($_GET['cpt_msg']) && $_GET['cpt_msg']=='del') { ?>
                             <tr>
                                 <td valign="top"><?php echo $post_type->name; ?></td>
                                 <td valign="top"><?php echo $post_type->label; ?></td>
-                                <td valign="top"><?php echo $post_type->singular_label; ?></td>
+                                <td valign="top"><?php 
+                                // EKS hack to avoid undefined property error
+                                echo empty($post_type->singular_label) ? '' : $post_type->singular_label; ?></td>
                                 <td valign="top"><?php echo disp_boolean($post_type->public); ?></td>
                                 <td valign="top"><?php echo disp_boolean($post_type->show_ui); ?></td>
                                 <td valign="top"><?php echo $post_type->capability_type; ?></td>

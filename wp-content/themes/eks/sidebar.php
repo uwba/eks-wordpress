@@ -73,11 +73,12 @@ Last year’s tax return
 					} else {
 						echo html_link(va_get_the_author_listings_url($dashboard_user->ID), __('View Tax Sites', APP_TD));
 					}
-					?></li>
-					<li class="add-listings"><?php echo html_link(va_get_listing_create_url(), __('New Tax Site', APP_TD)); ?></li>
-					<?php if (false && $dashboard_user->has_claimed) { ?>
-					<li class="claimed-listings"><?php echo html_link(va_get_claimed_listings_url(), __('Claimed Listings', APP_TD)); ?></li>
-					<?php } ?>
+					?>
+                                            <ul>
+                                                <li class="add-listings"><?php echo html_link(va_get_listing_create_url(), __('New Tax Site', APP_TD)); ?></li>
+                                                <li><a href="<?php echo site_url('export-sites'); ?>"><?php echo __('Export Tax Sites', APP_TD); ?></a></li>
+                                            </ul>
+                                        </li>
 					<!--<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>-->
 					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a>
                                             <ul>
