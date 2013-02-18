@@ -20,6 +20,48 @@ function vantage_child_setup() {
 
 }
 
+// Hook this function to the init() action so that it gets executed prior to the headers going out.
+add_action('init', 'eks_handle_download_document');
+
+function eks_handle_download_document() {
+    if (strstr($_SERVER["REQUEST_URI"], 'export-volunteers') != null) {
+
+        $u = wp_get_current_user();
+        $volunteers = get_volunteers();
+
+        $arr = array();
+        foreach ($volunteers as $el) {
+            $meta_values = get_post_meta($el->ID);
+            $user = get_user_by('id', $el->post_author);
+            $row = array(
+                $user->data->user_nicename,
+                $el->post_date
+                    );
+                      
+            foreach (array_keys($meta_values) as $k)
+            {
+                if (in_array($k, array('interpreter', 'greeter', 'preparer', 'screener')))
+                        $row[] = $k;
+                else
+                    $row[] = $meta_values[$k][0];
+            }
+            
+            $arr[] = $row;
+        }
+        $header = array(
+            'Name',
+            'Date Registered',
+            'Username',
+            'Phone',
+            'Email',
+            'Status',
+            'Position'
+        );
+        $e = new EksExcel();
+        $e->downloadExcel('EKS Volunteer Export.xlsx', $arr, $header);
+    }
+}
+
 //define( 'VA_MAX_IMAGES', 3 );
 //REGISTER WIDGETS for HOME PAGE
 // Before Content Area
@@ -195,7 +237,7 @@ function get_volunteers() {
         'post_status' => array('publish', 'pending'),
         'meta_query' => array('relation' => 'OR'),
     );
-    
+
     foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
         $arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
     }
@@ -262,17 +304,18 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
                 </tr>
             </thead>
 
-            <? //$i=1;
-            foreach ($items as $row):
-                ?>
+        <?
+        //$i=1;
+        foreach ($items as $row):
+            ?>
                 <tr>
-                    <?
-                    foreach ($row as $entry) {
-                        echo "<td>$entry</td>";
-                    }
-                    ?>
+                <?
+                foreach ($row as $entry) {
+                    echo "<td>$entry</td>";
+                }
+                ?>
                 </tr>
-        <? endforeach ?>
+                <? endforeach ?>
         </table>
 
 
@@ -373,12 +416,9 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
             if (is_volunteer()) {
                 $item->url = site_url("/dashboard");
                 $item->title = __("Volunteer Dashboard");
-            }
-            else
-            {
+            } else {
                 // User is anonymous, or a coordinator
-                if (is_user_logged_in())
-                {
+                if (is_user_logged_in()) {
                     // User is a coordinator
                     $this->page_is_visible = false;
                 }
@@ -487,8 +527,8 @@ function fileupload($label, $myposts = array()) {
     <?php if (count($myposts) > 0) { ?>
 
             <label>Tax Site: <select name="tax_site">
-        <?php foreach ($myposts as $post) {
-            ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
+            <?php foreach ($myposts as $post) {
+                ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
                     <?php } ?>
                 </select>
             </label>
@@ -587,4 +627,65 @@ function fileupload_process() {
         }
     }
     return $response;
+}
+
+class EksExcel {
+
+    /**
+     * downloadExcel() - Export a 2-dimensional array out to Excel 2007 spreadsheet (.xlsx) format and pipe it to the browser.
+     * In order to prevent mangling, all cells in the spreadsheet will be of datatype "String".
+     * 
+     * @param	$filename			Filename to save to the browser as
+     * @param	$data_array			Array of rows to export
+     * @param	$header_array		Optional header array for the first row
+     */
+    function downloadExcel($filename, $data_array, $header_array = null) {
+        // Use this simple regex to clean the filename
+        $filename = preg_replace("/[^a-zA-Z0-9-\.]/", "_", $filename);
+        $tmpfname = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "export_xlsx" . time();
+
+        require_once ABSPATH . 'wp-content/plugins/volunteer/lib/PHPExcel/classes/PHPExcel.php';
+        require_once ABSPATH . 'wp-content/plugins/volunteer/lib/PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
+
+        $objPHPExcel = new PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+        $sheet = $objPHPExcel->getActiveSheet();
+
+        $row = 1;
+        if ($header_array != null)
+            array_unshift($data_array, $header_array);
+
+        for ($i = 0; $i < count($data_array); $i++) {
+            for ($j = 0; $j < count($data_array[$i]); $j++) {
+                $this->_writeCell($sheet, $j, $row, $data_array[$i][$j]);
+            }
+            $row++;
+        }
+
+        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+        $objWriter->save($tmpfname);
+
+        // read it then delete it
+        $buffer = file_get_contents($tmpfname);
+        unlink($tmpfname);
+
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header('Content-Description: File Transfer');
+        header("Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header("Expires: 0");
+        header("Pragma: public");
+
+        print($buffer);
+        exit();
+    }
+
+    private function _writeCell($sheet, $column, $row, $value) {
+        // If the length is over 15 characters and it's all numbers, then set the string datatype explicitly; otherwise set it using the ordinary method
+        if (strlen($value) > 15 && preg_match('/[^\d]/', $value) == 0)
+            $sheet->getCellByColumnAndRow($column, $row)->setValueExplicit($value, PHPExcel_Cell_DataType::TYPE_STRING);
+        else
+            $sheet->setCellValueByColumnAndRow($column, $row, $value);
+    }
+
 }

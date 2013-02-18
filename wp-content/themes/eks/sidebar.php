@@ -42,10 +42,6 @@ Last year’s tax return
 		global $current_user, $user_ID;
 		get_currentuserinfo();
 		$user_info = get_userdata($user_ID);
-		//echo "<pre>";
-	//	var_dump($user_info);
-	//	echo ini_get('html_errors');
-		//echo "</pre>";
 		$role = $user_info->roles[0];
 		$dashboard_user = $user_info;//va_get_dashboard_author();
 		$is_own_dashboard = TRUE; //va_is_own_dashboard();
@@ -83,11 +79,14 @@ Last year’s tax return
 					<li class="claimed-listings"><?php echo html_link(va_get_claimed_listings_url(), __('Claimed Listings', APP_TD)); ?></li>
 					<?php } ?>
 					<!--<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>-->
-					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a><ul>
+					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a>
+                                            <ul>
 						<li><a href="<?php echo site_url('email-all'); ?>"><?php echo __('Email Volunteers', APP_TD); ?></a></li>
 						<!--<li><a href="<?php echo site_url('coordinator-calendar'); ?>"><?php echo __('Schedule', APP_TD); ?></a></li>-->
 						<li><a href="<?php echo site_url('coordinator-documents'); ?>"><?php echo __('View Documents', APP_TD); ?></a></li>
-					</ul></li>
+                                                <li><a href="<?php echo site_url('export-volunteers'); ?>"><?php echo __('Export Volunteers', APP_TD); ?></a></li>
+                                            </ul>
+                                        </li>
 					
 				<?php
 
