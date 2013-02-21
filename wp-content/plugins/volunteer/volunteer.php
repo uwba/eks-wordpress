@@ -495,10 +495,6 @@ function register_role_custom() {
         function tax_search() {
             $errors = array();
 
-//	$response = json_encode(array( 
-//			'success' => !count($errors),
-//			'errors' => implode('<br/>', $errors),
-//			));
             // response output
             header("Content-Type: text/html");
 
@@ -528,17 +524,8 @@ function register_role_custom() {
         WHERE post_status = 'publish' AND post_type = 'listing'
 		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='preparer'), UNSIGNED INTEGER) <= (CONVERT(m1.meta_value, UNSIGNED INTEGER))
 		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='interpreter'), UNSIGNED INTEGER) <= (CONVERT(m2.meta_value, UNSIGNED INTEGER))
-		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='greeter'), UNSIGNED INTEGER) <= (CONVERT(m3.meta_value, UNSIGNED INTEGER))"
-
-//        ." AND meta_key = 'app_closestbartstations'  "
-            ;
-
-//    var_dump($_GET);
-
-
-//    if ($_GET['zip_code']) $query .= " AND a.meta_value like '%" . $wpdb->escape($_GET['zip_code']) . "%'";
-
-            $query .= " GROUP BY ID";
+		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='greeter'), UNSIGNED INTEGER) <= (CONVERT(m3.meta_value, UNSIGNED INTEGER)) 
+        GROUP BY ID";
 
             if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
                 if ($_GET['searchphrase'] != 'exact') {
@@ -557,11 +544,8 @@ function register_role_custom() {
                 }
                 $query .= " having (" . implode(" $cond ", $whereclauses) . ")";
             };
-
-            //echo $query;
             $data = $wpdb->get_results($query, 'OBJECT');
             global $post;
-//    var_dump($data);
             if (count($data)) {
                 foreach ($data as $post) {
                     //	var_dump($item);
@@ -622,22 +606,28 @@ function register_role_custom() {
                         </p>
 
                         <p class="listing-lang">Addition
-                            languages: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_additionallanguagescheckallthatapply', false))); // the_terms(get_the_ID(), 'listing_tag', 'Languages: ', ' ', '');   ?></p>
+                            languages: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_additionallanguagesspoken', false))); ?></p>
 
                         <p class="listing-transportation">
                             Parking: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_parking', false))); ?>
                             |
                             Transit
-                            Agency: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_busshuttlesincludetransitagencyname', true)); ?>
+                            Agency: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_busshuttles', true)); ?>
                             |
                             Bart
-                            stations: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closestbartstations', true)); ?>
+                            stations: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closestbartstation', true)); ?>
                         </p>
 
                         <p class="listing-openclose">
                             Opening/closing
-                            dates: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_openingdate01012013', true)); ?> |
-                            <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closingdate04152012', true)); ?>
+                            dates: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_openingdate', true)); ?> |
+                            <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closingdate', true)); ?>
+                        </p>
+                        <p>
+                            ADA Accessible: <?php echo get_post_meta(get_the_ID(), 'app_adaaccessible', true) ?>
+                        </p>
+                        <p>
+                            Number of Tax Preparers, Interpreters, and Greeters needed: <?php echo get_post_meta(get_the_ID(), 'app_numberoftaxpreparersneeded', true) ?> |  <?php echo get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) ?> | <?php echo get_post_meta(get_the_ID(), 'app_numberofgreetersneeded', true) ?>
                         </p>
                     </div>
                     <?php ?></article><?php
@@ -648,7 +638,7 @@ function register_role_custom() {
         } else {
             ?>
         <article class="listing">
-            <h2><?php printf(__('Sorry, No Tax Sites Found', APP_TD)); ?></h2>
+            <h2><?php printf(__('Sorry, no Tax Sites were found.', APP_TD)); ?></h2>
         </article><?php
     }
 

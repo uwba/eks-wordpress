@@ -589,15 +589,12 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
             $this->page_is_visible = true;
 
             if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
-                if (is_volunteer()) {
+                
+                // Since the "Volunteer" main menu only has a single option under it, we cannot hide it or the CSS breaks on IE.  
+                // So just rename it and leave it visible
+                if (is_user_logged_in()) {
                     $item->url = site_url("/dashboard");
                     $item->title = __("Volunteer Dashboard");
-                } else {
-                    // User is anonymous, or a coordinator
-                    if (is_user_logged_in()) {
-                        // User is a coordinator
-                        $this->page_is_visible = false;
-                    }
                 }
             }
 
