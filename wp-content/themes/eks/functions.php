@@ -195,7 +195,8 @@ function eks_handle_download_document() {
                 empty($meta_values['app_numberoftaxpreparersneeded'][0]) ? '' : $meta_values['app_numberoftaxpreparersneeded'][0],
                 empty($meta_values['app_numberofinterpretersneeded'][0]) ? '' : $meta_values['app_numberofinterpretersneeded'][0],
                 empty($meta_values['app_numberofgreetersneeded'][0]) ? '' : $meta_values['app_numberofgreetersneeded'][0],
-                empty($meta_values['phone'][0]) ? '' : $meta_values['phone'][0]
+                empty($meta_values['phone'][0]) ? '' : $meta_values['phone'][0],
+                empty($meta_values['app_sitetype'][0]) ? '' : $meta_values['app_sitetype'][0],
             );
         }
 
@@ -227,7 +228,8 @@ function eks_handle_download_document() {
             'Number of Tax Preparers needed',
             'Number of Interpreters needed',
             'Number of Greeters needed',
-            'Public phone number'
+            'Public Phone Number',
+            'Site Type'
         );
         $e = new EksExcel();
         $e->downloadExcel('EKS Tax Sites Export.xlsx', $arr, $header);
