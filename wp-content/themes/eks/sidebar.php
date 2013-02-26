@@ -61,8 +61,7 @@ Last year’s tax return
 						<li><a href="<?php echo site_url('my-tax-sites'); ?>"><?php echo __('My Tax Sites', APP_TD); ?></a></li>
 						<!--<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-calendar'); ?>"><?php echo __('My Schedule', APP_TD); ?></a></li>-->
-						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Upload Documents', APP_TD); ?></a></li>
-						<li><a href="<?php echo site_url('my-playlist'); ?>"><?php echo __('VITA Video Playlist', APP_TD); ?></a></li>
+						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Documents', APP_TD); ?></a></li>
 						<?php
 				break;
 

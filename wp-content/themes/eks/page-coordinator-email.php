@@ -73,7 +73,10 @@ if (count($volunteers) > 0) {
 
             <form method="post" action="/email-all" class="email-form" id="email-form">
                 <div class="yui3-g">  
-                    <div class="yui3-u-1"><p>Select the volunteers and enter your message below.<p/></div>
+                    <div class="yui3-u-1">
+                        <p>Select the volunteers and enter your message below.</p>
+                        <p><input type="button" id="select_all" value="Select All" class="btn-small" /></p>
+                    </div>
 
                     <?php
                     $u = wp_get_current_user();
