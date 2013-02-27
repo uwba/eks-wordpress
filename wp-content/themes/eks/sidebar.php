@@ -50,10 +50,23 @@ Last year’s tax return
 			<?php if (is_page_template('page-search.php')) echo recent_searches();?>
 			<h3><?php echo ucfirst($role); ?> Dashboard</h3>
 				<div class="user_meta">
-					<p><?php $is_own_dashboard ? _e('Welcome, ', APP_TD) : ''; ?><b><?php echo $dashboard_user->display_name; ?></b></p>
-					<p class="smaller"><?php _e('Member Since: ', APP_TD); ?><?php echo mysql2date(get_option('date_format'), $dashboard_user->user_registered); ?></p>
+					<p><?php $is_own_dashboard ? _e('Welcome, ', APP_TD) : ''; ?><b><?php echo $dashboard_user->user_nicename; ?></b></p>
+					<small><?php _e('Member Since: ', APP_TD); ?><?php echo mysql2date(get_option('date_format'), $dashboard_user->user_registered); ?></small>
+                                        <?php
+                                        if ($role == 'volunteer')
+                                        {
+                                                $volunteer_tax_sites = get_volunteer_tax_sites();
+                                                $tax_site_ids = array_keys($volunteer_tax_sites);
+                                                $tax_site = get_post($tax_site_ids[0]);   
+                                                $coordinator = get_userdata($tax_site->post_author);
+                                                //var_dump($coordinator);
+                                                
+                                                ?>
+                                        <br/>
+                                        <small>My Coordinator: <?php echo $coordinator->data->user_nicename ?> (<a href="mailto:<?php echo $coordinator->data->user_email ?>"><?php echo $coordinator->data->user_email ?></a>)</small>
+                                        <?php } ?>
 				</div>
-				<ul class="links">
+				<ul class="links" style="padding-top:1em">
 <?php
 		switch ($role) {
 			case 'volunteer':
