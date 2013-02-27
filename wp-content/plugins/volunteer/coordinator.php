@@ -27,9 +27,6 @@ add_action( 'wp_ajax_email-all', 'email_all' );
 
 add_action( 'save_post', 'custom_listing_save', 10, 2);
 function custom_listing_save( $post_id, $post ){
-	$data = date('Y-m-d--h-i-s') . " save post {$post_id} " . serialize($post) . "\n\n";
-	file_put_contents('registration.log', $data, FILE_APPEND);
-    //wp_mail( 'example@example.com', $post->post_title, 'This post was posted' );
 	if ($post->post_type == 'listing' && isset($_REQUEST['email'])) {
 		$email = sanitize_email($_REQUEST['email']);
 		if (is_email($email)) {

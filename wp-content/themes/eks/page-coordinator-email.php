@@ -38,7 +38,7 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
             $name = $current_user->user_nicename;
             $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
             $subject = $_POST['subject'];
-            $message = "Message from " . $current_user->user_email . ":\n\n" . $_POST['message'];
+            $message = "The following is a message from $name (" . $current_user->user_email . "):\n\n\n" . $_POST['message'];
             $headers = "From: \"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>\r\n";
 
             $count = 0;
@@ -46,7 +46,7 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
                 if (in_array($volunteer->post_author, $_POST['volunteers'])) {
                     set_current_user($volunteer->post_author);
                     get_currentuserinfo();
-                    $to = "\"{$current_user->user_nicename}\"<{$current_user->user_email}>";
+                    $to = "{$current_user->user_nicename} <{$current_user->user_email}>";
                     if (!wp_mail($to, $subject, $message, $headers)) {
                         $errors[] = htmlentities("The email to ".$current_user->user_email." could not be sent.");
                     }
@@ -57,9 +57,9 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
         }
         
         if (count($errors) == 0) { ?>
-            <div class="notice success"><span><?php echo $count . 'email' . ($count == 1 ? '' : 's') ?> emails were sent.</span></div>
+            <div class="notice success"><span><?php echo $count . ' email' . ($count == 1 ? ' was' : 's were') ?> sent.</span></div>
         <?php } else { ?>
-            <div class="notice error"><span><?php echo implode(' ', $errors) ?></span></div>
+            <div class="notice error"><span><?php echo implode('<br/>', $errors) ?></span></div>
             <?php
         }
 
