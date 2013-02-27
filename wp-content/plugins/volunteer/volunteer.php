@@ -8,14 +8,19 @@
 if (!session_id())
     session_start();
 
-// Add the new submenus item for Admins, as per http://codex.wordpress.org/Function_Reference/add_submenu_page
-add_action('admin_menu', 'eks_add_menu_items');
+// Update the new submenus item for Admins, as per http://codex.wordpress.org/Function_Reference/add_submenu_page
+add_action('admin_menu', 'eks_update_menu_items');
 
-function eks_add_menu_items() {
+function eks_update_menu_items() {
+    
+    // Remove the old "Add New" submenu for clarity
+    remove_submenu_page('edit.php?post_type=listing', 'post-new.php?post_type=listing');
+    add_submenu_page('edit.php?post_type=listing', 'Add New Tax Site', 'Add New Tax Site', 'export', '../coordinators/create-listing');
     add_submenu_page('edit.php?post_type=listing', 'Export All Tax Sites', 'Export All Tax Sites', 'export', '../export-sites');
     
     add_submenu_page('edit.php?post_type=volunteer', 'Export All Volunteers', 'Export All Volunteers', 'export', '../export-volunteers');
-    add_submenu_page('edit.php?post_type=volunteer', 'Registration Email', 'Registration Email', 'administrator', __FILE__, 'eks_settings_page');
+    add_submenu_page('edit.php?post_type=volunteer', 'Email All Volunteers', 'Email All Volunteers', 'administrator', '../email-all');
+    add_submenu_page('edit.php?post_type=volunteer', 'Update Volunteer Registration Email', 'Update Volunteer Registration Email', 'administrator', __FILE__, 'eks_settings_page');
 
     //call register settings function
     add_action( 'admin_init', 'eks_register_mysettings' );

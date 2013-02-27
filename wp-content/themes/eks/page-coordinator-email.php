@@ -35,28 +35,30 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
 
             global $current_user;
             get_currentuserinfo();
-            $name = $current_user->user_login;
-            $email = 'noreply@' . $_SERVER["HTTP_HOST"];
+            $name = $current_user->user_nicename;
+            $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
             $subject = $_POST['subject'];
-            $message = $_POST['message'];
-            $headers = "From: \"{$name}\"<{$email}>\r\n";
+            $message = "Message from " . $current_user->user_email . ":\n\n" . $_POST['message'];
+            $headers = "From: \"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>\r\n";
 
+            $count = 0;
             foreach ($volunteers as $volunteer) {
                 if (in_array($volunteer->post_author, $_POST['volunteers'])) {
                     set_current_user($volunteer->post_author);
                     get_currentuserinfo();
-                    $to = "\"{$current_user->display_name}\"<{$current_user->user_email}>";
-                    $message = str_replace('!user', $current_user->display_name, $message);
+                    $to = "\"{$current_user->user_nicename}\"<{$current_user->user_email}>";
                     if (!wp_mail($to, $subject, $message, $headers)) {
-                        $errors[] = htmlentities("Message to {$to} is failed");
+                        $errors[] = htmlentities("The email to ".$current_user->user_email." could not be sent.");
                     }
+                    else
+                        $count++;
                 }
             }
-            ?>
-            <div class="notice success"><span>The emails were sent.</span></div>
-            <?php
-        } else {
-            ?>
+        }
+        
+        if (count($errors) == 0) { ?>
+            <div class="notice success"><span><?php echo $count . 'email' . ($count == 1 ? '' : 's') ?> emails were sent.</span></div>
+        <?php } else { ?>
             <div class="notice error"><span><?php echo implode(' ', $errors) ?></span></div>
             <?php
         }
