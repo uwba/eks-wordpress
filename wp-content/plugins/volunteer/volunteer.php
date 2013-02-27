@@ -499,6 +499,14 @@ function error_message() {
 add_action('wp_ajax_nopriv_tax_search', 'tax_search');
 add_action('wp_ajax_tax_search', 'tax_search');
 
+/**
+ * Find Tax Sites to volunteer at - called in Step 3 of the volunteer registration wizard.
+ * 
+ * @global type $wpdb
+ * @global type $table_prefix
+ * @global type $post
+ * @return $html                    HTML fragment showing a list of excerpted Tax Sites matching the search.
+ */
 function tax_search() {
     $errors = array();
 
@@ -508,9 +516,12 @@ function tax_search() {
     global $wpdb;
     global $table_prefix;
 
-    $query = "SELECT p.*, bart.meta_value as bartstations, t.name as county,
-        GROUP_CONCAT(DISTINCT l.meta_value) as languages, a.meta_value as address,
-        CONCAT_WS('; ', ID, post_title, post_excerpt, post_content, bart.meta_value, t.name, GROUP_CONCAT(DISTINCT l.meta_value), a.meta_value) as search
+    $query = "SELECT p.*, 
+            bart.meta_value AS bartstations, 
+            t.name AS county,
+            GROUP_CONCAT(DISTINCT l.meta_value) AS languages, 
+            a.meta_value AS address,
+            CONCAT_WS('; ', ID, post_title, post_excerpt, post_content, bart.meta_value, t.name, GROUP_CONCAT(DISTINCT l.meta_value), a.meta_value) AS search
         FROM {$table_prefix}posts as p
         LEFT JOIN {$table_prefix}postmeta as bart ON ID = bart.post_id AND bart.meta_key = 'app_closestbartstations'
         LEFT JOIN {$table_prefix}postmeta as ada ON ID = ada.post_id AND ada.meta_key = 'app_adaaccessible'
@@ -522,16 +533,8 @@ function tax_search() {
             {$table_prefix}term_relationships.term_taxonomy_id = {$table_prefix}term_taxonomy.term_taxonomy_id 
             AND {$table_prefix}term_taxonomy.taxonomy = 'listing_category'
         )
-        LEFT JOIN {$table_prefix}terms AS t USING(term_id) -- for full text search
-			
-		LEFT JOIN {$table_prefix}postmeta m1 ON m1.meta_key = 'app_numberoftaxpreparersneeded' AND p.ID=m1.post_id 
-		LEFT JOIN {$table_prefix}postmeta m2 ON m2.meta_key = 'app_numberofinterpretersneeded' AND p.ID=m2.post_id 
-		LEFT JOIN {$table_prefix}postmeta m3 ON m3.meta_key = 'app_numberofgreetersneeded' AND p.ID=m3.post_id 
-
+        LEFT JOIN {$table_prefix}terms AS t USING(term_id) 
         WHERE post_status = 'publish' AND post_type = 'listing'
-		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='preparer'), UNSIGNED INTEGER) <= (CONVERT(m1.meta_value, UNSIGNED INTEGER))
-		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='interpreter'), UNSIGNED INTEGER) <= (CONVERT(m2.meta_value, UNSIGNED INTEGER))
-		AND CONVERT((SELECT count(*) c FROM {$table_prefix}postmeta WHERE meta_value=p.ID AND meta_key='greeter'), UNSIGNED INTEGER) <= (CONVERT(m3.meta_value, UNSIGNED INTEGER)) 
         GROUP BY ID";
 
     if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
@@ -549,8 +552,9 @@ function tax_search() {
         } else { //if 'all'
             $cond = 'AND';
         }
-        $query .= " having (" . implode(" $cond ", $whereclauses) . ")";
+        $query .= " HAVING (" . implode(" $cond ", $whereclauses) . ")";
     };
+
     $data = $wpdb->get_results($query, 'OBJECT');
     global $post;
     if (count($data)) {
