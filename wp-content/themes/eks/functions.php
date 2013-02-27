@@ -30,7 +30,7 @@ add_action('init', 'eks_handle_download_document');
  * @return void
  */
 function eks_handle_download_document() {
-     
+
     class EksExcel {
 
         /**
@@ -109,27 +109,69 @@ function eks_handle_download_document() {
 
                 $tax_site = '';
                 $tax_site_id = null;
+
+                $contacted = '';
+                $training = false;
+                $confirmed = false;
+                $ethics = false;
+                $basic = false;
+                $intermediate = false;
+                $specialized = false;
+                $volunteered = false;
+                $another_site = false;
+
                 foreach (array_keys($meta_values) as $k) {
                     if (in_array($k, array('interpreter', 'greeter', 'preparer', 'screener'))) {
                         $row[] = $k;
                         $tax_site_id = $meta_values[$k][0];
-                    }
+                    } elseif ($k == 'notes_contacted')
+                        $contacted = $meta_values[$k][0];
+                    elseif ($k == 'notes_signed_up_for_appropriate_training')
+                        $training = $meta_values[$k][0];
+                    elseif ($k == 'notes_confirmed_as_my_volunteer')
+                        $confirmed = $meta_values[$k][0];
+                    elseif ($k == 'notes_certified_in_ethics')
+                        $ethics = $meta_values[$k][0];
+                    elseif ($k == 'notes_certified_in_basic_level')
+                        $basic = $meta_values[$k][0];
+                    elseif ($k == 'notes_certified_in_intermediate_level')
+                        $intermediate = $meta_values[$k][0];
+                    elseif ($k == 'notes_certified_specialized')
+                        $specialized = $meta_values[$k][0];
+                    elseif ($k == 'notes_volunteered_at_my_site')
+                        $volunteered = $meta_values[$k][0];
+                    elseif ($k == 'notes_also_volunteers_at_another_vita_site')
+                        $another_site = $meta_values[$k][0];
                     else
                         $row[] = $meta_values[$k][0];
                 }
+
+                
 
                 if (!empty($tax_site_id)) {
                     $tax_site_post = get_post($tax_site_id);
                     $tax_site = $tax_site_post->post_title;
                 }
 
-                // Now construct a new row, with the tax site inserted after the 2nd element
+                // Now construct a new row, with the tax site and notes inserted after the 2nd element
                 $newrow = array();
                 for ($i = 0; $i < count($row); $i++) {
                     $newrow[] = $row[$i];
                     if ($i == 1)
-                        $newrow[] = $tax_site;
+                        array_push($newrow, 
+                            $tax_site,
+                            $contacted ? 'Yes' : 'No', 
+                            $training ? 'Yes' : 'No', 
+                            $confirmed ? 'Yes' : 'No', 
+                            $ethics ? 'Yes' : 'No', 
+                            $basic ? 'Yes' : 'No', 
+                            $intermediate ? 'Yes' : 'No', 
+                            $specialized ? 'Yes' : 'No', 
+                            $volunteered ? 'Yes' : 'No', 
+                            $another_site ? 'Yes' : 'No'
+                            );
                 }
+
                 $arr[] = $newrow;
             }
         }
@@ -137,6 +179,15 @@ function eks_handle_download_document() {
             'Name',
             'Date Registered',
             'Tax Site',
+            'Contacted Date',
+            'Signed Up for Training',
+            'Confirmed',
+            'Certified Ethics',
+            'Certified Basic',
+            'Certified Intermediate',
+            'Certified Specialized',
+            'Volunteered',
+            'Volunteers at Another VITA Site',
             'Username',
             'Phone',
             'Email',
@@ -164,8 +215,8 @@ function eks_handle_download_document() {
 
         foreach ($query->posts as $el) {
             $meta_values = get_post_meta($el->ID);
-            
-            $county = get_the_listing_category( $el->ID );
+
+            $county = get_the_listing_category($el->ID);
 
             $arr[] = array(
                 $el->post_title,
@@ -467,79 +518,79 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
         <table class="table">
             <thead>
                 <tr>
-        <?php
-        if ($header) {
-            foreach ($header as $title) {
-                echo "<th>$title</th>";
-            }
-        } else {
-            $item = current($items);
-            foreach ($item as $title => $entry) {
-                echo "<th>" . ucwords(str_replace('_', ' ', $title)) . "</th>";
-            }
-        }
-        ?>
+                    <?php
+                    if ($header) {
+                        foreach ($header as $title) {
+                            echo "<th>$title</th>";
+                        }
+                    } else {
+                        $item = current($items);
+                        foreach ($item as $title => $entry) {
+                            echo "<th>" . ucwords(str_replace('_', ' ', $title)) . "</th>";
+                        }
+                    }
+                    ?>
                 </tr>
             </thead>
 
-                    <?
-                    //$i=1;
-                    foreach ($items as $row):
-                        ?>
+            <?
+            //$i=1;
+            foreach ($items as $row):
+                ?>
                 <tr>
-                        <?
-                        foreach ($row as $entry) {
-                            echo "<td>$entry</td>";
-                        }
-                        ?>
+                    <?
+                    foreach ($row as $entry) {
+                        echo "<td>$entry</td>";
+                    }
+                    ?>
                 </tr>
             <? endforeach ?>
         </table>
 
 
-            <?php else: ?>
+    <?php else: ?>
         <div id="about"><div class="not_found"><?php echo $no_message ?></div></div>
-            <?php endif; ?>
+    <?php endif; ?>
 
 
-        <?
-        $output = ob_get_clean();
-        return $output;
+    <?
+    $output = ob_get_clean();
+    return $output;
+}
+
+/**
+ * 
+ * @param array $options associative array value => label
+ * @param string/array $selected 
+ * @param array $attributes
+ * @param bool $none none option
+ * @return string
+ */
+function html_options($options = array(), $selected = NULL, $attributes = array(), $none = false) {
+    if (!is_array($selected)) {
+        $selected = array($selected);
     }
-
-    /**
-     * 
-     * @param array $options associative array value => label
-     * @param string/array $selected 
-     * @param array $attributes
-     * @param bool $none none option
-     * @return string
-     */
-    function html_options($options = array(), $selected = NULL, $attributes = array(), $none = false) {
-        if (!is_array($selected)) {
-            $selected = array($selected);
-        }
-        $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-        foreach ($options as $value => $label) {
-            $is_selected = in_array($value, $selected) ? ' selected' : '';
-            $output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
-        }
-        $output .= '</select';
-        return $output;
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($options as $value => $label) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
     }
+    $output .= '</select';
+    return $output;
+}
 
-    function html_options_val($values = array(), $selected = NULL, $attributes = array(), $none = false) {
-        if (!is_array($selected)) {
-            $selected = array($selected);
-        }
-        $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-        foreach ($values as $value) {
-            $is_selected = in_array($value, $selected) ? ' selected' : '';
-            $output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
-        }
-        $output .= '</select';
-        return $output;
+function html_options_val($values = array(), $selected = NULL, $attributes = array(), $none = false) {
+    if (!is_array($selected)) {
+        $selected = array($selected);
     }
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($values as $value) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
+    }
+    $output .= '</select';
+    return $output;
+}
 
 //add_filter( 'site_url', 'custom_site_url', 10, 4 );
 //function custom_site_url( $url, $path, $scheme, $blog_id ) {
@@ -552,69 +603,68 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
 //}
 
 
-    add_filter('site_url', 'custom_site_url', 10, 4);
+add_filter('site_url', 'custom_site_url', 10, 4);
 
-    function custom_site_url($url, $path, $scheme, $blog_id) {
+function custom_site_url($url, $path, $scheme, $blog_id) {
 //	echo $path;
 //    if ( strpos($path, '/volunteer') !== FALSE  && strpos($path, 'action=edit') !== FALSE) {
 //		$url = str_replace ('/wp-admin/post.php?post=', 'edit?postid=', $url);
 //		$url = str_replace ('&action=edit', '', $url);
 //        //	$url = '/register'; // Or do this dynamically
 //    }
-        return $url;
-    }
+    return $url;
+}
 
-    function insert_attachment($file_handler, $post_id, $setthumb = 'false') {
-        // check to make sure its a successful upload
-        if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK)
-            __return_false();
+function insert_attachment($file_handler, $post_id, $setthumb = 'false') {
+    // check to make sure its a successful upload
+    if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK)
+        __return_false();
 
-        require_once(ABSPATH . "wp-admin" . '/includes/image.php');
-        require_once(ABSPATH . "wp-admin" . '/includes/file.php');
-        require_once(ABSPATH . "wp-admin" . '/includes/media.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 
-        $attach_id = media_handle_upload($file_handler, $post_id);
+    $attach_id = media_handle_upload($file_handler, $post_id);
 
-        if ($setthumb)
-            update_post_meta($post_id, '_thumbnail_id', $attach_id);
-        return $attach_id;
-    }
+    if ($setthumb)
+        update_post_meta($post_id, '_thumbnail_id', $attach_id);
+    return $attach_id;
+}
 
 //http://www.tomauger.com/2011/web-development/wordpress/wordpress-hiding-menu-items-from-users-based-on-their-roles-using-a-custom-walker
-    /* Custom Walker to prevent password-protected pages from appearing in the list */
-    class ZG_Nav_Walker extends Walker_Nav_Menu {
+/* Custom Walker to prevent password-protected pages from appearing in the list */
+class ZG_Nav_Walker extends Walker_Nav_Menu {
 
-        protected $page_is_visible = true;
+    protected $page_is_visible = true;
 
-        function start_el(&$output, $item, $depth, $args) {
+    function start_el(&$output, $item, $depth, $args) {
 
-            $this->page_is_visible = true;
+        $this->page_is_visible = true;
 
-            if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
-                
-                // Since the "Volunteer" main menu only has a single option under it, we cannot hide it or the CSS breaks on IE.  
-                // So just rename it and leave it visible
-                if (is_user_logged_in()) {
-                    $item->url = site_url("/dashboard");
-                    $item->title = __("Volunteer Dashboard");
-                }
+        if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
+            // Since the "Volunteer" main menu only has a single option under it, we cannot hide it or the CSS breaks on IE.  
+            // So just rename it and leave it visible
+            if (is_user_logged_in()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Volunteer Dashboard");
             }
-
-            if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
-                if (!is_volunteer()) {
-                    $item->url = site_url("/dashboard");
-                    $item->title = __("Coordinator Dashboard");
-                }
-                else
-                    $this->page_is_visible = false;
-            }
-
-            // If it's not visible, skip the menu item
-            if ($this->page_is_visible)
-                parent::start_el($output, $item, $depth, $args);
         }
 
+        if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
+            if (!is_volunteer()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Coordinator Dashboard");
+            }
+            else
+                $this->page_is_visible = false;
+        }
+
+        // If it's not visible, skip the menu item
+        if ($this->page_is_visible)
+            parent::start_el($output, $item, $depth, $args);
     }
+
+}
 
 //function registration_redirect($location, $status) {
 //	echo 'rrrrrrrrrrrrrr';
@@ -626,90 +676,90 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
 //}
 //add_filter('wp_redirect', 'registration_redirect', 10, 2);
 
-    function recent_searches() {
-        // Save search at Recent Searches
+function recent_searches() {
+    // Save search at Recent Searches
 
-        $current_search = $_SERVER["REQUEST_URI"];
+    $current_search = $_SERVER["REQUEST_URI"];
 
-        // Read
-        if (is_user_logged_in()) {
-            global $user_ID;
-            get_currentuserinfo();
-            $recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
-        } else {
-            $recent_searches = $_SESSION['recent_searches'];
-        }
-//	var_dump($recent_searches);
-        // View Recent Searches
-        $html = '<h3>Recent Searches</h3><ul class="links">';
-        for ($i = 0; $i < count($recent_searches);) {
-            $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
-        }
-        $html .= '</ul>';
-
-        // Modify
-        if ($current_search !== '/find-free-tax-help/') {
-            if (is_array($recent_searches)) {
-                if (in_array($current_search, $recent_searches)) {
-                    $recent_searches = array_diff($recent_searches, array($current_search));
-                }
-                array_unshift($recent_searches, $current_search);
-            } else {
-                $recent_searches = array($current_search);
-            }
-            $recent_searches = array_slice($recent_searches, 0, 10);
-        }
-//	var_dump($recent_searches);
-        // Save
-        if (is_user_logged_in()) {
-            update_user_meta($user_ID, 'recent_searches', $recent_searches);
-        } else {
-            $_SESSION['recent_searches'] = $recent_searches;
-        }
-
-
-        return $html;
-    }
-
-    /**
-     * Return whether or not the current user is an admin.
-     * 
-     * @global int $user_ID
-     * @return boolean
-     */
-    function eks_is_admin() {
-        $ret = false;
+    // Read
+    if (is_user_logged_in()) {
         global $user_ID;
+        get_currentuserinfo();
+        $recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
+    } else {
+        $recent_searches = $_SESSION['recent_searches'];
+    }
+//	var_dump($recent_searches);
+    // View Recent Searches
+    $html = '<h3>Recent Searches</h3><ul class="links">';
+    for ($i = 0; $i < count($recent_searches);) {
+        $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
+    }
+    $html .= '</ul>';
 
-        if ($user_ID) {
-            if (current_user_can('level_10'))
-                $ret = true;
+    // Modify
+    if ($current_search !== '/find-free-tax-help/') {
+        if (is_array($recent_searches)) {
+            if (in_array($current_search, $recent_searches)) {
+                $recent_searches = array_diff($recent_searches, array($current_search));
+            }
+            array_unshift($recent_searches, $current_search);
+        } else {
+            $recent_searches = array($current_search);
         }
-        return $ret;
+        $recent_searches = array_slice($recent_searches, 0, 10);
+    }
+//	var_dump($recent_searches);
+    // Save
+    if (is_user_logged_in()) {
+        update_user_meta($user_ID, 'recent_searches', $recent_searches);
+    } else {
+        $_SESSION['recent_searches'] = $recent_searches;
     }
 
-    /**
-     * Form builder helper
-     *
-     * @param string $label         Field label
-     * @param array $myposts        Optional array of tax sites display in poplist
-     * @return none
-     */
-    function fileupload($label, $myposts = array()) {
-        ?>
+
+    return $html;
+}
+
+/**
+ * Return whether or not the current user is an admin.
+ * 
+ * @global int $user_ID
+ * @return boolean
+ */
+function eks_is_admin() {
+    $ret = false;
+    global $user_ID;
+
+    if ($user_ID) {
+        if (current_user_can('level_10'))
+            $ret = true;
+    }
+    return $ret;
+}
+
+/**
+ * Form builder helper
+ *
+ * @param string $label         Field label
+ * @param array $myposts        Optional array of tax sites display in poplist
+ * @return none
+ */
+function fileupload($label, $myposts = array()) {
+    ?>
     <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';  ?>" accept-charset="utf-8" >
 
-    <?php if (count($myposts) > 0) { ?>
+        <?php if (count($myposts) > 0) { ?>
 
             <label>Tax Site: <select name="tax_site">
-        <?php foreach ($myposts as $post) {
-            ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
-        <?php } ?>
+                    <?php foreach ($myposts as $post) {
+                        ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
+                    <?php } ?>
                 </select>
             </label>
             <p>Uploaded documents will be displayed to volunteers assigned to this Tax Site.</p>
             <br/>
-    <?php } ?>
+        <?php } ?>
 
         <label><?php echo $label; ?><input type="file" name="uploadfiles[]" id="uploadfiles" size="35" class="uploadfiles" /></label>
         <input class="button-primary" type="submit" name="uploadfile" id="uploadfile_btn" value="Upload"  />

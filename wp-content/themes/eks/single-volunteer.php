@@ -1,82 +1,83 @@
-<div id="main">
-          
-    <?php   
+<?php
+wp_enqueue_script('jquery-ui-datepicker');
+?>
+<div id="main">        
+    <?php
     if ('POST' == $_SERVER['REQUEST_METHOD']) {
-     global $wpdb;
+        global $wpdb;
 
-     foreach (array_keys($_POST) as $k)
-     {   
-         update_post_meta($post->ID, $k, $wpdb->escape($_POST[$k]));
-     }
-     ?>
-         <div class="notice success">
-             <span>The volunteer notes have been updated.</span>
-         </div>
-     <?php
-     } 
-     ?>
-    
-    <?php if (!is_user_logged_in()) { ?>
-    <div class="notice error">
-        <span>You do not have access to this page.</span>
-    </div>
-    <?php } else { // logged in, so display the volunteer information 
+        foreach (array_keys($_POST) as $k) {
+            update_post_meta($post->ID, $k, $wpdb->escape($_POST[$k]));
+        }
+        ?>
+        <div class="notice success">
+            <span>The volunteer notes have been updated.</span>
+        </div>
+        <?php
+    }
     ?>
-    <?php appthemes_before_blog_loop(); ?>
 
-    <?php while (have_posts()) : the_post(); ?>
+    <?php if (!is_user_logged_in()) { ?>
+        <div class="notice error">
+            <span>You do not have access to this page.</span>
+        </div>
+    <?php } else { // logged in, so display the volunteer information 
+        ?>
+        <?php appthemes_before_blog_loop(); ?>
 
-        <?php appthemes_before_blog_post(); ?>
+        <?php while (have_posts()) : the_post(); ?>
 
-        <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+            <?php appthemes_before_blog_post(); ?>
 
-            <?php appthemes_before_blog_post_title(); ?>
+            <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
-            <h1 class="post-heading"><a href="<?php the_permalink(); ?>" rel="bookmark"></a><span class="left-hanger"><?php the_title(); ?></span></a></h1>
-            <?php // comments_popup_link( "0", "1", "%", "comment-count" ); ?>
+                <?php appthemes_before_blog_post_title(); ?>
 
-            <?php appthemes_after_blog_post_title(); ?>
+                <h1 class="post-heading"><a href="<?php the_permalink(); ?>" rel="bookmark"></a><span class="left-hanger"><?php the_title(); ?></span></a></h1>
+                <?php // comments_popup_link( "0", "1", "%", "comment-count" );  ?>
+
+                <?php appthemes_after_blog_post_title(); ?>
 
 
-            <section class="overview">
-                <?php appthemes_before_blog_post_content(); ?>
-                <?php the_content(); ?>
-                <?php // HTML markup format copied from single-listing.php for consistency ?>
-                <ul>
-                    <?php
-
-                    /**
-                     * Render a single <li> for the given metadata item.
-                     * 
-                     * @param string $label
-                     * @param string $item_name
-                     */
-                    function display_volunteer_metadata_item($label, $item_name) {
-                        ?>
-                        <li>
-                            <p class="listing-custom-field"><span class="custom-field-label"><?php echo $label ?></span><span class="custom-field-sep">: </span><span class="custom-field-value"><?php echo esc_html(get_post_meta(get_the_ID(), $item_name, true)); ?></span></p>
-                        </li>
+                <section class="overview">
+                    <?php appthemes_before_blog_post_content(); ?>
+                    <?php the_content(); ?>
+                    <?php // HTML markup format copied from single-listing.php for consistency ?>
+                    <ul>
                         <?php
+
+                        /**
+                         * Render a single <li> for the given metadata item.
+                         * 
+                         * @param string $label
+                         * @param string $item_name
+                         */
+                        function display_volunteer_metadata_item($label, $item_name) {
+                            ?>
+                            <li>
+                                <p class="listing-custom-field"><span class="custom-field-label"><?php echo $label ?></span><span class="custom-field-sep">: </span><span class="custom-field-value"><?php echo esc_html(get_post_meta(get_the_ID(), $item_name, true)); ?></span></p>
+                            </li>
+                            <?php
+                        }
+
+                        display_volunteer_metadata_item('Name', 'name');
+                        display_volunteer_metadata_item('Phone', 'phone');
+                        display_volunteer_metadata_item('Email', 'email');
+                        display_volunteer_metadata_item('Experience', 'experience');
+                        ?>
+                    </ul>
+
+                    <?php
+                    $trainings = get_post_meta(get_the_ID(), 'training', false);
+                    wp_reset_query();
+                    $args = array('numberposts' => -1, 'post_type' => 'training', 'post__in' => $trainings);
+                    $links = array();
+                    foreach (get_posts($args) as $training) {
+                        $links[] = '<a href="' . get_permalink($training->ID) . '">' . $training->post_title . '</a>';
                     }
-
-                    display_volunteer_metadata_item('Name', 'name');
-                    display_volunteer_metadata_item('Phone', 'phone');
-                    display_volunteer_metadata_item('Email', 'email');
-                    display_volunteer_metadata_item('Experience', 'experience');
                     ?>
-                </ul>
 
-                <?php
-                $trainings = get_post_meta(get_the_ID(), 'training', false);
-                wp_reset_query();
-                $args = array('numberposts' => -1, 'post_type' => 'training', 'post__in' => $trainings);
-                $links = array();
-                foreach (get_posts($args) as $training) {
-                    $links[] = '<a href="' . get_permalink($training->ID) . '">' . $training->post_title . '</a>';
-                }
-                ?>
-
-                <h2>Volunteer Documents</h2>
+                    <h2>Volunteer Documents</h2>
                     <?
                     $files = get_posts(array('post_type' => 'attachment', 'author' => $post->post_author));
                     $items = array();
@@ -91,91 +92,65 @@
                     }
                     echo OutputArrayToTable($items, array('File', 'Date Modified'));
                     ?>
-                </p>
+                    </p>
 
-                <h2>Volunteer Notes</h2>
-                <form method="POST">
-                    <fieldset class="contacted">
-                        <label for="contacted">Contacted - enter date:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'contacted', true); ?>"
-                               name="contacted"/>
-                    </fieldset>
+                    <h2>Volunteer Notes</h2>
+                    <form method="POST">
 
-                    <fieldset class="signed_up_for_appropriate_training">
-                        <label for="signed_up_for_appropriate_training">Signed up for appropriate training:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'signed_up_for_appropriate_training', true); ?>"
-                               name="signed_up_for_appropriate_training"/>
-                    </fieldset>
+                        <label for="notes_contacted">Date Contacted:</label><br/>
+                        <input type="text" id="contacted" value="<?php echo get_post_meta($post->ID, 'notes_contacted', true); ?>" name="notes_contacted"/>
+                        <br/>
 
-                    <fieldset class="confirmed_as_my_volunteer">
-                        <label for="confirmed_as_my_volunteer">Confirmed as my volunteer:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'confirmed_as_my_volunteer', true); ?>"
-                               name="confirmed_as_my_volunteer"/>
-                    </fieldset>
+        <?php
+        function render_checkbox($post, $name, $label) {
+                        ?>
+                        <div style="padding:5px 0;">                       
+                            <input name="notes_<?php echo $name ?>" type="hidden" value="0"/>
+                            <input name="notes_<?php echo $name ?>" type="checkbox" value="1" <?php echo get_post_meta($post->ID, "notes_" . $name, true) == 1 ? 'checked="checked"' : ''; ?> />
+                            <label for="notes_<?php echo $name ?>"><?php echo $label ?></label>
+                        </div>
+            <?php
+        }
 
-                    <fieldset class="certified_in_ethics">
-                        <label for="certified_in_ethics">Certified in Ethics:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'certified_in_ethics', true); ?>"
-                               id="certified_in_ethics" name="certified_in_ethics"/>
-                    </fieldset>
+        render_checkbox($post, 'signed_up_for_appropriate_training', 'Signed Up for Appropriate Training');
+        render_checkbox($post, 'confirmed_as_my_volunteer', 'Confirmed as My Volunteer');
+        render_checkbox($post, 'certified_in_ethics', 'Certified in Ethics');
+        render_checkbox($post, 'certified_in_basic_level', 'Certified in Basic Level Tax Return Preparation');
+        render_checkbox($post, 'certified_in_intermediate_level', 'Certified in Intermediate Level Tax Return Preparation');
+        render_checkbox($post, 'certified_specialized', 'Certified Specialized Tax Return Preparation');
+        render_checkbox($post, 'volunteered_at_my_site', 'Volunteered at My Site');
+        render_checkbox($post, 'also_volunteers_at_another_vita_site', 'Also Volunteers at Another VITA Site');
+        ?>
+                        <fieldset class="submit">
+                            <input type="submit" value="Update" tabindex="40" />
+                        </fieldset>
+                    </form>
 
-                    <fieldset class="certified_in_basic_level">
-                        <label for="certified_in_basic_level">Certified in Basic Level Tax Return Preparation:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'certified_in_basic_level', true); ?>"
-                               id="certified_in_basic_level" name="certified_in_basic_level"/>
-                    </fieldset>
+        <?php appthemes_after_blog_post_content(); ?>
+                </section>
 
-                    <fieldset class="certified_in_intermediate_level">
-                        <label for="certified_in_intermediate_level">Certified in Intermediate Level Tax Return Preparation:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'certified_in_intermediate_level', true); ?>"
-                               id="certified_in_intermediate_level" name="certified_in_intermediate_level"/>
-                    </fieldset>
+                <!--<small>Created at <?php // va_the_post_byline();   ?></small>-->
+        <?php //edit_post_link( __( 'Edit', APP_TD ), '<span class="edit-link">', '</span>' );   ?>	
 
-                    <fieldset class="certified_specialized">
-                        <label for="certified_specialized">Certified Specialized Tax Return Preparation:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'certified_specialized', true); ?>"
-                               id="certified_specialized" name="certified_specialized"/>
-                    </fieldset>
+                <?php //comments_template();    ?>
 
-
-
-                    <fieldset class="volunteered_at_my_site">
-                        <label for="volunteered_at_my_site">Volunteered at my site:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'volunteered_at_my_site', true); ?>"
-                               id="volunteered_at_my_site" name="volunteered_at_my_site"/>
-                    </fieldset>
-
-                    <fieldset class="also_volunteers_at_another_vita_site">
-                        <label for="also_volunteers_at_another_vita_site">Also volunteers at another VITA Site:</label><br/>
-                        <input type="text" value="<?php echo get_post_meta($post->ID, 'also_volunteers_at_another_vita_site', true); ?>"
-                               id="also_volunteers_at_another_vita_site" name="also_volunteers_at_another_vita_site"/>
-                    </fieldset>
-
-
-                    <fieldset class="submit">
-                        <input type="submit" value="Update" tabindex="40" />
-                    </fieldset>
-                </form>
-
-                <?php appthemes_after_blog_post_content(); ?>
-            </section>
-
-        <!--<small>Created at <?php // va_the_post_byline();   ?></small>-->
-            <?php //edit_post_link( __( 'Edit', APP_TD ), '<span class="edit-link">', '</span>' );  ?>	
-
-            <?php //comments_template();   ?>
-
-        </article>
+            </article>
 
         <?php appthemes_after_blog_post(); ?>
 
-    <?php endwhile; ?>
+        <?php endwhile; ?>
 
-    <?php appthemes_after_blog_loop(); ?>
-    
+        <?php appthemes_after_blog_loop(); ?>
+
     <?php } ?>
 
 </div><!-- /#main -->
+
+<script>
+    jQuery(document).ready(function($) {
+        $("#contacted").datepicker();
+    });
+</script>
 
 
 <?php get_sidebar(app_template_base()); ?>
