@@ -153,8 +153,8 @@ if ( isset( $_REQUEST['redirect_to'] ) ) {
 						<input type="hidden" name="testcookie" value="1" />															
 					</div>
 
-					<div class="form-field">
-						<input type="checkbox" name="rememberme" class="checkbox" tabindex="3" id="rememberme" value="forever" checked="checked"/>
+					<div class="form-field" style="display:none">
+						<input type="checkbox" name="rememberme" class="checkbox" tabindex="3" id="rememberme" value="forever" checked=""/>
 						<label for="rememberme"><?php _e('Remember me', APP_TD ); ?></label>
 					</div>
 
