@@ -526,7 +526,7 @@ if ($lat && $lng) {
 	<?php echo esc_html( get_post_meta( get_the_ID(), 'app_closingdate04152012', true ) ); ?>
 </p>
 <p class="listing-hours">Hours of operation:<br/>
-	<?php echo esc_html( get_post_meta( get_the_ID(), 'app_hoursofoperation', true ) ); ?></p>
+	<?php echo get_formatted_hours_of_operation( get_post_meta( get_the_ID(), 'app_hoursofoperation', true ) ); ?></p>
 <!--<p class="listing-coordinator">
 Coordinator info: <?php //echo esc_html( get_post_meta( get_the_ID(), 'app_sitecoordinatorname', true ) ); ?>
  <?php //echo esc_html( get_post_meta( get_the_ID(), 'app_sitecoordinatorphonenumber', true ) ); ?>

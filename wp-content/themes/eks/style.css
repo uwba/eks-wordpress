@@ -1234,3 +1234,9 @@ input[type="password"]
 	clear: left;
 	font-style: normal;
 }
+
+/* Override */
+.form-field
+{
+    width:90%
+}

@@ -229,7 +229,7 @@ function eks_handle_download_document() {
                 empty($meta_values['app_adaaccessible'][0]) ? '' : $meta_values['app_adaaccessible'][0],
                 empty($meta_values['app_openingdate'][0]) ? '' : $meta_values['app_openingdate'][0],
                 empty($meta_values['app_closingdate'][0]) ? '' : $meta_values['app_closingdate'][0],
-                empty($meta_values['app_hoursofoperation'][0]) ? '' : implode(', ', $meta_values['app_hoursofoperation']),
+                empty($meta_values['app_hoursofoperation'][0]) ? '' : get_formatted_hours_of_operation($meta_values['app_hoursofoperation'][0], "; "),
                 empty($meta_values['app_availability'][0]) ? '' : implode(', ', $meta_values['app_availability']),
                 empty($meta_values['app_specialcloseddates'][0]) ? '' : $meta_values['app_specialcloseddates'][0],
                 empty($meta_values['app_specialinstructions'][0]) ? '' : $meta_values['app_specialinstructions'][0],
@@ -852,4 +852,39 @@ function fileupload_process() {
         }
     }
     return $response;
+}
+
+/**
+ * Return the "hours of operation" JSON object as a readable string.
+ * 
+ * @param string $json       JSON string representing the object
+ * @param string $separator
+ * @return string $str           
+ */
+function get_formatted_hours_of_operation($json, $separator = "<br/>")
+{
+    $arr = array();
+    $obj = json_decode($json, true);
+    if (!empty($obj))
+    {
+        foreach (array_keys($obj) as $day)
+        {
+            $row = '';
+            $slot1 = '';
+            $slot2 = '';
+
+            if (!empty($obj[$day]['Start1']) && !empty($obj[$day]['End1']))
+                $slot1 = $obj[$day]['Start1'] . ' - ' . $obj[$day]['End1'];
+            if (!empty($obj[$day]['Start2']) && !empty($obj[$day]['End2']))
+                $slot2 = $obj[$day]['Start2'] . ' - ' . $obj[$day]['End2'];
+
+            if (!empty($slot1) && !empty($slot2))
+                $row = "$day: $slot1 and $slot2";
+            elseif(!empty($slot1) || !empty($slot2))
+                $row = "$day: $slot1$slot2";
+            if (!empty($row))
+                $arr[] = $row;
+        }
+    }
+    return implode($separator, $arr);
 }

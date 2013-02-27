@@ -602,7 +602,7 @@ function tax_search() {
                         <p class="listing-address">Address: <?php the_listing_address(); ?></p>
 
                         <p class="listing-hours">Hours of
-                            operation:<?php echo esc_html(get_post_meta(get_the_ID(), 'app_hoursofoperation', true)); ?></p>
+                            operation:<br/><?php echo get_formatted_hours_of_operation(get_post_meta(get_the_ID(), 'app_hoursofoperation', true)); ?></p>
 
                         <p class="listing-coordinator">
                             Coordinator

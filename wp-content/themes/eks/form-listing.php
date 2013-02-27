@@ -166,105 +166,55 @@ wp_enqueue_script('jquery-ui-datepicker');
             renderScheduleCreatorWidget();
             
             $('#btn-submit').show();
-
+            
             // Render "Hours of Operation" schedule creator widget
             function renderScheduleCreatorWidget()
-            {     
-                $('#app_hoursofoperation').wrap('<div id="schedule-wrapper">').parent().prepend('<div id="schedule-editor">');
+            {
+                $('#app_hoursofoperation').hide().parent().append('<div id="scheduler" style="padding:1em 0" />');
+                var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 
-                var text = $('#app_hoursofoperation').hide().text().split(' ');
-                var n = (text.length - 1) / 12;
-                n = Math.max(1, n);
+                var options = '';
 
-                for (var i = 1; i <= n; i++) {
-                    $('#schedule-editor').append(row(i));
+                var times = ["", "7:00 am", "7:30 am", "8:00 am", "8:30 am", "9:00 am", "9:30 am", "10:00 am", "10:30 am", "11:00 am", "11:30 am", 
+                    "12:00 pm", "12:30 pm", "1:00 pm", "1:30 pm", "2:00 pm", "2:30 pm", "3:00 pm", "3:30 pm", "4:00 pm", "4:30 pm", "5:00 pm",
+                    "5:30 pm", "6:00 pm", "6:30 pm", "7:00 pm", "7:30 pm", "8:00 pm", "8:30 pm", "9:00 pm"];
+                for (var i = 0; i < times.length; i++) {
+
+                        options += '<option value="' + times[i] + '">' + times[i] + '</option>'
                 }
-                //$('#schedule-wrapper').height($('#schedule-editor').height());
-
-                var q = 0;
-                $('#schedule-editor select').each(function() {
-                    if (q < text.length) {
-                        var col = (q + 1) % 12;
-                        if (col == 4 || col == 7 || col == 10) {
-                            q++;
-                        }
-                        $(this).val(text[q]);
-                        //console.log('[' + q + '] = ' + text[q]);
-                        q++;
-                    }
-                });
-
-                $('#schedule-editor').append('<div><input type="button" id="schedule-add" value="+" class="btn-small" /></div>');
-
-                $('#schedule-add').click(function() {
-                    n++;
-                    $(this).before(row(n));
-                    //$('#schedule-wrapper').height($('#schedule-editor').height());
-                });
-
-                function row(i) {
-                    function days(i) {
-                        var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                        var days_select = '<select name="day' + i + '" id="day' + i + '">';
-                        for (var key in days) {
-                            var val = days [key];
-                            days_select += '<option value="' + val + '">' + val + '</option>'
-                        }
-                        days_select += '</select>'
-                        return days_select;
-                    }
-                    function time(i, j) {
-                        var minutes = ['00', '15', '30', '45'];
-                        var select = '<select name="time' + i + '_' + j + '" id="time' + i + '_' + j + '">';
-                        var hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-                        for (var h in hours) {
-                            for (var key in minutes) {
-                                var val = hours[h] + ':' + minutes [key];
-                                select += '<option value="' + val + '">' + val + '</option>'
-                            }
-                        }
-                        select += '</select>'
-                        return select;
-                    }
-                    function ampm(i, j) {
-                        var ap = ['am', 'pm'];
-                        var select = '<select name="ampm' + i + '_' + j + '" id="ampm' + i + '_' + j + '">';
-                        for (var key in ap) {
-                            var val = ap [key];
-                            select += '<option value="' + val + '">' + val + '</option>'
-                        }
-                        select += '</select>'
-                        return select;
-                    }
-
-                    var html = 
-                            '<tr>' +
-                                '<td>' + days(i) + '</td><td>' + time(i, 1) + '</td><td>' + ampm(i, 1) + '</td><td> &nbsp;to&nbsp; </td><td>' + time(i, 2) + '</td><td>' + ampm(i, 2) + '</td>' + 
-                                '<td> &nbsp;and&nbsp; </td><td>' + time(i, 3) + '</td><td>' + ampm(i, 3) + '</td><td>&nbsp;to&nbsp;</td><td>' + time(i, 4) + '</td><td>' + ampm(i, 4) + '</td>' +
-                              //  '<td><input type="button" id="schedule-delete" value="-" class="btn-small" /></td>' +
-                            '</tr>';
-                    return html;
+     
+                var html = '';
+                for (var i=0; i<days.length; i++) {
+                    html += '<div><div style="width:20%;float:left;text-align:right">' + days[i] + '&nbsp;</div> <select id="Schedule' + days[i] + 'Start1">' + options + '</select> - <select id="Schedule' + days[i] + 'End1">' + options + '</select> and <select id="Schedule' + days[i] + 'Start2">' + options + '</select> - <select id="Schedule' + days[i] + 'End2">' + options + '</select></div>';
                 }
-
-
-                $('#schedule-editor select').live('change', function() {
-                    var text = '';
-                    var i = 1;
-                    $('#schedule-editor tr').each(function() {
-                        var line = $('#day' + i).val() + ' ' + $('#time' + i + '_1').val() + ' ' + $('#ampm' + i + '_1').val() + ' to ' + $('#time' + i + '_2').val() + ' ' + $('#ampm' + i + '_2').val()
-                                + ' and ' + $('#time' + i + '_3').val() + ' ' + $('#ampm' + i + '_3').val() + ' to ' + $('#time' + i + '_4').val() + ' ' + $('#ampm' + i + '_4').val() + ' <br>';
-                        // Only add the line if something has been changed from the default
-                        if (line != 'Monday 0:00 am to 0:00 am and 0:00 am to 0:00 am <br>')
-                            text += line;
-                        
-                        i++;
-                        
-                    });
-                    $('#app_hoursofoperation').html(text);
-                });
+                $('#scheduler').html(html);
+                
+                // Parse the schedule string
+                var obj = $.parseJSON($('#app_hoursofoperation').val());
+                if (obj)
+                {
+                    for (var i=0; i<days.length; i++) {
+                        $('#Schedule' + days[i] + 'Start1').val(obj[days[i]]['Start1']);
+                        $('#Schedule' + days[i] + 'End1').val(obj[days[i]]['End1']);
+                        $('#Schedule' + days[i] + 'Start2').val(obj[days[i]]['Start2']);
+                        $('#Schedule' + days[i] + 'End2').val(obj[days[i]]['End2']);
+                    }
+                }
+                
+                $('#scheduler select').change(function(){             
+                    var obj = {};
+                    // Update the textarea
+                    for (var i=0; i<days.length; i++) {
+                        obj[days[i]] = {};
+                        obj[days[i]]['Start1'] = $('#Schedule' + days[i] + 'Start1').val();
+                        obj[days[i]]['End1'] = $('#Schedule' + days[i] + 'End1').val();
+                        obj[days[i]]['Start2'] = $('#Schedule' + days[i] + 'Start2').val();
+                        obj[days[i]]['End2'] = $('#Schedule' + days[i] + 'End2').val();
+                    }
+                    $('#app_hoursofoperation').val(JSON.stringify(obj));
+                }).change();
             }
         });
-
     }
 </script>
 

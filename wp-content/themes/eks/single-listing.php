@@ -24,6 +24,8 @@
 
                 <li><p class="listing-custom-field"><span class="custom-field-label">Phone</span><span class="custom-field-sep">: </span><span class="custom-field-value"><?php echo esc_html( get_post_meta( get_the_ID(), 'phone', true ) ); ?></span></p>
                 </li>
+                <li><p class="listing-custom-field"><span class="custom-field-label">Hours</span><span class="custom-field-sep">: </span><br/><span class="custom-field-value"><?php echo get_formatted_hours_of_operation( get_post_meta( get_the_ID(), 'app_hoursofoperation', true ) ); ?></span></p>
+                </li>
                 
 	<?php if ( $website ) : ?>
                 <li><p class="listing-custom-field"><span class="custom-field-label">Website</span><span class="custom-field-sep">: </span><span class="custom-field-value"><a href="<?php echo esc_url( 'http://' . $website ); ?>" title="<?php _e( 'Website', APP_TD ); ?>" target="_blank"><?php echo esc_html( $website ); ?></a></span></li>
@@ -76,20 +78,11 @@
 <script type="text/javascript">
 
         jQuery(document).ready(function($) {
+            var privateFields = ['Site Coordinator Name', 'Site Coordinator Email Address', 'Site Coordinator Phone Number', 'New Tax Preparer Training Required', 'Returning Tax Preparer Training Required', 'Number of Tax Preparers Needed', 'Number of Interpreters Needed', 'Number of Greeters Needed', 'Hours of Operation'];
 
-            var privateFields = ['Site Coordinator Name', 'Site Coordinator Email Address', 'Site Coordinator Phone Number', 'New Tax Preparer Training Required', 'Returning Tax Preparer Training Required', 'Number of Tax Preparers Needed', 'Number of Interpreters Needed', 'Number of Greeters Needed'];
-
-            $('span.custom-field-label').each(function(){
-                
+            $('span.custom-field-label').each(function(){               
                 if ($.inArray($(this).text(), privateFields) > -1)
                     $(this).parent().hide();
-                
-                if ($(this).text() == 'Hours of Operation')
-                {
-                    // To improve readability, precede each day name with a line break
-                    var str = $(this).siblings('span.custom-field-value').html();
-                    $(this).siblings('span.custom-field-value').html(str.replace(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/g, ' <br/>$1'));
-                }
             });
         });
 </script>
