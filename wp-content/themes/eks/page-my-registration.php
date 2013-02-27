@@ -52,10 +52,10 @@ $_SESSION['role'] = "volunteer";
                         <p>All fields are required.</p>
                         <div class="yui3-g">
                             <div class="yui3-u-1-2">
-                                <label>Name: <input type="text" name="name" id="name" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['name']) ? '' : $_SESSION['volunteer']['name'] ?>" minlength="2" required /></label>
+                                <label>Full Name: <input type="text" name="name" id="name" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['name']) ? '' : $_SESSION['volunteer']['name'] ?>" minlength="2" required /></label>
                             </div>
                             <div class="yui3-u-1-2">
-                                <label>Username <input type="text" name="username" id="username" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['username']) ? '' : $_SESSION['volunteer']['username'] ?>" required /></label>
+                                <label>Username: <input type="text" name="username" id="username" size="30" maxlength="100" value="<?php echo empty($_SESSION['volunteer']['username']) ? '' : $_SESSION['volunteer']['username'] ?>" required /></label>
                             </div>
                             <div class="yui3-u-1">
                                 <label>Daytime Phone: <input type="text" name="phone" id="phone" size="30" maxlength="14" value="<?php echo empty($_SESSION['volunteer']['phone']) ? '' : $_SESSION['volunteer']['phone'] ?>" /></label>                                
