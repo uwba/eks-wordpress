@@ -108,11 +108,6 @@ $_SESSION['role'] = "volunteer";
                                             <div>
                                                 <input type="text" id="search-text" name="search_terms" size="30" style="width:100%">
                                             </div>
-                                            <div>
-                                                <input type="radio" name="searchphrase" checked="checked" value="any">Any Words
-                                                <input type="radio" name="searchphrase" value="all">All Words
-                                                <input type="radio" name="searchphrase" value="exact">Exact phrase
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -124,7 +119,6 @@ $_SESSION['role'] = "volunteer";
                                 </div>
                             </div>
                         </form>
-                        <br/>
                         <form id="step32" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
                              <div id="results" style="height:300px;overflow-y:scroll;border:1px solid #ccc;margin:10px 0;padding:10px"></div>
                              <input type="button" class="back" value="Back"/>

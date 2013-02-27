@@ -516,16 +516,28 @@ function tax_search() {
     global $wpdb;
     global $table_prefix;
 
+    $conditions_string = '';   
+    if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
+        $terms = split(' ', $_GET['search_terms']);
+        $conditions = array();
+        foreach ($terms as $term) {
+            $term = mysql_real_escape_string($term);
+            $conditions[] = " (p.post_title LIKE '%$term%' 
+                OR p.post_excerpt LIKE '%$term%' 
+                OR p.post_content LIKE '%$term%' 
+                OR bart.meta_value LIKE '%$term%' 
+                OR t.name LIKE '%$term%' 
+                OR a.meta_value LIKE '%$term%' ) ";
+        }
+        $conditions_string = 'AND ('. implode(' OR ', $conditions) . ')';
+    };
+    
     $query = "SELECT p.*, 
             bart.meta_value AS bartstations, 
             t.name AS county,
-            GROUP_CONCAT(DISTINCT l.meta_value) AS languages, 
-            a.meta_value AS address,
-            CONCAT_WS('; ', ID, post_title, post_excerpt, post_content, bart.meta_value, t.name, GROUP_CONCAT(DISTINCT l.meta_value), a.meta_value) AS search
+            a.meta_value AS address 
         FROM {$table_prefix}posts as p
         LEFT JOIN {$table_prefix}postmeta as bart ON ID = bart.post_id AND bart.meta_key = 'app_closestbartstations'
-        LEFT JOIN {$table_prefix}postmeta as ada ON ID = ada.post_id AND ada.meta_key = 'app_adaaccessible'
-        LEFT JOIN {$table_prefix}postmeta as l ON ID = l.post_id AND l.meta_key = 'app_additionallanguagescheckallthatapply'
         LEFT JOIN {$table_prefix}postmeta as a ON ID = a.post_id AND a.meta_key = 'address'
 
         LEFT JOIN {$table_prefix}term_relationships ON ID = object_id
@@ -535,25 +547,8 @@ function tax_search() {
         )
         LEFT JOIN {$table_prefix}terms AS t USING(term_id) 
         WHERE post_status = 'publish' AND post_type = 'listing'
+        $conditions_string
         GROUP BY ID";
-
-    if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
-        if ($_GET['searchphrase'] != 'exact') {
-            $terms = split(' ', $_GET['search_terms']);
-        } else {
-            $terms = array($_GET['search_terms']);
-        }
-        foreach ($terms as $term) {
-            $term = mysql_real_escape_string($term);
-            $whereclauses[] = "search like '%$term%'";
-        }
-        if ($_GET['searchphrase'] == 'any') {
-            $cond = 'OR';
-        } else { //if 'all'
-            $cond = 'AND';
-        }
-        $query .= " HAVING (" . implode(" $cond ", $whereclauses) . ")";
-    };
 
     $data = $wpdb->get_results($query, 'OBJECT');
     global $post;
