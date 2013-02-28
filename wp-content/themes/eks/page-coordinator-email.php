@@ -87,17 +87,20 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
 
                                 // Modified from page-coordinator-volunteers.php
                                 $volunteer_tax_sites = get_volunteer_tax_sites($user_ID);
-                                $tax_site_ids = array_keys($volunteer_tax_sites);
-                                $role = $volunteer_tax_sites[$tax_site_ids[0]][0];
-                                $tax_site = get_post($tax_site_ids[0]);
-                                $tax_site_link = '<a href="/listings/' . $tax_site->post_name . '">' . $tax_site->post_title . '</a>';
+                                if (count($volunteer_tax_sites) > 0)
+                                {
+                                    $tax_site_ids = array_keys($volunteer_tax_sites);
+                                    $role = $volunteer_tax_sites[$tax_site_ids[0]][0];
+                                    $tax_site = get_post($tax_site_ids[0]);
+                                    $tax_site_link = '<a href="/listings/' . $tax_site->post_name . '">' . $tax_site->post_title . '</a>';
 
-                                $items[] = array(
-                                    'checkbox' => '<input type="checkbox" name="volunteers[]" value="' . $user_ID . '" />',
-                                    'name' => '<a href="' . get_permalink($post->ID) . '" rel="bookmark">' . $current_user->data->user_nicename . '</a>',
-                                    'tax_site' => $tax_site_link,
-                                    'role' => $role
-                                );
+                                    $items[] = array(
+                                        'checkbox' => '<input type="checkbox" name="volunteers[]" value="' . $user_ID . '" />',
+                                        'name' => '<a href="' . get_permalink($post->ID) . '" rel="bookmark">' . $current_user->data->user_nicename . '</a>',
+                                        'tax_site' => $tax_site_link,
+                                        'role' => $role
+                                    );
+                                }
                             }
                         }
                         echo OutputArrayToTable($items, array('&nbsp;', 'Volunteer', 'Tax Site', 'Role'));

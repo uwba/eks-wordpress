@@ -430,15 +430,17 @@ function get_volunteer($volunteer_ID = null) {
 )
  */
 function get_volunteer_tax_sites($volunteer_user_id = null) {
-    $volunteer = get_volunteer($volunteer_user_id);
-
-    $volunteer_meta = get_post_meta($volunteer->ID);
-
     $tax_sites = array();
-    foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
-        if (!empty($volunteer_meta[$position])) {
-            foreach ($volunteer_meta[$position] as $tax_site) {
-                $tax_sites[$tax_site][] = $position;
+    $volunteer = get_volunteer($volunteer_user_id);
+    if (!empty($volunteer->ID))
+    {
+        $volunteer_meta = get_post_meta($volunteer->ID);
+
+        foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
+            if (!empty($volunteer_meta[$position])) {
+                foreach ($volunteer_meta[$position] as $tax_site) {
+                    $tax_sites[$tax_site][] = $position;
+                }
             }
         }
     }
