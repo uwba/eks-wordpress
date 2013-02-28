@@ -37,12 +37,11 @@ if (!function_exists('wp_new_user_notification')) {
         $user_login = stripslashes($user->user_login);
         $user_email = stripslashes($user->user_email);
 
-        $message = sprintf(__('New user registration on your blog %s:'), get_option('blogname')) . "\r\n\r\n";
-        $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
-        $message .= sprintf(__('E-mail: %s'), $user_email) . "\r\n";
-
-        if (!wp_mail(get_option('admin_email'), sprintf(__('[%s] New User Registration'), get_option('blogname')), $message))
-            error_log('There was an error sending the new user registration email to the admin: ' . $message);
+        $message = sprintf(__('New user registration on %s:'), get_option('blogname')) . "<br>";
+        $message .= sprintf(__('Username: %s'), $user_login) . "<br>";
+        $message .= sprintf(__('E-mail: %s'), $user_email) . "<br>";
+        
+        eks_mail(get_option('admin_email'), get_option('admin_email'), sprintf(__('[%s] New User Registration'), get_option('blogname')), $message);
 
         if (empty($plaintext_pass))
             return;
@@ -53,8 +52,7 @@ if (!function_exists('wp_new_user_notification')) {
         $message = str_replace('[USERNAME]', $user_login, $message);
         $message = str_replace('[PASSWORD]', $plaintext_pass, $message);
 
-        if (!wp_mail($user_email, get_option('volunteer_email_subject'), $message))
-            error_log('There was an error sending the new user registration email to the user: ' . $message);
+        eks_mail($user_email, "\"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>", get_option('volunteer_email_subject'), $message);
     }
 
 }
@@ -160,13 +158,16 @@ function myajax_submit() {
                 $coordinator = get_user_by('id', $tax_site->post_author);
 
                 $to = $coordinator->data->user_email;
-                $from_email = 'noreply@' . $_SERVER["HTTP_HOST"];
+                $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
                 $subject = "New Volunteer Registration";
-                $message = sprintf("Hello.  The following person has registered to volunteer at your tax site:\r\n\r\n%s \r\n%s \r\n%s \r\n", $_SESSION['volunteer']['name'], $_SESSION['volunteer']['phone'], $_SESSION['volunteer']['email']);
-                $headers = "From: {$from_email}\r\n";
-                if (!wp_mail($to, $subject, $message, $headers)) {
-                    // There was an error sending the email - swallow it and move on.
-                }
+                $message = sprintf("<p>Hello.  The following person has registered to volunteer at your Tax Site:</p>
+                    <pre>
+                    %s
+                    %s
+                    %s
+                    </pre>", $_SESSION['volunteer']['name'], $_SESSION['volunteer']['phone'], $_SESSION['volunteer']['email']);
+                $from = "\"EarnItKeepItSaveIt!\"<{$noreply_email}>";
+                eks_mail($to, $from, $subject, $message);
             }
             $response = json_encode(array(
                 'success' => $valid,

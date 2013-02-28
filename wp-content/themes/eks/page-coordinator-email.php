@@ -38,8 +38,7 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
             $name = $current_user->user_nicename;
             $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
             $subject = $_POST['subject'];
-            $message = "The following is a message from $name (" . $current_user->user_email . "):\n\n\n" . $_POST['message'];
-            $headers = "From: \"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>\r\n";
+            $message = "<b>The following is a message from $name (" . $current_user->user_email . "):</b><br/><br/><pre>{$_POST['message']}</pre>";
 
             $count = 0;
             foreach ($volunteers as $volunteer) {
@@ -47,8 +46,9 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
                     set_current_user($volunteer->post_author);
                     get_currentuserinfo();
                     $to = "{$current_user->user_nicename} <{$current_user->user_email}>";
-                    if (!wp_mail($to, $subject, $message, $headers)) {
-                        $errors[] = htmlentities("The email to ".$current_user->user_email." could not be sent.");
+                    
+                    if (!eks_mail($to, "\"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>", $subject, $message)) {
+                        $errors[] = "The email to ".$current_user->user_email." could not be sent.";
                     }
                     else
                         $count++;

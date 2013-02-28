@@ -888,3 +888,29 @@ function get_formatted_hours_of_operation($json, $separator = "<br/>")
     }
     return implode($separator, $arr);
 }
+
+/**
+ * Send an HTML email to the specified recipient.  Upon failure, the error is written to the log.
+ * 
+ * @param string $to
+ * @param string $from
+ * @param string $subject
+ * @param string $body
+ * @return bool $success
+ */
+function eks_mail($to, $from, $subject, $body)
+{
+    $headers = 'From: ' . $from . "\r\n";
+    add_filter( 'wp_mail_content_type', 'eks_set_html_content_type' );
+    $success = wp_mail($to, $subject, $body, $headers);
+    // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
+    remove_filter( 'wp_mail_content_type', 'eks_set_html_content_type' ); 
+    if (!$success)
+            error_log("Could not email $to: $subject");
+    return $success;
+}
+
+function eks_set_html_content_type()
+{
+        return 'text/html';
+}
