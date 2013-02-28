@@ -6,7 +6,14 @@
 		l10n;
 
 	// Link any localized strings.
-	l10n = media.view.l10n = _.isUndefined( _wpMediaViewsL10n ) ? {} : _wpMediaViewsL10n;
+	l10n = media.view.l10n = typeof _wpMediaViewsL10n === 'undefined' ? {} : _wpMediaViewsL10n;
+
+	// Link any settings.
+	media.view.settings = l10n.settings || {};
+	delete l10n.settings;
+
+	// Copy the `post` setting over to the model settings.
+	media.model.settings.post = media.view.settings.post;
 
 	// Check if the browser supports CSS 3.0 transitions
 	$.support.transition = (function(){
@@ -28,8 +35,10 @@
 	}());
 
 	// Makes it easier to bind events using transitions.
-	media.transition = function( selector ) {
+	media.transition = function( selector, sensitivity ) {
 		var deferred = $.Deferred();
+
+		sensitivity = sensitivity || 2000;
 
 		if ( $.support.transition ) {
 			if ( ! (selector instanceof $) )
@@ -37,6 +46,9 @@
 
 			// Resolve the deferred when the first element finishes animating.
 			selector.first().one( $.support.transition.end, deferred.resolve );
+
+			// Just in case the event doesn't trigger, fire a callback.
+			_.delay( deferred.resolve, sensitivity );
 
 		// Otherwise, execute on the spot.
 		} else {
@@ -53,6 +65,78 @@
 	 */
 
 	/**
+	 * wp.media.controller.Region
+	 */
+	media.controller.Region = function( options ) {
+		_.extend( this, _.pick( options || {}, 'id', 'view', 'selector' ) );
+	};
+
+	// Use Backbone's self-propagating `extend` inheritance method.
+	media.controller.Region.extend = Backbone.Model.extend;
+
+	_.extend( media.controller.Region.prototype, {
+		mode: function( mode ) {
+			if ( ! mode )
+				return this._mode;
+
+			// Bail if we're trying to change to the current mode.
+			if ( mode === this._mode )
+				return this;
+
+			this.trigger('deactivate');
+			this._mode = mode;
+			this.render( mode );
+			this.trigger('activate');
+			return this;
+		},
+
+		render: function( mode ) {
+			// If no mode is provided, just re-render the current mode.
+			// If the provided mode isn't active, perform a full switch.
+			if ( mode && mode !== this._mode )
+				return this.mode( mode );
+
+			var set = { view: null },
+				view;
+
+			this.trigger( 'create', set );
+			view = set.view;
+			this.trigger( 'render', view );
+			if ( view )
+				this.set( view );
+			return this;
+		},
+
+		get: function() {
+			return this.view.views.first( this.selector );
+		},
+
+		set: function( views, options ) {
+			if ( options )
+				options.add = false;
+			return this.view.views.set( this.selector, views, options );
+		},
+
+		trigger: function( event ) {
+			var base;
+			if ( ! this._mode )
+				return;
+
+			var args = _.toArray( arguments );
+			base = this.id + ':' + event;
+
+			// Trigger `region:action:mode` event.
+			args[0] = base + ':' + this._mode;
+			this.view.trigger.apply( this.view, args );
+
+			// Trigger `region:action` event.
+			args[0] = base;
+			this.view.trigger.apply( this.view, args );
+			return this;
+		}
+	});
+
+	/**
 	 * wp.media.controller.StateMachine
 	 */
 	media.controller.StateMachine = function( states ) {
@@ -62,36 +146,55 @@
 	// Use Backbone's self-propagating `extend` inheritance method.
 	media.controller.StateMachine.extend = Backbone.Model.extend;
 
-	_.extend( media.controller.StateMachine.prototype, {
-		// Fetch a state model.
+	// Add events to the `StateMachine`.
+	_.extend( media.controller.StateMachine.prototype, Backbone.Events, {
+
+		// Fetch a state.
+		//
+		// If no `id` is provided, returns the active state.
 		//
 		// Implicitly creates states.
-		get: function( id ) {
+		state: function( id ) {
 			// Ensure that the `states` collection exists so the `StateMachine`
 			// can be used as a mixin.
 			this.states = this.states || new Backbone.Collection();
 
-			if ( ! this.states.get( id ) )
+			// Default to the active state.
+			id = id || this._state;
+
+			if ( id && ! this.states.get( id ) )
 				this.states.add({ id: id });
 			return this.states.get( id );
 		},
 
-		// Selects or returns the active state.
-		//
-		// If a `id` is provided, sets that as the current state.
-		// If no parameters are provided, returns the current state object.
-		state: function( id ) {
-			var previous;
+		// Sets the active state.
+		setState: function( id ) {
+			var previous = this.state();
 
-			if ( id ) {
-				if ( previous = this.state() )
-					previous.trigger('deactivate');
-				this._state = id;
-				return this.state().trigger('activate');
+			// Bail if we're trying to select the current state, if we haven't
+			// created the `states` collection, or are trying to select a state
+			// that does not exist.
+			if ( ( previous && id === previous.id ) || ! this.states || ! this.states.get( id ) )
+				return this;
+
+			if ( previous ) {
+				previous.trigger('deactivate');
+				this._lastState = previous.id;
 			}
 
-			if ( this._state )
-				return this.get( this._state );
+			this._state = id;
+			this.state().trigger('activate');
+
+			return this;
+		},
+
+		// Returns the previous active state.
+		//
+		// Call the `state()` method with no parameters to retrieve the current
+		// active state.
+		lastState: function() {
+			if ( this._lastState )
+				return this.state( this._lastState );
 		}
 	});
 
@@ -107,183 +210,632 @@
 		};
 	});
 
+
+	// wp.media.controller.State
+	// ---------------------------
+	media.controller.State = Backbone.Model.extend({
+		constructor: function() {
+			this.on( 'activate', this._preActivate, this );
+			this.on( 'activate', this.activate, this );
+			this.on( 'activate', this._postActivate, this );
+			this.on( 'deactivate', this._deactivate, this );
+			this.on( 'deactivate', this.deactivate, this );
+			this.on( 'reset', this.reset, this );
+			this.on( 'ready', this._ready, this );
+			this.on( 'ready', this.ready, this );
+
+			this.on( 'change:menu', this._updateMenu, this );
+
+			Backbone.Model.apply( this, arguments );
+		},
+
+		ready: function() {},
+		activate: function() {},
+		deactivate: function() {},
+		reset: function() {},
+
+		_ready: function() {
+			this._updateMenu();
+		},
+
+		_preActivate: function() {
+			this.active = true;
+		},
+
+		_postActivate: function() {
+			this.on( 'change:menu', this._menu, this );
+			this.on( 'change:titleMode', this._title, this );
+			this.on( 'change:content', this._content, this );
+			this.on( 'change:toolbar', this._toolbar, this );
+
+			this.frame.on( 'title:render:default', this._renderTitle, this );
+
+			this._title();
+			this._menu();
+			this._toolbar();
+			this._content();
+			this._router();
+		},
+
+
+		_deactivate: function() {
+			this.active = false;
+
+			this.frame.off( 'title:render:default', this._renderTitle, this );
+
+			this.off( 'change:menu', this._menu, this );
+			this.off( 'change:titleMode', this._title, this );
+			this.off( 'change:content', this._content, this );
+			this.off( 'change:toolbar', this._toolbar, this );
+		},
+
+		_title: function() {
+			this.frame.title.render( this.get('titleMode') || 'default' );
+		},
+
+		_renderTitle: function( view ) {
+			view.$el.text( this.get('title') || '' );
+		},
+
+		_router: function() {
+			var router = this.frame.router,
+				mode = this.get('router'),
+				view;
+
+			this.frame.$el.toggleClass( 'hide-router', ! mode );
+			if ( ! mode )
+				return;
+
+			this.frame.router.render( mode );
+
+			view = router.get();
+			if ( view && view.select )
+				view.select( this.frame.content.mode() );
+		},
+
+		_menu: function() {
+			var menu = this.frame.menu,
+				mode = this.get('menu'),
+				view;
+
+			if ( ! mode )
+				return;
+
+			menu.mode( mode );
+
+			view = menu.get();
+			if ( view && view.select )
+				view.select( this.id );
+		},
+
+		_updateMenu: function() {
+			var previous = this.previous('menu'),
+				menu = this.get('menu');
+
+			if ( previous )
+				this.frame.off( 'menu:render:' + previous, this._renderMenu, this );
+
+			if ( menu )
+				this.frame.on( 'menu:render:' + menu, this._renderMenu, this );
+		},
+
+		_renderMenu: function( view ) {
+			var menuItem = this.get('menuItem'),
+				title = this.get('title'),
+				priority = this.get('priority');
+
+			if ( ! menuItem && title ) {
+				menuItem = { text: title };
+
+				if ( priority )
+					menuItem.priority = priority;
+			}
+
+			if ( ! menuItem )
+				return;
+
+			view.set( this.id, menuItem );
+		}
+	});
+
+	_.each(['toolbar','content'], function( region ) {
+		media.controller.State.prototype[ '_' + region ] = function() {
+			var mode = this.get( region );
+			if ( mode )
+				this.frame[ region ].render( mode );
+		};
+	});
+
 	// wp.media.controller.Library
 	// ---------------------------
-	media.controller.Library = Backbone.Model.extend({
+	media.controller.Library = media.controller.State.extend({
 		defaults: {
-			id:       'library',
-			multiple: false,
-			describe: false,
-			title:    l10n.mediaLibrary
+			id:         'library',
+			multiple:   false, // false, 'add', 'reset'
+			describe:   false,
+			toolbar:    'select',
+			sidebar:    'settings',
+			content:    'upload',
+			router:     'browse',
+			menu:       'default',
+			searchable: true,
+			filterable: false,
+			sortable:   true,
+			title:      l10n.mediaLibraryTitle,
+
+			// Uses a user setting to override the content mode.
+			contentUserSetting: true,
+
+			// Sync the selection from the last state when 'multiple' matches.
+			syncSelection: true
 		},
 
 		initialize: function() {
-			if ( ! this.get('selection') ) {
-				this.set( 'selection', new media.model.Selection( null, {
-					multiple: this.get('multiple')
-				}) );
-			}
+			var selection = this.get('selection'),
+				props;
 
+			// If a library isn't provided, query all media items.
 			if ( ! this.get('library') )
 				this.set( 'library', media.query() );
+
+			// If a selection instance isn't provided, create one.
+			if ( ! (selection instanceof media.model.Selection) ) {
+				props = selection;
+
+				if ( ! props ) {
+					props = this.get('library').props.toJSON();
+					props = _.omit( props, 'orderby', 'query' );
+				}
+
+				// If the `selection` attribute is set to an object,
+				// it will use those values as the selection instance's
+				// `props` model. Otherwise, it will copy the library's
+				// `props` model.
+				this.set( 'selection', new media.model.Selection( null, {
+					multiple: this.get('multiple'),
+					props: props
+				}) );
+			}
 
 			if ( ! this.get('edge') )
 				this.set( 'edge', 120 );
 
 			if ( ! this.get('gutter') )
-				this.set( 'gutter', 6 );
+				this.set( 'gutter', 8 );
 
-			this.on( 'activate', this.activate, this );
-			this.on( 'deactivate', this.deactivate, this );
-			this.on( 'change:details', this.details, this );
+			this.resetDisplays();
 		},
 
 		activate: function() {
-			this.toolbar();
-			this.sidebar();
-			this.content();
+			this.syncSelection();
 
-			// If we're in a workflow that supports multiple attachments,
-			// automatically select any uploading attachments.
-			if ( this.get('multiple') )
-				wp.Uploader.queue.on( 'add', this.selectUpload, this );
+			wp.Uploader.queue.on( 'add', this.uploading, this );
 
-			this.get('selection').on( 'add remove', this.toggleDetails, this );
+			this.get('selection').on( 'add remove reset', this.refreshContent, this );
+
+			if ( this.get('contentUserSetting') ) {
+				this.frame.on( 'content:activate', this.saveContentMode, this );
+				this.set( 'content', getUserSetting( 'libraryContent', this.get('content') ) );
+			}
 		},
 
 		deactivate: function() {
-			var toolbar = this._postLibraryToolbar;
-			if ( toolbar )
-				this.get('selection').off( 'add remove', toolbar.visibility, toolbar );
+			this.recordSelection();
 
-			wp.Uploader.queue.off( 'add', this.selectUpload, this );
-			this.get('selection').off( 'add remove', this.toggleDetails, this );
+			this.frame.off( 'content:activate', this.saveContentMode, this );
+
+			// Unbind all event handlers that use this state as the context
+			// from the selection.
+			this.get('selection').off( null, null, this );
+
+			wp.Uploader.queue.off( null, null, this );
 		},
 
-		toolbar: function() {
-			var frame = this.frame,
-				toolbar;
-
-			// Toolbar.
-			toolbar = this._postLibraryToolbar = new media.view.Toolbar.PostLibrary({
-				controller: frame,
-				state:      this
-			});
-
-			frame.toolbar( toolbar );
-			this.get('selection').on( 'add remove', toolbar.visibility, toolbar );
+		reset: function() {
+			this.get('selection').reset();
+			this.resetDisplays();
+			this.refreshContent();
 		},
 
-		sidebar: function() {
-			var frame = this.frame;
-
-			// Sidebar.
-			frame.sidebar( new media.view.Sidebar({
-				controller: frame
-			}) );
-
-			this.details({ silent: true });
-			frame.sidebar().add({
-				search: new media.view.Search({
-					controller: frame,
-					model:      this.get('library').props,
-					priority:   20
-				}),
-
-				selection: new media.view.SelectionPreview({
-					controller: frame,
-					collection: this.get('selection'),
-					priority:   40
-				})
-			});
+		resetDisplays: function() {
+			var defaultProps = media.view.settings.defaultProps;
+			this._displays = [];
+			this._defaultDisplaySettings = {
+				align: defaultProps.align || getUserSetting( 'align', 'none' ),
+				size:  defaultProps.size  || getUserSetting( 'imgsize', 'medium' ),
+				link:  defaultProps.link  || getUserSetting( 'urlbutton', 'file' )
+			};
 		},
 
-		content: function() {
-			var frame = this.frame;
+		display: function( attachment ) {
+			var displays = this._displays;
 
-			// Content.
-			frame.content( new media.view.Attachments({
-				controller: frame,
-				collection: this.get('library'),
-				// The single `Attachment` view to be used in the `Attachments` view.
-				AttachmentView: media.view.Attachment.Library
-			}).render() );
+			if ( ! displays[ attachment.cid ] )
+				displays[ attachment.cid ] = new Backbone.Model( this._defaultDisplaySettings );
+
+			return displays[ attachment.cid ];
 		},
 
-		selectUpload: function( attachment ) {
+		syncSelection: function() {
+			var selection = this.get('selection'),
+				manager = this.frame._selection;
+
+			if ( ! this.get('syncSelection') || ! manager || ! selection )
+				return;
+
+			// If the selection supports multiple items, validate the stored
+			// attachments based on the new selection's conditions. Record
+			// the attachments that are not included; we'll maintain a
+			// reference to those. Other attachments are considered in flux.
+			if ( selection.multiple ) {
+				selection.reset( [], { silent: true });
+				selection.validateAll( manager.attachments );
+				manager.difference = _.difference( manager.attachments.models, selection.models );
+			}
+
+			// Sync the selection's single item with the master.
+			selection.single( manager.single );
+		},
+
+		recordSelection: function() {
+			var selection = this.get('selection'),
+				manager = this.frame._selection,
+				filtered;
+
+			if ( ! this.get('syncSelection') || ! manager || ! selection )
+				return;
+
+			// Record the currently active attachments, which is a combination
+			// of the selection's attachments and the set of selected
+			// attachments that this specific selection considered invalid.
+			// Reset the difference and record the single attachment.
+			if ( selection.multiple ) {
+				manager.attachments.reset( selection.toArray().concat( manager.difference ) );
+				manager.difference = [];
+			} else {
+				manager.attachments.add( selection.toArray() );
+			}
+
+			manager.single = selection._single;
+		},
+
+		refreshContent: function() {
+			var selection = this.get('selection'),
+				frame = this.frame,
+				router = frame.router.get(),
+				mode = frame.content.mode();
+
+			// If the state is active, no items are selected, and the current
+			// content mode is not an option in the state's router (provided
+			// the state has a router), reset the content mode to the default.
+			if ( this.active && ! selection.length && router && ! router.get( mode ) )
+				this.frame.content.render( this.get('content') );
+		},
+
+		uploading: function( attachment ) {
+			var content = this.frame.content;
+
+			// If the uploader was selected, navigate to the browser.
+			if ( 'upload' === content.mode() )
+				this.frame.content.mode('browse');
+
+			// Automatically select any uploading attachments.
+			//
+			// Selections that don't support multiple attachments automatically
+			// limit themselves to one attachment (in this case, the last
+			// attachment in the upload queue).
 			this.get('selection').add( attachment );
 		},
 
-		details: function( options ) {
-			var model = this.get('details'),
-				view;
+		saveContentMode: function() {
+			// Only track the browse router on library states.
+			if ( 'browse' !== this.get('router') )
+				return;
 
-			if ( model ) {
-				view = new media.view.Attachment.Details({
-					controller: this.frame,
-					model:      model,
-					priority:   80
-				});
-			} else {
-				view = new Backbone.View();
-			}
+			var mode = this.frame.content.mode(),
+				view = this.frame.router.get();
 
-			if ( ! options || ! options.silent )
-				view.render();
-
-			this.frame.sidebar().add( 'details', view, options );
-		},
-
-		toggleDetails: function( model ) {
-			var details = this.get('details'),
-				selection = this.get('selection');
-
-			if ( selection.has( model ) )
-				this.set( 'details', model );
-			else if ( selection.length )
-				this.set( 'details', selection.last() );
-			else
-				this.unset('details');
+			if ( view && view.get( mode ) )
+				setUserSetting( 'libraryContent', mode );
 		}
 	});
 
-	// wp.media.controller.Gallery
-	// ---------------------------
-	media.controller.Gallery = media.controller.Library.extend({
+	// wp.media.controller.GalleryEdit
+	// -------------------------------
+	media.controller.GalleryEdit = media.controller.Library.extend({
 		defaults: {
-			id:         'gallery',
+			id:         'gallery-edit',
 			multiple:   false,
 			describe:   true,
-			title:      l10n.createGallery,
-			edge:       199
+			edge:       199,
+			editing:    false,
+			sortable:   true,
+			searchable: false,
+			toolbar:    'gallery-edit',
+			content:    'browse',
+			title:      l10n.editGalleryTitle,
+			priority:   60,
+			dragInfo:   true,
+
+			// Don't sync the selection, as the Edit Gallery library
+			// *is* the selection.
+			syncSelection: false
 		},
 
-		toolbar: function() {
-			this.frame.toolbar( new media.view.Toolbar.Gallery({
-				controller: this.frame,
-				state:      this
-			}) );
+		initialize: function() {
+			// If we haven't been provided a `library`, create a `Selection`.
+			if ( ! this.get('library') )
+				this.set( 'library', new media.model.Selection() );
+
+			// The single `Attachment` view to be used in the `Attachments` view.
+			if ( ! this.get('AttachmentView') )
+				this.set( 'AttachmentView', media.view.Attachment.EditLibrary );
+			media.controller.Library.prototype.initialize.apply( this, arguments );
 		},
 
-		sidebar: function() {
-			var frame = this.frame;
+		activate: function() {
+			var library = this.get('library');
 
-			// Sidebar.
-			frame.sidebar( new media.view.Sidebar({
-				controller: frame
-			}) );
+			// Limit the library to images only.
+			library.props.set( 'type', 'image' );
 
-			this.details();
+			// Watch for uploaded attachments.
+			this.get('library').observe( wp.Uploader.queue );
+
+			this.frame.on( 'content:render:browse', this.gallerySettings, this );
+
+			media.controller.Library.prototype.activate.apply( this, arguments );
 		},
 
-		content: function() {
-			this.frame.content( new media.view.Attachments({
-				controller: this.frame,
-				collection: this.get('library'),
-				sortable:   true,
-				// The single `Attachment` view to be used in the `Attachments` view.
-				AttachmentView: media.view.Attachment.Gallery
-			}).render() );
+		deactivate: function() {
+			// Stop watching for uploaded attachments.
+			this.get('library').unobserve( wp.Uploader.queue );
+
+			this.frame.off( 'content:render:browse', this.gallerySettings, this );
+
+			media.controller.Library.prototype.deactivate.apply( this, arguments );
+		},
+
+		gallerySettings: function( browser ) {
+			var library = this.get('library');
+
+			if ( ! library || ! browser )
+				return;
+
+			library.gallery = library.gallery || new Backbone.Model();
+
+			browser.sidebar.set({
+				gallery: new media.view.Settings.Gallery({
+					controller: this,
+					model:      library.gallery,
+					priority:   40
+				})
+			});
+
+			browser.toolbar.set( 'reverse', {
+				text:     l10n.reverseOrder,
+				priority: 80,
+
+				click: function() {
+					library.reset( library.toArray().reverse() );
+				}
+			});
+		}
+	});
+
+	// wp.media.controller.GalleryAdd
+	// ---------------------------------
+	media.controller.GalleryAdd = media.controller.Library.extend({
+		defaults: _.defaults({
+			id:           'gallery-library',
+			filterable:   'uploaded',
+			multiple:     'add',
+			menu:         'gallery',
+			toolbar:      'gallery-add',
+			title:        l10n.addToGalleryTitle,
+			priority:     100,
+
+			// Don't sync the selection, as the Edit Gallery library
+			// *is* the selection.
+			syncSelection: false
+		}, media.controller.Library.prototype.defaults ),
+
+		initialize: function() {
+			// If we haven't been provided a `library`, create a `Selection`.
+			if ( ! this.get('library') )
+				this.set( 'library', media.query({ type: 'image' }) );
+
+			media.controller.Library.prototype.initialize.apply( this, arguments );
+		},
+
+		activate: function() {
+			var library = this.get('library'),
+				edit    = this.frame.state('gallery-edit').get('library');
+
+			if ( this.editLibrary && this.editLibrary !== edit )
+				library.unobserve( this.editLibrary );
+
+			// Accepts attachments that exist in the original library and
+			// that do not exist in gallery's library.
+			library.validator = function( attachment ) {
+				return !! this.mirroring.getByCid( attachment.cid ) && ! edit.getByCid( attachment.cid ) && media.model.Selection.prototype.validator.apply( this, arguments );
+			};
+
+			// Reset the library to ensure that all attachments are re-added
+			// to the collection. Do so silently, as calling `observe` will
+			// trigger the `reset` event.
+			library.reset( library.mirroring.models, { silent: true });
+			library.observe( edit );
+			this.editLibrary = edit;
+
+			media.controller.Library.prototype.activate.apply( this, arguments );
+		}
+	});
+
+	// wp.media.controller.FeaturedImage
+	// ---------------------------------
+	media.controller.FeaturedImage = media.controller.Library.extend({
+		defaults: _.defaults({
+			id:         'featured-image',
+			filterable: 'uploaded',
+			multiple:   false,
+			toolbar:    'featured-image',
+			title:      l10n.setFeaturedImageTitle,
+			priority:   60,
+
+			syncSelection: false
+		}, media.controller.Library.prototype.defaults ),
+
+		initialize: function() {
+			var library, comparator;
+
+			// If we haven't been provided a `library`, create a `Selection`.
+			if ( ! this.get('library') )
+				this.set( 'library', media.query({ type: 'image' }) );
+
+			media.controller.Library.prototype.initialize.apply( this, arguments );
+
+			library    = this.get('library');
+			comparator = library.comparator;
+
+			// Overload the library's comparator to push items that are not in
+			// the mirrored query to the front of the aggregate collection.
+			library.comparator = function( a, b ) {
+				var aInQuery = !! this.mirroring.getByCid( a.cid ),
+					bInQuery = !! this.mirroring.getByCid( b.cid );
+
+				if ( ! aInQuery && bInQuery )
+					return -1;
+				else if ( aInQuery && ! bInQuery )
+					return 1;
+				else
+					return comparator.apply( this, arguments );
+			};
+
+			// Add all items in the selection to the library, so any featured
+			// images that are not initially loaded still appear.
+			library.observe( this.get('selection') );
+		},
+
+		activate: function() {
+			this.updateSelection();
+			this.frame.on( 'open', this.updateSelection, this );
+			media.controller.Library.prototype.activate.apply( this, arguments );
+		},
+
+		deactivate: function() {
+			this.frame.off( 'open', this.updateSelection, this );
+			media.controller.Library.prototype.deactivate.apply( this, arguments );
+		},
+
+		updateSelection: function() {
+			var selection = this.get('selection'),
+				id = media.view.settings.post.featuredImageId,
+				attachment;
+
+			if ( '' !== id && -1 !== id ) {
+				attachment = Attachment.get( id );
+				attachment.fetch();
+			}
+
+			selection.reset( attachment ? [ attachment ] : [] );
+		}
+	});
+
+
+	// wp.media.controller.Embed
+	// -------------------------
+	media.controller.Embed = media.controller.State.extend({
+		defaults: {
+			id:      'embed',
+			url:     '',
+			menu:    'default',
+			content: 'embed',
+			toolbar: 'main-embed',
+			type:    'link',
+
+			title:    l10n.insertFromUrlTitle,
+			priority: 120
+		},
+
+		// The amount of time used when debouncing the scan.
+		sensitivity: 200,
+
+		initialize: function() {
+			this.debouncedScan = _.debounce( _.bind( this.scan, this ), this.sensitivity );
+			this.props = new Backbone.Model({ url: '' });
+			this.props.on( 'change:url', this.debouncedScan, this );
+			this.props.on( 'change:url', this.refresh, this );
+			this.on( 'scan', this.scanImage, this );
+		},
+
+		scan: function() {
+			var scanners,
+				embed = this,
+				attributes = {
+					type: 'link',
+					scanners: []
+				};
+
+			// Scan is triggered with the list of `attributes` to set on the
+			// state, useful for the 'type' attribute and 'scanners' attribute,
+			// an array of promise objects for asynchronous scan operations.
+			if ( this.props.get('url') )
+				this.trigger( 'scan', attributes );
+
+			if ( attributes.scanners.length ) {
+				scanners = attributes.scanners = $.when.apply( $, attributes.scanners );
+				scanners.always( function() {
+					if ( embed.get('scanners') === scanners )
+						embed.set( 'loading', false );
+				});
+			} else {
+				attributes.scanners = null;
+			}
+
+			attributes.loading = !! attributes.scanners;
+			this.set( attributes );
+		},
+
+		scanImage: function( attributes ) {
+			var frame = this.frame,
+				state = this,
+				url = this.props.get('url'),
+				image = new Image(),
+				deferred = $.Deferred();
+
+			attributes.scanners.push( deferred.promise() );
+
+			// Try to load the image and find its width/height.
+			image.onload = function() {
+				deferred.resolve();
+
+				if ( state !== frame.state() || url !== state.props.get('url') )
+					return;
+
+				state.set({
+					type: 'image'
+				});
+
+				state.props.set({
+					width:  image.width,
+					height: image.height
+				});
+			};
+
+			image.onerror = deferred.reject;
+			image.src = url;
+		},
+
+		refresh: function() {
+			this.frame.toolbar.get().refresh();
+		},
+
+		reset: function() {
+			this.props.clear().set({ url: '' });
+
+			if ( this.active )
+				this.refresh();
 		}
 	});
 
@@ -293,138 +845,623 @@
 	 * ========================================================================
 	 */
 
-	/**
-	 * wp.media.view.Frame
-	 */
-	media.view.Frame = Backbone.View.extend({
-		tagName:   'div',
-		className: 'media-frame',
-		template:  media.template('media-frame'),
+	// wp.media.Views
+	// -------------
+	//
+	// A subview manager.
 
-		initialize: function() {
-			_.defaults( this.options, {
-				state:     'library',
-				title:     '',
-				selection: [],
-				library:   {},
-				modal:     true,
-				multiple:  false,
-				uploader:  true
-			});
+	media.Views = function( view, views ) {
+		this.view = view;
+		this._views = _.isArray( views ) ? { '': views } : views || {};
+	};
 
-			this.createSelection();
-			this.createSubviews();
-			this.createStates();
+	media.Views.extend = Backbone.Model.extend;
+
+	_.extend( media.Views.prototype, {
+		// ### Fetch all of the subviews
+		//
+		// Returns an array of all subviews.
+		all: function() {
+			return _.flatten( this._views );
 		},
 
-		render: function() {
-			var els = [ this.toolbar().el, this.sidebar().el, this.content().el ];
+		// ### Get a selector's subviews
+		//
+		// Fetches all subviews that match a given `selector`.
+		//
+		// If no `selector` is provided, it will grab all subviews attached
+		// to the view's root.
+		get: function( selector ) {
+			selector = selector || '';
+			return this._views[ selector ];
+		},
 
-			if ( this.modal )
-				this.modal.render();
+		// ### Get a selector's first subview
+		//
+		// Fetches the first subview that matches a given `selector`.
+		//
+		// If no `selector` is provided, it will grab the first subview
+		// attached to the view's root.
+		//
+		// Useful when a selector only has one subview at a time.
+		first: function( selector ) {
+			var views = this.get( selector );
+			return views && views.length ? views[0] : null;
+		},
 
-			// Detach any views that will be rebound to maintain event bidnings.
-			this.$el.children().filter( els ).detach();
-			this.$el.empty().append( els );
+		// ### Register subview(s)
+		//
+		// Registers any number of `views` to a `selector`.
+		//
+		// When no `selector` is provided, the root selector (the empty string)
+		// is used. `views` accepts a `Backbone.View` instance or an array of
+		// `Backbone.View` instances.
+		//
+		// ---
+		//
+		// Accepts an `options` object, which has a significant effect on the
+		// resulting behavior.
+		//
+		// `options.silent` &ndash; *boolean, `false`*
+		// > If `options.silent` is true, no DOM modifications will be made.
+		//
+		// `options.add` &ndash; *boolean, `false`*
+		// > Use `Views.add()` as a shortcut for setting `options.add` to true.
+		//
+		// > By default, the provided `views` will replace
+		// any existing views associated with the selector. If `options.add`
+		// is true, the provided `views` will be added to the existing views.
+		//
+		// `options.at` &ndash; *integer, `undefined`*
+		// > When adding, to insert `views` at a specific index, use
+		// `options.at`. By default, `views` are added to the end of the array.
+		set: function( selector, views, options ) {
+			var existing, next;
 
-			// Render the window uploader if it exists.
-			if ( this.uploader )
-				this.uploader.render().$el.appendTo( this.$el );
+			if ( ! _.isString( selector ) ) {
+				options  = views;
+				views    = selector;
+				selector = '';
+			}
+
+			options  = options || {};
+			views    = _.isArray( views ) ? views : [ views ];
+			existing = this.get( selector );
+			next     = views;
+
+			if ( existing ) {
+				if ( options.add ) {
+					if ( _.isUndefined( options.at ) ) {
+						next = existing.concat( views );
+					} else {
+						next = existing;
+						next.splice.apply( next, [ options.at, 0 ].concat( views ) );
+					}
+				} else {
+					_.each( next, function( view ) {
+						view.__detach = true;
+					});
+
+					_.each( existing, function( view ) {
+						if ( view.__detach )
+							view.$el.detach();
+						else
+							view.dispose();
+					});
+
+					_.each( next, function( view ) {
+						delete view.__detach;
+					});
+				}
+			}
+
+			this._views[ selector ] = next;
+
+			_.each( views, function( subview ) {
+				var constructor = subview.Views || media.Views,
+					subviews = subview.views = subview.views || new constructor( subview );
+				subviews.parent   = this.view;
+				subviews.selector = selector;
+			}, this );
+
+			if ( ! options.silent )
+				this._attach( selector, views, _.extend({ ready: this._isReady() }, options ) );
 
 			return this;
 		},
 
-		createSelection: function() {
-			var controller = this,
-				selection = this.options.selection;
-
-			if ( ! (selection instanceof media.model.Selection) ) {
-				selection = this.options.selection = new media.model.Selection( selection, {
-					multiple: this.options.multiple
-				});
+		// ### Add subview(s) to existing subviews
+		//
+		// An alias to `Views.set()`, which defaults `options.add` to true.
+		//
+		// Adds any number of `views` to a `selector`.
+		//
+		// When no `selector` is provided, the root selector (the empty string)
+		// is used. `views` accepts a `Backbone.View` instance or an array of
+		// `Backbone.View` instances.
+		//
+		// Use `Views.set()` when setting `options.add` to `false`.
+		//
+		// Accepts an `options` object. By default, provided `views` will be
+		// inserted at the end of the array of existing views. To insert
+		// `views` at a specific index, use `options.at`. If `options.silent`
+		// is true, no DOM modifications will be made.
+		//
+		// For more information on the `options` object, see `Views.set()`.
+		add: function( selector, views, options ) {
+			if ( ! _.isString( selector ) ) {
+				options  = views;
+				views    = selector;
+				selector = '';
 			}
+
+			return this.set( selector, views, _.extend({ add: true }, options ) );
 		},
 
-		createStates: function() {
-			var options = this.options;
+		// ### Stop tracking subviews
+		//
+		// Stops tracking `views` registered to a `selector`. If no `views` are
+		// set, then all of the `selector`'s subviews will be unregistered and
+		// disposed.
+		//
+		// Accepts an `options` object. If `options.silent` is set, `dispose`
+		// will *not* be triggered on the unregistered views.
+		unset: function( selector, views, options ) {
+			var existing;
 
+			if ( ! _.isString( selector ) ) {
+				options = views;
+				views = selector;
+				selector = '';
+			}
+
+			views = views || [];
+
+			if ( existing = this.get( selector ) ) {
+				views = _.isArray( views ) ? views : [ views ];
+				this._views[ selector ] = views.length ? _.difference( existing, views ) : [];
+			}
+
+			if ( ! options || ! options.silent )
+				_.invoke( views, 'dispose' );
+
+			return this;
+		},
+
+		// ### Detach all subviews
+		//
+		// Detaches all subviews from the DOM.
+		//
+		// Helps to preserve all subview events when re-rendering the master
+		// view. Used in conjunction with `Views.render()`.
+		detach: function() {
+			$( _.pluck( this.all(), 'el' ) ).detach();
+			return this;
+		},
+
+		// ### Render all subviews
+		//
+		// Renders all subviews. Used in conjunction with `Views.detach()`.
+		render: function() {
+			var options = {
+					ready: this._isReady()
+				};
+
+			_.each( this._views, function( views, selector ) {
+				this._attach( selector, views, options );
+			}, this );
+
+			this.rendered = true;
+			return this;
+		},
+
+		// ### Dispose all subviews
+		//
+		// Triggers the `dispose()` method on all subviews. Detaches the master
+		// view from its parent. Resets the internals of the views manager.
+		//
+		// Accepts an `options` object. If `options.silent` is set, `unset`
+		// will *not* be triggered on the master view's parent.
+		dispose: function( options ) {
+			if ( ! options || ! options.silent ) {
+				if ( this.parent && this.parent.views )
+					this.parent.views.unset( this.selector, this.view, { silent: true });
+				delete this.parent;
+				delete this.selector;
+			}
+
+			_.invoke( this.all(), 'dispose' );
+			this._views = [];
+			return this;
+		},
+
+		// ### Replace a selector's subviews
+		//
+		// By default, sets the `$target` selector's html to the subview `els`.
+		//
+		// Can be overridden in subclasses.
+		replace: function( $target, els ) {
+			$target.html( els );
+			return this;
+		},
+
+		// ### Insert subviews into a selector
+		//
+		// By default, appends the subview `els` to the end of the `$target`
+		// selector. If `options.at` is set, inserts the subview `els` at the
+		// provided index.
+		//
+		// Can be overridden in subclasses.
+		insert: function( $target, els, options ) {
+			var at = options && options.at,
+				$children;
+
+			if ( _.isNumber( at ) && ($children = $target.children()).length > at )
+				$children.eq( at ).before( els );
+			else
+				$target.append( els );
+
+			return this;
+		},
+
+		// ### Trigger the ready event
+		//
+		// **Only use this method if you know what you're doing.**
+		// For performance reasons, this method does not check if the view is
+		// actually attached to the DOM. It's taking your word for it.
+		//
+		// Fires the ready event on the current view and all attached subviews.
+		ready: function() {
+			this.view.trigger('ready');
+
+			// Find all attached subviews, and call ready on them.
+			_.chain( this.all() ).map( function( view ) {
+				return view.views;
+			}).flatten().where({ attached: true }).invoke('ready');
+		},
+
+		// #### Internal. Attaches a series of views to a selector.
+		//
+		// Checks to see if a matching selector exists, renders the views,
+		// performs the proper DOM operation, and then checks if the view is
+		// attached to the document.
+		_attach: function( selector, views, options ) {
+			var $selector = selector ? this.view.$( selector ) : this.view.$el,
+				managers;
+
+			// Check if we found a location to attach the views.
+			if ( ! $selector.length )
+				return this;
+
+			managers = _.chain( views ).pluck('views').flatten().value();
+
+			// Render the views if necessary.
+			_.each( managers, function( manager ) {
+				if ( manager.rendered )
+					return;
+
+				manager.view.render();
+				manager.rendered = true;
+			}, this );
+
+			// Insert or replace the views.
+			this[ options.add ? 'insert' : 'replace' ]( $selector, _.pluck( views, 'el' ), options );
+
+			// Set attached and trigger ready if the current view is already
+			// attached to the DOM.
+			_.each( managers, function( manager ) {
+				manager.attached = true;
+
+				if ( options.ready )
+					manager.ready();
+			}, this );
+
+			return this;
+		},
+
+		// #### Internal. Checks if the current view is in the DOM.
+		_isReady: function() {
+			var node = this.view.el;
+			while ( node ) {
+				if ( node === document.body )
+					return true;
+				node = node.parentNode;
+			}
+
+			return false;
+		}
+	});
+
+	// wp.media.View
+	// -------------
+	//
+	// The base view class.
+	media.View = Backbone.View.extend({
+		// The constructor for the `Views` manager.
+		Views: media.Views,
+
+		constructor: function( options ) {
+			this.views = new this.Views( this, this.views );
+			this.on( 'ready', this.ready, this );
+
+			if ( options && options.controller )
+				this.controller = options.controller;
+
+			Backbone.View.apply( this, arguments );
+		},
+
+		dispose: function() {
+			// Undelegating events, removing events from the model, and
+			// removing events from the controller mirror the code for
+			// `Backbone.View.dispose` in Backbone master.
+			this.undelegateEvents();
+
+			if ( this.model && this.model.off )
+				this.model.off( null, null, this );
+
+			if ( this.collection && this.collection.off )
+				this.collection.off( null, null, this );
+
+			// Unbind controller events.
+			if ( this.controller && this.controller.off )
+				this.controller.off( null, null, this );
+
+			// Recursively dispose child views.
+			if ( this.views )
+				this.views.dispose();
+
+			return this;
+		},
+
+		remove: function() {
+			this.dispose();
+			return Backbone.View.prototype.remove.apply( this, arguments );
+		},
+
+		render: function() {
+			var options;
+
+			if ( this.prepare )
+				options = this.prepare();
+
+			this.views.detach();
+
+			if ( this.template ) {
+				options = options || {};
+				this.trigger( 'prepare', options );
+				this.$el.html( this.template( options ) );
+			}
+
+			this.views.render();
+			return this;
+		},
+
+		prepare: function() {
+			return this.options;
+		},
+
+		ready: function() {}
+	});
+
+	/**
+	 * wp.media.view.Frame
+	 */
+	media.view.Frame = media.View.extend({
+		initialize: function() {
+			this._createRegions();
+			this._createStates();
+		},
+
+		_createRegions: function() {
+			// Clone the regions array.
+			this.regions = this.regions ? this.regions.slice() : [];
+
+			// Initialize regions.
+			_.each( this.regions, function( region ) {
+				this[ region ] = new media.controller.Region({
+					view:     this,
+					id:       region,
+					selector: '.media-frame-' + region
+				});
+			}, this );
+		},
+
+		_createStates: function() {
 			// Create the default `states` collection.
-			this.states = new Backbone.Collection();
+			this.states = new Backbone.Collection( null, {
+				model: media.controller.State
+			});
 
 			// Ensure states have a reference to the frame.
 			this.states.on( 'add', function( model ) {
 				model.frame = this;
+				model.trigger('ready');
 			}, this );
 
-			// Add the default states.
-			this.states.add([
-				new media.controller.Library({
-					selection: options.selection,
-					library:   media.query( options.library ),
-					multiple:  this.options.multiple
-				}),
-				new media.controller.Gallery({
-					library: options.selection
-				})
-			]);
-
-			// Set the default state.
-			this.state( options.state );
+			if ( this.options.states )
+				this.states.add( this.options.states );
 		},
 
-		createSubviews: function() {
-			// Initialize a stub view for each subview region.
-			_.each(['toolbar','sidebar','content'], function( subview ) {
-				this[ '_' + subview ] = new Backbone.View({
-					tagName:   'div',
-					className: 'media-' + subview
-				});
-			}, this );
-
-			// Initialize modal container view.
-			if ( this.options.modal ) {
-				this.modal = new media.view.Modal({
-					controller: this,
-					$content:   this.$el,
-					title:      this.options.title
-				});
-			}
-
-			// Initialize window-wide uploader.
-			if ( this.options.uploader ) {
-				this.uploader = new media.view.UploaderWindow({
-					uploader: {
-						dropzone: this.modal ? this.modal.$el : this.$el
-					}
-				});
-			}
+		reset: function() {
+			this.states.invoke( 'trigger', 'reset' );
+			return this;
 		}
 	});
 
 	// Make the `Frame` a `StateMachine`.
 	_.extend( media.view.Frame.prototype, media.controller.StateMachine.prototype );
 
-	// Create methods to fetch and replace individual subviews.
-	_.each(['toolbar','sidebar','content'], function( subview ) {
-		media.view.Frame.prototype[ subview ] = function( view ) {
-			var previous = this[ '_' + subview ];
+	/**
+	 * wp.media.view.MediaFrame
+	 */
+	media.view.MediaFrame = media.view.Frame.extend({
+		className: 'media-frame',
+		template:  media.template('media-frame'),
+		regions:   ['menu','title','content','toolbar','router'],
+
+		initialize: function() {
+			media.view.Frame.prototype.initialize.apply( this, arguments );
+
+			_.defaults( this.options, {
+				title:    '',
+				modal:    true,
+				uploader: true
+			});
+
+			// Ensure core UI is enabled.
+			this.$el.addClass('wp-core-ui');
+
+			// Initialize modal container view.
+			if ( this.options.modal ) {
+				this.modal = new media.view.Modal({
+					controller: this,
+					title:      this.options.title
+				});
+
+				this.modal.content( this );
+			}
+
+			// Force the uploader off if the upload limit has been exceeded or
+			// if the browser isn't supported.
+			if ( wp.Uploader.limitExceeded || ! wp.Uploader.browser.supported )
+				this.options.uploader = false;
+
+			// Initialize window-wide uploader.
+			if ( this.options.uploader ) {
+				this.uploader = new media.view.UploaderWindow({
+					controller: this,
+					uploader: {
+						dropzone:  this.modal ? this.modal.$el : this.$el,
+						container: this.$el
+					}
+				});
+				this.views.set( '.media-frame-uploader', this.uploader );
+			}
+
+			this.on( 'attach', _.bind( this.views.ready, this.views ), this );
+
+			// Bind default title creation.
+			this.on( 'title:create:default', this.createTitle, this );
+			this.title.mode('default');
+
+			// Bind default menu.
+			this.on( 'menu:create:default', this.createMenu, this );
+		},
+
+		render: function() {
+			// Activate the default state if no active state exists.
+			if ( ! this.state() && this.options.state )
+				this.setState( this.options.state );
+
+			return media.view.Frame.prototype.render.apply( this, arguments );
+		},
+
+		createTitle: function( title ) {
+			title.view = new media.View({
+				controller: this,
+				tagName: 'h1'
+			});
+		},
+
+		createMenu: function( menu ) {
+			menu.view = new media.view.Menu({
+				controller: this
+			});
+		},
+
+		createToolbar: function( toolbar ) {
+			toolbar.view = new media.view.Toolbar({
+				controller: this
+			});
+		},
+
+		createRouter: function( router ) {
+			router.view = new media.view.Router({
+				controller: this
+			});
+		},
+
+		createIframeStates: function( options ) {
+			var settings = media.view.settings,
+				tabs = settings.tabs,
+				tabUrl = settings.tabUrl,
+				$postId;
+
+			if ( ! tabs || ! tabUrl )
+				return;
+
+			// Add the post ID to the tab URL if it exists.
+			$postId = $('#post_ID');
+			if ( $postId.length )
+				tabUrl += '&post_id=' + $postId.val();
+
+			// Generate the tab states.
+			_.each( tabs, function( title, id ) {
+				var frame = this.state( 'iframe:' + id ).set( _.defaults({
+					tab:     id,
+					src:     tabUrl + '&tab=' + id,
+					title:   title,
+					content: 'iframe',
+					menu:    'default'
+				}, options ) );
+			}, this );
+
+			this.on( 'content:create:iframe', this.iframeContent, this );
+			this.on( 'menu:render:default', this.iframeMenu, this );
+			this.on( 'open', this.hijackThickbox, this );
+			this.on( 'close', this.restoreThickbox, this );
+		},
+
+		iframeContent: function( content ) {
+			this.$el.addClass('hide-toolbar');
+			content.view = new media.view.Iframe({
+				controller: this
+			});
+		},
+
+		iframeMenu: function( view ) {
+			var views = {};
 
 			if ( ! view )
-				return previous;
+				return;
 
-			view.$el.addClass( 'media-' + subview );
+			_.each( media.view.settings.tabs, function( title, id ) {
+				views[ 'iframe:' + id ] = {
+					text: this.state( 'iframe:' + id ).get('title'),
+					priority: 200
+				};
+			}, this );
 
-			if ( previous.destroy )
-				previous.destroy();
-			previous.undelegateEvents();
-			previous.$el.replaceWith( view.$el );
-			this[ '_' + subview ] = view;
-		};
+			view.set( views );
+		},
+
+		hijackThickbox: function() {
+			var frame = this;
+
+			if ( ! window.tb_remove || this._tb_remove )
+				return;
+
+			this._tb_remove = window.tb_remove;
+			window.tb_remove = function() {
+				frame.close();
+				frame.reset();
+				frame.setState( frame.options.state );
+				frame._tb_remove.call( window );
+			};
+		},
+
+		restoreThickbox: function() {
+			if ( ! this._tb_remove )
+				return;
+
+			window.tb_remove = this._tb_remove;
+			delete this._tb_remove;
+		}
 	});
 
 	// Map some of the modal's methods to the frame.
-	_.each(['open','close','attach','detach'], function( method ) {
-		media.view.Frame.prototype[ method ] = function( view ) {
+	_.each(['open','close','attach','detach','escape'], function( method ) {
+		media.view.MediaFrame.prototype[ method ] = function( view ) {
 			if ( this.modal )
 				this.modal[ method ].apply( this.modal, arguments );
 			return this;
@@ -432,85 +1469,617 @@
 	});
 
 	/**
-	 * wp.media.view.Modal
+	 * wp.media.view.MediaFrame.Select
 	 */
-	media.view.Modal = Backbone.View.extend({
-		tagName:  'div',
-		template: media.template('media-modal'),
-
-		events: {
-			'click .media-modal-backdrop, .media-modal-close' : 'closeHandler'
-		},
-
+	media.view.MediaFrame.Select = media.view.MediaFrame.extend({
 		initialize: function() {
-			this.controller = this.options.controller;
+			media.view.MediaFrame.prototype.initialize.apply( this, arguments );
 
 			_.defaults( this.options, {
-				container: document.body,
-				title:     ''
+				selection: [],
+				library:   {},
+				multiple:  false,
+				state:    'library'
+			});
+
+			this.createSelection();
+			this.createStates();
+			this.bindHandlers();
+		},
+
+		createSelection: function() {
+			var controller = this,
+				selection = this.options.selection;
+
+			if ( ! (selection instanceof media.model.Selection) ) {
+				this.options.selection = new media.model.Selection( selection, {
+					multiple: this.options.multiple
+				});
+			}
+
+			this._selection = {
+				attachments: new Attachments(),
+				difference: []
+			};
+		},
+
+		createStates: function() {
+			var options = this.options;
+
+			if ( this.options.states )
+				return;
+
+			// Add the default states.
+			this.states.add([
+				// Main states.
+				new media.controller.Library({
+					library:   media.query( options.library ),
+					multiple:  options.multiple,
+					title:     options.title,
+					priority:  20
+				})
+			]);
+		},
+
+		bindHandlers: function() {
+			this.on( 'router:create:browse', this.createRouter, this );
+			this.on( 'router:render:browse', this.browseRouter, this );
+			this.on( 'content:create:browse', this.browseContent, this );
+			this.on( 'content:render:upload', this.uploadContent, this );
+			this.on( 'toolbar:create:select', this.createSelectToolbar, this );
+		},
+
+		// Routers
+		browseRouter: function( view ) {
+			view.set({
+				upload: {
+					text:     l10n.uploadFilesTitle,
+					priority: 20
+				},
+				browse: {
+					text:     l10n.mediaLibraryTitle,
+					priority: 40
+				}
 			});
 		},
 
-		render: function() {
-			// Ensure content div exists.
-			this.options.$content = this.options.$content || $('<div />');
+		// Content
+		browseContent: function( content ) {
+			var state = this.state();
 
-			// Detach the content element from the DOM to prevent
-			// `this.$el.html()` from garbage collecting its events.
-			this.options.$content.detach();
+			this.$el.removeClass('hide-toolbar');
 
-			this.$el.html( this.template({
-				title: this.options.title
+			// Browse our library of attachments.
+			content.view = new media.view.AttachmentsBrowser({
+				controller: this,
+				collection: state.get('library'),
+				selection:  state.get('selection'),
+				model:      state,
+				sortable:   state.get('sortable'),
+				search:     state.get('searchable'),
+				filters:    state.get('filterable'),
+				display:    state.get('displaySettings'),
+				dragInfo:   state.get('dragInfo'),
+
+				AttachmentView: state.get('AttachmentView')
+			});
+		},
+
+		uploadContent: function() {
+			this.$el.removeClass('hide-toolbar');
+			this.content.set( new media.view.UploaderInline({
+				controller: this
 			}) );
+		},
 
-			this.options.$content.addClass('media-modal-content');
-			this.$('.media-modal').append( this.options.$content );
-			return this;
+		// Toolbars
+		createSelectToolbar: function( toolbar, options ) {
+			options = options || this.options.button || {};
+			options.controller = this;
+
+			toolbar.view = new media.view.Toolbar.Select( options );
+		}
+	});
+
+	/**
+	 * wp.media.view.MediaFrame.Post
+	 */
+	media.view.MediaFrame.Post = media.view.MediaFrame.Select.extend({
+		initialize: function() {
+			_.defaults( this.options, {
+				multiple:  true,
+				editing:   false,
+				state:    'insert'
+			});
+
+			media.view.MediaFrame.Select.prototype.initialize.apply( this, arguments );
+			this.createIframeStates();
+		},
+
+		createStates: function() {
+			var options = this.options;
+
+			// Add the default states.
+			this.states.add([
+				// Main states.
+				new media.controller.Library({
+					id:         'insert',
+					title:      l10n.insertMediaTitle,
+					priority:   20,
+					toolbar:    'main-insert',
+					filterable: 'all',
+					library:    media.query( options.library ),
+					multiple:   options.multiple ? 'reset' : false,
+					editable:   true,
+
+					// If the user isn't allowed to edit fields,
+					// can they still edit it locally?
+					allowLocalEdits: true,
+
+					// Show the attachment display settings.
+					displaySettings: true,
+					// Update user settings when users adjust the
+					// attachment display settings.
+					displayUserSettings: true
+				}),
+
+				new media.controller.Library({
+					id:         'gallery',
+					title:      l10n.createGalleryTitle,
+					priority:   40,
+					toolbar:    'main-gallery',
+					filterable: 'uploaded',
+					multiple:   'add',
+					editable:   false,
+
+					library:  media.query( _.defaults({
+						type: 'image'
+					}, options.library ) )
+				}),
+
+				// Embed states.
+				new media.controller.Embed(),
+
+				// Gallery states.
+				new media.controller.GalleryEdit({
+					library: options.selection,
+					editing: options.editing,
+					menu:    'gallery'
+				}),
+
+				new media.controller.GalleryAdd()
+			]);
+
+
+			if ( media.view.settings.post.featuredImageId ) {
+				this.states.add( new media.controller.FeaturedImage() );
+			}
+		},
+
+		bindHandlers: function() {
+			media.view.MediaFrame.Select.prototype.bindHandlers.apply( this, arguments );
+			this.on( 'menu:create:gallery', this.createMenu, this );
+			this.on( 'toolbar:create:main-insert', this.createToolbar, this );
+			this.on( 'toolbar:create:main-gallery', this.createToolbar, this );
+			this.on( 'toolbar:create:featured-image', this.featuredImageToolbar, this );
+			this.on( 'toolbar:create:main-embed', this.mainEmbedToolbar, this );
+
+			var handlers = {
+					menu: {
+						'default': 'mainMenu',
+						'gallery': 'galleryMenu'
+					},
+
+					content: {
+						'embed':          'embedContent',
+						'edit-selection': 'editSelectionContent'
+					},
+
+					toolbar: {
+						'main-insert':      'mainInsertToolbar',
+						'main-gallery':     'mainGalleryToolbar',
+						'gallery-edit':     'galleryEditToolbar',
+						'gallery-add':      'galleryAddToolbar'
+					}
+				};
+
+			_.each( handlers, function( regionHandlers, region ) {
+				_.each( regionHandlers, function( callback, handler ) {
+					this.on( region + ':render:' + handler, this[ callback ], this );
+				}, this );
+			}, this );
+		},
+
+		// Menus
+		mainMenu: function( view ) {
+			view.set({
+				'library-separator': new media.View({
+					className: 'separator',
+					priority: 100
+				})
+			});
+		},
+
+		galleryMenu: function( view ) {
+			var lastState = this.lastState(),
+				previous = lastState && lastState.id,
+				frame = this;
+
+			view.set({
+				cancel: {
+					text:     l10n.cancelGalleryTitle,
+					priority: 20,
+					click:    function() {
+						if ( previous )
+							frame.setState( previous );
+						else
+							frame.close();
+					}
+				},
+				separateCancel: new media.View({
+					className: 'separator',
+					priority: 40
+				})
+			});
+		},
+
+		// Content
+		embedContent: function() {
+			var view = new media.view.Embed({
+				controller: this,
+				model:      this.state()
+			}).render();
+
+			this.content.set( view );
+			view.url.focus();
+		},
+
+		editSelectionContent: function() {
+			var state = this.state(),
+				selection = state.get('selection'),
+				view;
+
+			view = new media.view.AttachmentsBrowser({
+				controller: this,
+				collection: selection,
+				selection:  selection,
+				model:      state,
+				sortable:   true,
+				search:     false,
+				dragInfo:   true,
+
+				AttachmentView: media.view.Attachment.EditSelection
+			}).render();
+
+			view.toolbar.set( 'backToLibrary', {
+				text:     l10n.returnToLibrary,
+				priority: -100,
+
+				click: function() {
+					this.controller.content.mode('browse');
+				}
+			});
+
+			// Browse our library of attachments.
+			this.content.set( view );
+		},
+
+		// Toolbars
+		selectionStatusToolbar: function( view ) {
+			var editable = this.state().get('editable');
+
+			view.set( 'selection', new media.view.Selection({
+				controller: this,
+				collection: this.state().get('selection'),
+				priority:   -40,
+
+				// If the selection is editable, pass the callback to
+				// switch the content mode.
+				editable: editable && function() {
+					this.controller.content.mode('edit-selection');
+				}
+			}).render() );
+		},
+
+		mainInsertToolbar: function( view ) {
+			var controller = this;
+
+			this.selectionStatusToolbar( view );
+
+			view.set( 'insert', {
+				style:    'primary',
+				priority: 80,
+				text:     l10n.insertIntoPost,
+				requires: { selection: true },
+
+				click: function() {
+					var state = controller.state(),
+						selection = state.get('selection');
+
+					controller.close();
+					state.trigger( 'insert', selection ).reset();
+				}
+			});
+		},
+
+		mainGalleryToolbar: function( view ) {
+			var controller = this;
+
+			this.selectionStatusToolbar( view );
+
+			view.set( 'gallery', {
+				style:    'primary',
+				text:     l10n.createNewGallery,
+				priority: 60,
+				requires: { selection: true },
+
+				click: function() {
+					var selection = controller.state().get('selection'),
+						edit = controller.state('gallery-edit'),
+						models = selection.where({ type: 'image' });
+
+					edit.set( 'library', new media.model.Selection( models, {
+						props:    selection.props.toJSON(),
+						multiple: true
+					}) );
+
+					this.controller.setState('gallery-edit');
+				}
+			});
+		},
+
+		featuredImageToolbar: function( toolbar ) {
+			this.createSelectToolbar( toolbar, {
+				text:  l10n.setFeaturedImage,
+				state: this.options.state || 'upload'
+			});
+		},
+
+		mainEmbedToolbar: function( toolbar ) {
+			toolbar.view = new media.view.Toolbar.Embed({
+				controller: this
+			});
+		},
+
+		galleryEditToolbar: function() {
+			var editing = this.state().get('editing');
+			this.toolbar.set( new media.view.Toolbar({
+				controller: this,
+				items: {
+					insert: {
+						style:    'primary',
+						text:     editing ? l10n.updateGallery : l10n.insertGallery,
+						priority: 80,
+						requires: { library: true },
+
+						click: function() {
+							var controller = this.controller,
+								state = controller.state();
+
+							controller.close();
+							state.trigger( 'update', state.get('library') );
+
+							controller.reset();
+							// @todo: Make the state activated dynamic (instead of hardcoded).
+							controller.setState('upload');
+						}
+					}
+				}
+			}) );
+		},
+
+		galleryAddToolbar: function() {
+			this.toolbar.set( new media.view.Toolbar({
+				controller: this,
+				items: {
+					insert: {
+						style:    'primary',
+						text:     l10n.addToGallery,
+						priority: 80,
+						requires: { selection: true },
+
+						click: function() {
+							var controller = this.controller,
+								state = controller.state(),
+								edit = controller.state('gallery-edit');
+
+							edit.get('library').add( state.get('selection').models );
+							state.trigger('reset');
+							controller.setState('gallery-edit');
+						}
+					}
+				}
+			}) );
+		}
+	});
+
+	/**
+	 * wp.media.view.Modal
+	 */
+	media.view.Modal = media.View.extend({
+		tagName:  'div',
+		template: media.template('media-modal'),
+
+		attributes: {
+			tabindex: 0
+		},
+
+		events: {
+			'click .media-modal-backdrop, .media-modal-close': 'escapeHandler',
+			'keydown': 'keydown'
+		},
+
+		initialize: function() {
+			_.defaults( this.options, {
+				container: document.body,
+				title:     '',
+				propagate: true,
+				freeze:    true
+			});
+		},
+
+		prepare: function() {
+			return {
+				title: this.options.title
+			};
 		},
 
 		attach: function() {
+			if ( this.views.attached )
+				return this;
+
+			if ( ! this.views.rendered )
+				this.render();
+
 			this.$el.appendTo( this.options.container );
-			this.controller.trigger( 'attach', this.controller );
-			return this;
+
+			// Manually mark the view as attached and trigger ready.
+			this.views.attached = true;
+			this.views.ready();
+
+			return this.propagate('attach');
 		},
 
 		detach: function() {
+			if ( this.$el.is(':visible') )
+				this.close();
+
 			this.$el.detach();
-			this.controller.trigger( 'detach', this.controller );
-			return this;
+			this.views.attached = false;
+			return this.propagate('detach');
 		},
 
 		open: function() {
-			this.$el.show();
-			this.controller.trigger( 'open', this.controller );
-			return this;
+			var $el = this.$el,
+				options = this.options;
+
+			if ( $el.is(':visible') )
+				return this;
+
+			if ( ! this.views.attached )
+				this.attach();
+
+			// If the `freeze` option is set, record the window's scroll position.
+			if ( options.freeze ) {
+				this._freeze = {
+					scrollTop: $( window ).scrollTop()
+				};
+			}
+
+			$el.show().focus();
+			return this.propagate('open');
 		},
 
-		close: function() {
+		close: function( options ) {
+			var freeze = this._freeze;
+
+			if ( ! this.views.attached || ! this.$el.is(':visible') )
+				return this;
+
 			this.$el.hide();
-			this.controller.trigger( 'close', this.controller );
+			this.propagate('close');
+
+			// If the `freeze` option is set, restore the container's scroll position.
+			if ( freeze ) {
+				$( window ).scrollTop( freeze.scrollTop );
+			}
+
+			if ( options && options.escape )
+				this.propagate('escape');
+
 			return this;
 		},
 
-		closeHandler: function( event ) {
-			event.preventDefault();
-			this.close();
+		escape: function() {
+			return this.close({ escape: true });
 		},
 
-		content: function( $content ) {
-			// Detach any existing content to prevent events from being lost.
-			if ( this.options.$content )
-				this.options.$content.detach();
+		escapeHandler: function( event ) {
+			event.preventDefault();
+			this.escape();
+		},
 
-			// Set and render the content.
-			this.options.$content = ( $content instanceof Backbone.View ) ? $content.$el : $content;
-			return this.render();
+		content: function( content ) {
+			this.views.set( '.media-modal-content', content );
+			return this;
+		},
+
+		// Triggers a modal event and if the `propagate` option is set,
+		// forwards events to the modal's controller.
+		propagate: function( id ) {
+			this.trigger( id );
+
+			if ( this.options.propagate )
+				this.controller.trigger( id );
+
+			return this;
+		},
+
+		keydown: function( event ) {
+			// Close the modal when escape is pressed.
+			if ( 27 === event.which ) {
+				event.preventDefault();
+				this.escape();
+				return;
+			}
+		}
+	});
+
+	// wp.media.view.FocusManager
+	// ----------------------------
+	media.view.FocusManager = media.View.extend({
+		events: {
+			keydown: 'recordTab',
+			focusin: 'updateIndex'
+		},
+
+		focus: function() {
+			if ( _.isUndefined( this.index ) )
+				return;
+
+			// Update our collection of `$tabbables`.
+			this.$tabbables = this.$(':tabbable');
+
+			// If tab is saved, focus it.
+			this.$tabbables.eq( this.index ).focus();
+		},
+
+		recordTab: function( event ) {
+			// Look for the tab key.
+			if ( 9 !== event.keyCode )
+				return;
+
+			// First try to update the index.
+			if ( _.isUndefined( this.index ) )
+				this.updateIndex( event );
+
+			// If we still don't have an index, bail.
+			if ( _.isUndefined( this.index ) )
+				return;
+
+			var index = this.index + ( event.shiftKey ? -1 : 1 );
+
+			if ( index >= 0 && index < this.$tabbables.length )
+				this.index = index;
+			else
+				delete this.index;
+		},
+
+		updateIndex: function( event ) {
+			this.$tabbables = this.$(':tabbable');
+
+			var index = this.$tabbables.index( event.target );
+
+			if ( -1 === index )
+				delete this.index;
+			else
+				this.index = index;
 		}
 	});
 
 	// wp.media.view.UploaderWindow
 	// ----------------------------
-	media.view.UploaderWindow = Backbone.View.extend({
+	media.view.UploaderWindow = media.View.extend({
 		tagName:   'div',
 		className: 'uploader-window',
 		template:  media.template('uploader-window'),
@@ -518,35 +2087,19 @@
 		initialize: function() {
 			var uploader;
 
-			this.controller = this.options.controller;
-			this.inline = new media.view.UploaderInline({
-				controller:     this.controller,
-				uploaderWindow: this
-			}).render();
-
-			this.inline.$el.appendTo('body');
+			this.$browser = $('<a href="#" class="browser" />').hide().appendTo('body');
 
 			uploader = this.options.uploader = _.defaults( this.options.uploader || {}, {
-				container: this.inline.$el,
 				dropzone:  this.$el,
-				browser:   this.inline.$('.browser'),
+				browser:   this.$browser,
 				params:    {}
 			});
 
-			if ( uploader.dropzone ) {
-				// Ensure the dropzone is a jQuery collection.
-				if ( ! (uploader.dropzone instanceof $) )
-					uploader.dropzone = $( uploader.dropzone );
+			// Ensure the dropzone is a jQuery collection.
+			if ( uploader.dropzone && ! (uploader.dropzone instanceof $) )
+				uploader.dropzone = $( uploader.dropzone );
 
-				// Attempt to initialize the uploader whenever the dropzone is hovered.
-				uploader.dropzone.one( 'mouseenter dragenter', _.bind( this.maybeInitUploader, this ) );
-			}
-		},
-
-		render: function() {
-			this.maybeInitUploader();
-			this.$el.html( this.template( this.options ) );
-			return this;
+			this.controller.on( 'activate', this.refresh, this );
 		},
 
 		refresh: function() {
@@ -554,16 +2107,16 @@
 				this.uploader.refresh();
 		},
 
-		maybeInitUploader: function() {
-			var $id, dropzone;
+		ready: function() {
+			var postId = media.view.settings.post.id,
+				dropzone;
 
-			// If the uploader already exists or the body isn't in the DOM, bail.
-			if ( this.uploader || ! this.$el.closest('body').length )
+			// If the uploader already exists, bail.
+			if ( this.uploader )
 				return;
 
-			$id = $('#post_ID');
-			if ( $id.length )
-				this.options.uploader.params.post_id = $id.val();
+			if ( postId )
+				this.options.uploader.params.post_id = postId;
 
 			this.uploader = new wp.Uploader( this.options.uploader );
 
@@ -594,108 +2147,260 @@
 		}
 	});
 
-	media.view.UploaderInline = Backbone.View.extend({
+	media.view.UploaderInline = media.View.extend({
 		tagName:   'div',
 		className: 'uploader-inline',
 		template:  media.template('uploader-inline'),
 
 		initialize: function() {
-			this.controller = this.options.controller;
+			_.defaults( this.options, {
+				message: '',
+				status:  true
+			});
 
-			// Track uploading attachments.
-			wp.Uploader.queue.on( 'add remove reset change:percent', this.renderUploadProgress, this );
+			if ( ! this.options.$browser && this.controller.uploader )
+				this.options.$browser = this.controller.uploader.$browser;
+
+			if ( _.isUndefined( this.options.postId ) )
+				this.options.postId = media.view.settings.post.id;
+
+			if ( this.options.status ) {
+				this.views.set( '.upload-inline-status', new media.view.UploaderStatus({
+					controller: this.controller
+				}) );
+			}
 		},
 
-		destroy: function() {
-			wp.Uploader.queue.off( 'add remove reset change:percent', this.renderUploadProgress, this );
+		dispose: function() {
+			if ( this.disposing )
+				return media.View.prototype.dispose.apply( this, arguments );
+
+			// Run remove on `dispose`, so we can be sure to refresh the
+			// uploader with a view-less DOM. Track whether we're disposing
+			// so we don't trigger an infinite loop.
+			this.disposing = true;
+			return this.remove();
 		},
 
-		render: function() {
-			this.renderUploadProgress();
-			this.$el.html( this.template( this.options ) );
-			this.$bar = this.$('.media-progress-bar div');
+		remove: function() {
+			var result = media.View.prototype.remove.apply( this, arguments );
+
+			_.defer( _.bind( this.refresh, this ) );
+			return result;
+		},
+
+		refresh: function() {
+			var uploader = this.controller.uploader;
+
+			if ( uploader )
+				uploader.refresh();
+		},
+
+		ready: function() {
+			var $browser = this.options.$browser,
+				$placeholder;
+
+			if ( this.controller.uploader ) {
+				$placeholder = this.$('.browser');
+
+				// Check if we've already replaced the placeholder.
+				if ( $placeholder[0] === $browser[0] )
+					return;
+
+				$browser.detach().text( $placeholder.text() );
+				$browser[0].className = $placeholder[0].className;
+				$placeholder.replaceWith( $browser.show() );
+			}
+
+			this.refresh();
 			return this;
-		},
-
-		renderUploadProgress: function() {
-			var queue = wp.Uploader.queue;
-
-			this.$el.toggleClass( 'uploading', !! queue.length );
-
-			if ( ! this.$bar || ! queue.length )
-				return;
-
-			this.$bar.width( ( queue.reduce( function( memo, attachment ) {
-				if ( attachment.get('uploading') )
-					return memo + ( attachment.get('percent') || 0 );
-				else
-					return memo + 100;
-			}, 0 ) / queue.length ) + '%' );
 		}
 	});
 
+	/**
+	 * wp.media.view.UploaderStatus
+	 */
+	media.view.UploaderStatus = media.View.extend({
+		className: 'media-uploader-status',
+		template:  media.template('uploader-status'),
+
+		events: {
+			'click .upload-dismiss-errors': 'dismiss'
+		},
+
+		initialize: function() {
+			this.queue = wp.Uploader.queue;
+			this.queue.on( 'add remove reset', this.visibility, this );
+			this.queue.on( 'add remove reset change:percent', this.progress, this );
+			this.queue.on( 'add remove reset change:uploading', this.info, this );
+
+			this.errors = wp.Uploader.errors;
+			this.errors.reset();
+			this.errors.on( 'add remove reset', this.visibility, this );
+			this.errors.on( 'add', this.error, this );
+		},
+
+		dispose: function() {
+			wp.Uploader.queue.off( null, null, this );
+			media.View.prototype.dispose.apply( this, arguments );
+			return this;
+		},
+
+		visibility: function() {
+			this.$el.toggleClass( 'uploading', !! this.queue.length );
+			this.$el.toggleClass( 'errors', !! this.errors.length );
+			this.$el.toggle( !! this.queue.length || !! this.errors.length );
+		},
+
+		ready: function() {
+			_.each({
+				'$bar':      '.media-progress-bar div',
+				'$index':    '.upload-index',
+				'$total':    '.upload-total',
+				'$filename': '.upload-filename'
+			}, function( selector, key ) {
+				this[ key ] = this.$( selector );
+			}, this );
+
+			this.visibility();
+			this.progress();
+			this.info();
+		},
+
+		progress: function() {
+			var queue = this.queue,
+				$bar = this.$bar,
+				memo = 0;
+
+			if ( ! $bar || ! queue.length )
+				return;
+
+			$bar.width( ( queue.reduce( function( memo, attachment ) {
+				if ( ! attachment.get('uploading') )
+					return memo + 100;
+
+				var percent = attachment.get('percent');
+				return memo + ( _.isNumber( percent ) ? percent : 100 );
+			}, 0 ) / queue.length ) + '%' );
+		},
+
+		info: function() {
+			var queue = this.queue,
+				index = 0, active;
+
+			if ( ! queue.length )
+				return;
+
+			active = this.queue.find( function( attachment, i ) {
+				index = i;
+				return attachment.get('uploading');
+			});
+
+			this.$index.text( index + 1 );
+			this.$total.text( queue.length );
+			this.$filename.html( active ? this.filename( active.get('filename') ) : '' );
+		},
+
+		filename: function( filename ) {
+			return media.truncate( _.escape( filename ), 24 );
+		},
+
+		error: function( error ) {
+			this.views.add( '.upload-errors', new media.view.UploaderStatusError({
+				filename: this.filename( error.get('file').name ),
+				message:  error.get('message')
+			}), { at: 0 });
+		},
+
+		dismiss: function( event ) {
+			var errors = this.views.get('.upload-errors');
+
+			event.preventDefault();
+
+			if ( errors )
+				_.invoke( errors, 'remove' );
+			wp.Uploader.errors.reset();
+		}
+	});
+
+	media.view.UploaderStatusError = media.View.extend({
+		className: 'upload-error',
+		template:  media.template('uploader-status-error')
+	});
 
 	/**
 	 * wp.media.view.Toolbar
 	 */
-	media.view.Toolbar = Backbone.View.extend({
+	media.view.Toolbar = media.View.extend({
 		tagName:   'div',
 		className: 'media-toolbar',
 
 		initialize: function() {
-			this.controller = this.options.controller;
+			var state = this.controller.state(),
+				selection = this.selection = state.get('selection'),
+				library = this.library = state.get('library');
 
-			this._views     = {};
-			this.$primary   = $('<div class="media-toolbar-primary" />').prependTo( this.$el );
-			this.$secondary = $('<div class="media-toolbar-secondary" />').prependTo( this.$el );
+			this._views = {};
+
+			// The toolbar is composed of two `PriorityList` views.
+			this.primary   = new media.view.PriorityList();
+			this.secondary = new media.view.PriorityList();
+			this.primary.$el.addClass('media-toolbar-primary');
+			this.secondary.$el.addClass('media-toolbar-secondary');
+
+			this.views.set([ this.secondary, this.primary ]);
 
 			if ( this.options.items )
-				this.add( this.options.items, { silent: true });
+				this.set( this.options.items, { silent: true });
 
 			if ( ! this.options.silent )
 				this.render();
+
+			if ( selection )
+				selection.on( 'add remove reset', this.refresh, this );
+			if ( library )
+				library.on( 'add remove reset', this.refresh, this );
 		},
 
-		render: function() {
-			var views = _.chain( this._views ).sortBy( function( view ) {
-				return view.options.priority || 10;
-			}).groupBy( function( view ) {
-				return ( view.options.priority || 10 ) > 0 ? 'primary' : 'secondary';
-			}).value();
-
-			// Make sure to detach the elements we want to reuse.
-			// Otherwise, `jQuery.html()` will unbind their events.
-			$( _.pluck( this._views, 'el' ) ).detach();
-			this.$primary.html( _.pluck( views.primary || [], 'el' ) );
-			this.$secondary.html( _.pluck( views.secondary || [], 'el' ) );
-
-			return this;
+		dispose: function() {
+			if ( this.selection )
+				this.selection.off( null, null, this );
+			if ( this.library )
+				this.library.off( null, null, this );
+			return media.View.prototype.dispose.apply( this, arguments );
 		},
 
-		add: function( id, view, options ) {
+		ready: function() {
+			this.refresh();
+		},
+
+		set: function( id, view, options ) {
+			var list;
 			options = options || {};
 
 			// Accept an object with an `id` : `view` mapping.
 			if ( _.isObject( id ) ) {
 				_.each( id, function( view, id ) {
-					this.add( id, view, { silent: true });
+					this.set( id, view, { silent: true });
 				}, this );
 
-				if ( ! options.silent )
-					this.render();
-				return this;
+			} else {
+				if ( ! ( view instanceof Backbone.View ) ) {
+					view.classes = [ 'media-button-' + id ].concat( view.classes || [] );
+					view = new media.view.Button( view ).render();
+				}
+
+				view.controller = view.controller || this.controller;
+
+				this._views[ id ] = view;
+
+				list = view.options.priority < 0 ? 'secondary' : 'primary';
+				this[ list ].set( id, view, options );
 			}
 
-			if ( ! ( view instanceof Backbone.View ) ) {
-				view.classes = [ id ].concat( view.classes || [] );
-				view = new media.view.Button( view ).render();
-			}
-
-			view.controller = view.controller || this.controller;
-
-			this._views[ id ] = view;
 			if ( ! options.silent )
-				this.render();
+				this.refresh();
+
 			return this;
 		},
 
@@ -703,142 +2408,116 @@
 			return this._views[ id ];
 		},
 
-		remove: function( id, options ) {
+		unset: function( id, options ) {
 			delete this._views[ id ];
+			this.primary.unset( id, options );
+			this.secondary.unset( id, options );
+
 			if ( ! options || ! options.silent )
-				this.render();
+				this.refresh();
 			return this;
-		}
-	});
-
-	// wp.media.view.Toolbar.PostLibrary
-	// ---------------------------------
-	media.view.Toolbar.PostLibrary = media.view.Toolbar.extend({
-		initialize: function() {
-			var state = this.options.state,
-				selection = state.get('selection'),
-				controller = this.options.controller;
-
-			this.options.items = {
-				'create-new-gallery': {
-					style:    'primary',
-					text:     l10n.createNewGallery,
-					priority: 40,
-
-					click: function() {
-						this.controller.state('gallery');
-					}
-				},
-
-				'insert-into-post': new media.view.ButtonGroup({
-					priority: 30,
-					classes:  'dropdown-flip-x',
-					buttons:  [
-						{
-							text:  l10n.insertIntoPost,
-							click: function() {
-								controller.close();
-								state.trigger( 'insert', selection );
-								selection.clear();
-							}
-						},
-						{
-							classes:  ['down-arrow'],
-							dropdown: new media.view.AttachmentDisplaySettings().render().$el,
-
-							click: function( event ) {
-								var $el = this.$el;
-
-								if ( ! $( event.target ).closest('.dropdown').length )
-									$el.toggleClass('active');
-
-								// Stop the event from propagating further so we can bind
-								// a one-time event to the body (and ensure that a click
-								// on the dropdown won't trigger said event).
-								event.stopPropagation();
-
-								if ( $el.is(':visible') ) {
-									$(document.body).one( 'click', function() {
-										$el.removeClass('active');
-									});
-								}
-							}
-						}
-					]
-				}).render(),
-
-				'add-to-gallery': {
-					text:     l10n.addToGallery,
-					priority: 20
-				}
-			};
-
-			media.view.Toolbar.prototype.initialize.apply( this, arguments );
-			this.visibility();
 		},
 
-		visibility: function() {
-			var state = this.options.state,
-				selection = state.get('selection'),
-				controller = this.options.controller,
-				count = selection.length,
-				showGallery;
+		refresh: function() {
+			var state = this.controller.state(),
+				library = state.get('library'),
+				selection = state.get('selection');
 
-			// Check if every attachment in the selection is an image.
-			showGallery = count > 1 && selection.all( function( attachment ) {
-				return 'image' === attachment.get('type');
+			_.each( this._views, function( button ) {
+				if ( ! button.model || ! button.options || ! button.options.requires )
+					return;
+
+				var requires = button.options.requires,
+					disabled = false;
+
+				if ( requires.selection && selection && ! selection.length )
+					disabled = true;
+				else if ( requires.library && library && ! library.length )
+					disabled = true;
+
+				button.model.set( 'disabled', disabled );
 			});
-
-			this.get('create-new-gallery').$el.toggle( showGallery );
-			insert = this.get('insert-into-post');
-			_.each( insert.buttons, function( button ) {
-				button.model.set( 'style', showGallery ? '' : 'primary' );
-			});
-
-			_.first( insert.buttons ).model.set( 'disabled', ! count );
 		}
 	});
 
-	// wp.media.view.Toolbar.Gallery
-	// -----------------------------
-	media.view.Toolbar.Gallery = media.view.Toolbar.extend({
+	// wp.media.view.Toolbar.Select
+	// ----------------------------
+	media.view.Toolbar.Select = media.view.Toolbar.extend({
 		initialize: function() {
-			var state = this.options.state,
-				editing = state.get('editing'),
-				library = state.get('library'),
-				controller = this.options.controller;
+			var options = this.options,
+				controller = options.controller,
+				selection = controller.state().get('selection');
 
-			this.options.items = {
-				'update-gallery': {
-					style:    'primary',
-					text:     editing ? l10n.updateGallery : l10n.insertGalleryIntoPost,
-					priority: 40,
-					click:    function() {
-						controller.close();
-						state.trigger( 'update', library );
-						library.clear();
-						controller.state('library');
-					}
-				},
+			_.bindAll( this, 'clickSelect' );
 
-				'return-to-library': {
-					text:     editing ? l10n.addImagesFromLibrary : l10n.returnToLibrary,
-					priority: -40,
+			_.defaults( options, {
+				event: 'select',
+				state: false,
+				reset: true,
+				close: true,
+				text:  l10n.select,
 
-					click: function() {
-						this.controller.state('library');
-					}
+				// Does the button rely on the selection?
+				requires: {
+					selection: true
 				}
-			};
+			});
+
+			options.items = _.defaults( options.items || {}, {
+				select: {
+					style:    'primary',
+					text:     options.text,
+					priority: 80,
+					click:    this.clickSelect,
+					requires: options.requires
+				}
+			});
 
 			media.view.Toolbar.prototype.initialize.apply( this, arguments );
+		},
+
+		clickSelect: function() {
+			var options = this.options,
+				controller = this.controller;
+
+			if ( options.close )
+				controller.close();
+
+			if ( options.event )
+				controller.state().trigger( options.event );
+
+			if ( options.reset )
+				controller.reset();
+
+			if ( options.state )
+				controller.setState( options.state );
+		}
+	});
+
+	// wp.media.view.Toolbar.Embed
+	// ---------------------------
+	media.view.Toolbar.Embed = media.view.Toolbar.Select.extend({
+		initialize: function() {
+			_.defaults( this.options, {
+				text: l10n.insertIntoPost,
+				requires: false
+			});
+
+			media.view.Toolbar.Select.prototype.initialize.apply( this, arguments );
+		},
+
+		refresh: function() {
+			var url = this.controller.state().props.get('url');
+			this.get('select').model.set( 'disabled', ! url || url === 'http://' );
+
+			media.view.Toolbar.Select.prototype.refresh.apply( this, arguments );
 		}
 	});
 
 	/**
 	 * wp.media.view.Button
 	 */
-	media.view.Button = Backbone.View.extend({
+	media.view.Button = media.View.extend({
 		tagName:    'a',
 		className:  'media-button',
 		attributes: { href: '#' },
@@ -869,9 +2548,6 @@
 				delete this.options[ key ];
 			}, this );
 
-			if ( this.options.dropdown )
-				this.options.dropdown.addClass('dropdown');
-
 			this.model.on( 'change', this.render, this );
 		},
 
@@ -889,21 +2565,15 @@
 			this.el.className = classes.join(' ');
 
 			this.$el.attr( 'disabled', model.disabled );
-
-			// Detach the dropdown.
-			if ( this.options.dropdown )
-				this.options.dropdown.detach();
-
 			this.$el.text( this.model.get('text') );
-
-			if ( this.options.dropdown )
-				this.$el.append( this.options.dropdown );
 
 			return this;
 		},
 
 		click: function( event ) {
-			event.preventDefault();
+			if ( '#' === this.attributes.href )
+				event.preventDefault();
+
 			if ( this.options.click && ! this.model.get('disabled') )
 				this.options.click.apply( this, arguments );
 		}
@@ -912,7 +2582,7 @@
 	/**
 	 * wp.media.view.ButtonGroup
 	 */
-	media.view.ButtonGroup = Backbone.View.extend({
+	media.view.ButtonGroup = media.View.extend({
 		tagName:   'div',
 		className: 'button-group button-large media-button-group',
 
@@ -937,67 +2607,57 @@
 	});
 
 	/**
-	 * wp.media.view.Sidebar
+	 * wp.media.view.PriorityList
 	 */
-	media.view.Sidebar = Backbone.View.extend({
+
+	media.view.PriorityList = media.View.extend({
 		tagName:   'div',
-		className: 'media-sidebar',
-		template:  media.template('sidebar'),
 
 		initialize: function() {
-			this.controller = this.options.controller;
-			this._views     = {};
+			this._views = {};
 
-			if ( this.options.views )
-				this.add( this.options.views, { silent: true });
+			this.set( _.extend( {}, this._views, this.options.views ), { silent: true });
+			delete this.options.views;
 
 			if ( ! this.options.silent )
 				this.render();
 		},
 
-		render: function() {
-			var els = _( this._views ).chain().sortBy( function( view ) {
-					return view.options.priority || 10;
-				}).pluck('el').value();
+		set: function( id, view, options ) {
+			var priority, views, index;
 
-			// Make sure to detach the elements we want to reuse.
-			// Otherwise, `jQuery.html()` will unbind their events.
-			$( els ).detach();
-
-			this.$el.html( this.template({
-				title:    this.controller.state().get('title') || '',
-				uploader: this.controller.options.uploader
-			}) );
-
-			this.$('.sidebar-content').html( els );
-
-			if ( this.controller.uploader ) {
-				this.$el.append( this.controller.uploader.inline.$el );
-				this.controller.uploader.refresh();
-			}
-
-			return this;
-		},
-
-		add: function( id, view, options ) {
 			options = options || {};
 
 			// Accept an object with an `id` : `view` mapping.
 			if ( _.isObject( id ) ) {
 				_.each( id, function( view, id ) {
-					this.add( id, view, { silent: true });
+					this.set( id, view );
 				}, this );
-
-				if ( ! options.silent )
-					this.render();
 				return this;
 			}
 
+			if ( ! (view instanceof Backbone.View) )
+				view = this.toView( view, id, options );
+
 			view.controller = view.controller || this.controller;
 
+			this.unset( id );
+
+			priority = view.options.priority || 10;
+			views = this.views.get() || [];
+
+			_.find( views, function( existing, i ) {
+				if ( existing.options.priority > priority ) {
+					index = i;
+					return true;
+				}
+			});
+
 			this._views[ id ] = view;
-			if ( ! options.silent )
-				this.render();
+			this.views.add( view, {
+				at: _.isNumber( index ) ? index : views.length || 0
+			});
+
 			return this;
 		},
 
@@ -1005,72 +2665,265 @@
 			return this._views[ id ];
 		},
 
-		remove: function( id, options ) {
+		unset: function( id ) {
+			var view = this.get( id );
+
+			if ( view )
+				view.remove();
+
 			delete this._views[ id ];
-			if ( ! options || ! options.silent )
-				this.render();
+			return this;
+		},
+
+		toView: function( options ) {
+			return new media.View( options );
+		}
+	});
+
+	/**
+	 * wp.media.view.MenuItem
+	 */
+	media.view.MenuItem = media.View.extend({
+		tagName:   'a',
+		className: 'media-menu-item',
+
+		attributes: {
+			href: '#'
+		},
+
+		events: {
+			'click': '_click'
+		},
+
+		_click: function( event ) {
+			var clickOverride = this.options.click;
+
+			if ( event )
+				event.preventDefault();
+
+			if ( clickOverride )
+				clickOverride.call( this );
+			else
+				this.click();
+		},
+
+		click: function() {
+			var state = this.options.state;
+			if ( state )
+				this.controller.setState( state );
+		},
+
+		render: function() {
+			var options = this.options;
+
+			if ( options.text )
+				this.$el.text( options.text );
+			else if ( options.html )
+				this.$el.html( options.html );
+
 			return this;
 		}
 	});
 
 	/**
+	 * wp.media.view.Menu
+	 */
+	media.view.Menu = media.view.PriorityList.extend({
+		tagName:   'div',
+		className: 'media-menu',
+		property:  'state',
+		ItemView:  media.view.MenuItem,
+		region:    'menu',
+
+		toView: function( options, id ) {
+			options = options || {};
+			options[ this.property ] = options[ this.property ] || id;
+			return new this.ItemView( options ).render();
+		},
+
+		ready: function() {
+			media.view.PriorityList.prototype.ready.apply( this, arguments );
+			this.visibility();
+		},
+
+		set: function() {
+			media.view.PriorityList.prototype.set.apply( this, arguments );
+			this.visibility();
+		},
+
+		unset: function() {
+			media.view.PriorityList.prototype.unset.apply( this, arguments );
+			this.visibility();
+		},
+
+		visibility: function() {
+			var region = this.region,
+				view = this.controller[ region ].get(),
+				views = this.views.get(),
+				hide = ! views || views.length < 2;
+
+			if ( this === view )
+				this.controller.$el.toggleClass( 'hide-' + region, hide );
+		},
+
+		select: function( id ) {
+			var view = this.get( id );
+
+			if ( ! view )
+				return;
+
+			this.deselect();
+			view.$el.addClass('active');
+		},
+
+		deselect: function() {
+			this.$el.children().removeClass('active');
+		}
+	});
+
+	/**
+	 * wp.media.view.RouterItem
+	 */
+	media.view.RouterItem = media.view.MenuItem.extend({
+		click: function() {
+			var contentMode = this.options.contentMode;
+			if ( contentMode )
+				this.controller.content.mode( contentMode );
+		}
+	});
+
+	/**
+	 * wp.media.view.Router
+	 */
+	media.view.Router = media.view.Menu.extend({
+		tagName:   'div',
+		className: 'media-router',
+		property:  'contentMode',
+		ItemView:  media.view.RouterItem,
+		region:    'router',
+
+		initialize: function() {
+			this.controller.on( 'content:render', this.update, this );
+			media.view.Menu.prototype.initialize.apply( this, arguments );
+		},
+
+		update: function() {
+			var mode = this.controller.content.mode();
+			if ( mode )
+				this.select( mode );
+		}
+	});
+
+
+	/**
+	 * wp.media.view.Sidebar
+	 */
+	media.view.Sidebar = media.view.PriorityList.extend({
+		className: 'media-sidebar'
+	});
+
+	/**
 	 * wp.media.view.Attachment
 	 */
-	media.view.Attachment = Backbone.View.extend({
+	media.view.Attachment = media.View.extend({
 		tagName:   'li',
 		className: 'attachment',
 		template:  media.template('attachment'),
 
 		events: {
-			'click .attachment-preview':      'toggleSelection',
-			// 'mouseenter .attachment-preview': 'shrink',
-			// 'mouseleave .attachment-preview': 'expand',
-			'change .describe':               'describe'
+			'click .attachment-preview':      'toggleSelectionHandler',
+			'change [data-setting]':          'updateSetting',
+			'change [data-setting] input':    'updateSetting',
+			'change [data-setting] select':   'updateSetting',
+			'change [data-setting] textarea': 'updateSetting',
+			'click .close':                   'removeFromLibrary',
+			'click .check':                   'removeFromSelection',
+			'click a':                        'preventDefault'
 		},
 
 		buttons: {},
 
 		initialize: function() {
-			this.controller = this.options.controller;
+			var selection = this.options.selection;
 
 			this.model.on( 'change:sizes change:uploading', this.render, this );
+			this.model.on( 'change:title', this._syncTitle, this );
+			this.model.on( 'change:caption', this._syncCaption, this );
 			this.model.on( 'change:percent', this.progress, this );
+
+			// Update the selection.
 			this.model.on( 'add', this.select, this );
 			this.model.on( 'remove', this.deselect, this );
+			if ( selection )
+				selection.on( 'reset', this.updateSelect, this );
 
-			// Prevent default navigation on all links.
-			this.$el.on( 'click', 'a', this.preventDefault );
+			// Update the model's details view.
+			this.model.on( 'selection:single selection:unsingle', this.details, this );
+			this.details( this.model, this.controller.state().get('selection') );
+		},
+
+		dispose: function() {
+			var selection = this.options.selection;
+
+			// Make sure all settings are saved before removing the view.
+			this.updateAll();
+
+			if ( selection )
+				selection.off( null, null, this );
+
+			media.View.prototype.dispose.apply( this, arguments );
+			return this;
 		},
 
 		render: function() {
-			var attachment = this.model.toJSON(),
-				options = _.defaults( this.model.toJSON(), {
-					orientation: 'landscape',
-					uploading:   false,
-					type:        '',
-					subtype:     '',
-					icon:        '',
-					filename:    '',
-					caption:     '',
-					title:       ''
+			var options = _.defaults( this.model.toJSON(), {
+					orientation:   'landscape',
+					uploading:     false,
+					type:          '',
+					subtype:       '',
+					icon:          '',
+					filename:      '',
+					caption:       '',
+					title:         '',
+					dateFormatted: '',
+					width:         '',
+					height:        '',
+					compat:        false,
+					alt:           '',
+					description:   ''
 				});
 
 			options.buttons  = this.buttons;
 			options.describe = this.controller.state().get('describe');
 
 			if ( 'image' === options.type )
-				_.extend( options, this.imageSize() );
+				options.size = this.imageSize();
 
+			options.can = {};
+			if ( options.nonces ) {
+				options.can.remove = !! options.nonces['delete'];
+				options.can.save = !! options.nonces.update;
+			}
+
+			if ( this.controller.state().get('allowLocalEdits') )
+				options.allowLocalEdits = true;
+
+			this.views.detach();
 			this.$el.html( this.template( options ) );
 
+			this.$el.toggleClass( 'uploading', options.uploading );
 			if ( options.uploading )
 				this.$bar = this.$('.media-progress-bar div');
 			else
 				delete this.$bar;
 
 			// Check if the model is selected.
-			if ( this.selected() )
-				this.select();
+			this.updateSelect();
+
+			// Update the save status.
+			this.updateSave();
+
+			this.views.render();
 
 			return this;
 		},
@@ -1080,23 +2933,85 @@
 				this.$bar.width( this.model.get('percent') + '%' );
 		},
 
-		toggleSelection: function( event ) {
-			var selection = this.controller.state().get('selection');
+		toggleSelectionHandler: function( event ) {
+			var method;
+
+			if ( event.shiftKey )
+				method = 'between';
+			else if ( event.ctrlKey || event.metaKey )
+				method = 'toggle';
+
+			this.toggleSelection({
+				method: method
+			});
+		},
+
+		toggleSelection: function( options ) {
+			var collection = this.collection,
+				selection = this.options.selection,
+				model = this.model,
+				method = options && options.method,
+				single, between, models, singleIndex, modelIndex;
 
 			if ( ! selection )
 				return;
 
-			selection[ selection.has( this.model ) ? 'remove' : 'add' ]( this.model );
+			single = selection.single();
+			method = _.isUndefined( method ) ? selection.multiple : method;
+
+			// If the `method` is set to `between`, select all models that
+			// exist between the current and the selected model.
+			if ( 'between' === method && single && selection.multiple ) {
+				// If the models are the same, short-circuit.
+				if ( single === model )
+					return;
+
+				singleIndex = collection.indexOf( single );
+				modelIndex  = collection.indexOf( this.model );
+
+				if ( singleIndex < modelIndex )
+					models = collection.models.slice( singleIndex, modelIndex + 1 );
+				else
+					models = collection.models.slice( modelIndex, singleIndex + 1 );
+
+				selection.add( models ).single( model );
+				return;
+
+			// If the `method` is set to `toggle`, just flip the selection
+			// status, regardless of whether the model is the single model.
+			} else if ( 'toggle' === method ) {
+				selection[ this.selected() ? 'remove' : 'add' ]( model ).single( model );
+				return;
+			}
+
+			if ( method !== 'add' )
+				method = 'reset';
+
+			if ( this.selected() ) {
+				// If the model is the single model, remove it.
+				// If it is not the same as the single model,
+				// it now becomes the single model.
+				selection[ single === model ? 'remove' : 'single' ]( model );
+			} else {
+				// If the model is not selected, run the `method` on the
+				// selection. By default, we `reset` the selection, but the
+				// `method` can be set to `add` the model to the selection.
+				selection[ method ]( model ).single( model );
+			}
+		},
+
+		updateSelect: function() {
+			this[ this.selected() ? 'select' : 'deselect' ]();
 		},
 
 		selected: function() {
-			var selection = this.controller.state().get('selection');
+			var selection = this.options.selection;
 			if ( selection )
-				return selection.has( this.model );
+				return !! selection.getByCid( this.model.cid );
 		},
 
 		select: function( model, collection ) {
-			var selection = this.controller.state().get('selection');
+			var selection = this.options.selection;
 
 			// Check if a selection exists and if it's the collection provided.
 			// If they're not the same collection, bail; we're in another
@@ -1108,7 +3023,7 @@
 		},
 
 		deselect: function( model, collection ) {
-			var selection = this.controller.state().get('selection');
+			var selection = this.options.selection;
 
 			// Check if a selection exists and if it's the collection provided.
 			// If they're not the same collection, bail; we're in another
@@ -1117,6 +3032,17 @@
 				return;
 
 			this.$el.removeClass('selected');
+		},
+
+		details: function( model, collection ) {
+			var selection = this.options.selection,
+				details;
+
+			if ( selection !== collection )
+				return;
+
+			details = selection.single();
+			this.$el.toggleClass( 'details', details === this.model );
 		},
 
 		preventDefault: function( event ) {
@@ -1141,67 +3067,183 @@
 			}
 		},
 
-		describe: function( event ) {
-			if ( 'image' === this.model.get('type') )
-				this.model.save( 'caption', event.target.value );
-			else
-				this.model.save( 'title', event.target.value );
+		updateSetting: function( event ) {
+			var $setting = $( event.target ).closest('[data-setting]'),
+				setting, value;
+
+			if ( ! $setting.length )
+				return;
+
+			setting = $setting.data('setting');
+			value   = event.target.value;
+
+			if ( this.model.get( setting ) !== value )
+				this.save( setting, value );
+		},
+
+		// Pass all the arguments to the model's save method.
+		//
+		// Records the aggregate status of all save requests and updates the
+		// view's classes accordingly.
+		save: function() {
+			var view = this,
+				save = this._save = this._save || { status: 'ready' },
+				request = this.model.save.apply( this.model, arguments ),
+				requests = save.requests ? $.when( request, save.requests ) : request;
+
+			// If we're waiting to remove 'Saved.', stop.
+			if ( save.savedTimer )
+				clearTimeout( save.savedTimer );
+
+			this.updateSave('waiting');
+			save.requests = requests;
+			requests.always( function() {
+				// If we've performed another request since this one, bail.
+				if ( save.requests !== requests )
+					return;
+
+				view.updateSave( requests.state() === 'resolved' ? 'complete' : 'error' );
+				save.savedTimer = setTimeout( function() {
+					view.updateSave('ready');
+					delete save.savedTimer;
+				}, 2000 );
+			});
+
+		},
+
+		updateSave: function( status ) {
+			var save = this._save = this._save || { status: 'ready' };
+
+			if ( status && status !== save.status ) {
+				this.$el.removeClass( 'save-' + save.status );
+				save.status = status;
+			}
+
+			this.$el.addClass( 'save-' + save.status );
+			return this;
+		},
+
+		updateAll: function() {
+			var $settings = this.$('[data-setting]'),
+				model = this.model,
+				changed;
+
+			changed = _.chain( $settings ).map( function( el ) {
+				var $input = $('input, textarea, select, [value]', el ),
+					setting, value;
+
+				if ( ! $input.length )
+					return;
+
+				setting = $(el).data('setting');
+				value = $input.val();
+
+				// Record the value if it changed.
+				if ( model.get( setting ) !== value )
+					return [ setting, value ];
+			}).compact().object().value();
+
+			if ( ! _.isEmpty( changed ) )
+				model.save( changed );
+		},
+
+		removeFromLibrary: function( event ) {
+			// Stop propagation so the model isn't selected.
+			event.stopPropagation();
+
+			this.collection.remove( this.model );
+		},
+
+		removeFromSelection: function( event ) {
+			var selection = this.options.selection;
+			if ( ! selection )
+				return;
+
+			// Stop propagation so the model isn't selected.
+			event.stopPropagation();
+
+			selection.remove( this.model );
 		}
+	});
+
+	// Ensure settings remain in sync between attachment views.
+	_.each({
+		caption: '_syncCaption',
+		title:   '_syncTitle'
+	}, function( method, setting ) {
+		media.view.Attachment.prototype[ method ] = function( model, value ) {
+			var $setting = this.$('[data-setting="' + setting + '"]');
+
+			if ( ! $setting.length )
+				return this;
+
+			// If the updated value is in sync with the value in the DOM, there
+			// is no need to re-render. If we're currently editing the value,
+			// it will automatically be in sync, suppressing the re-render for
+			// the view we're editing, while updating any others.
+			if ( value === $setting.find('input, textarea, select, [value]').val() )
+				return this;
+
+			return this.render();
+		};
 	});
 
 	/**
 	 * wp.media.view.Attachment.Library
 	 */
 	media.view.Attachment.Library = media.view.Attachment.extend({
-		className: 'attachment library'
+		buttons: {
+			check: true
+		}
 	});
 
 	/**
-	 * wp.media.view.Attachment.Gallery
+	 * wp.media.view.Attachment.EditLibrary
 	 */
-	media.view.Attachment.Gallery = media.view.Attachment.extend({
+	media.view.Attachment.EditLibrary = media.view.Attachment.extend({
 		buttons: {
 			close: true
-		},
-
-		events: (function() {
-			var events = _.clone( media.view.Attachment.prototype.events );
-			events['click .close'] = 'removeFromGallery';
-			return events;
-		}()),
-
-		removeFromGallery: function() {
-			this.controller.state().get('library').remove( this.model );
 		}
 	});
 
 	/**
 	 * wp.media.view.Attachments
 	 */
-	media.view.Attachments = Backbone.View.extend({
+	media.view.Attachments = media.View.extend({
 		tagName:   'ul',
 		className: 'attachments',
-		template:  media.template('attachments-css'),
+
+		cssTemplate: media.template('attachments-css'),
 
 		events: {
 			'scroll': 'scroll'
 		},
 
 		initialize: function() {
-			this.controller = this.options.controller;
 			this.el.id = _.uniqueId('__attachments-view-');
 
 			_.defaults( this.options, {
 				refreshSensitivity: 200,
 				refreshThreshold:   3,
 				AttachmentView:     media.view.Attachment,
-				sortable:           false
+				sortable:           false,
+				resize:             true
 			});
 
-			_.each(['add','remove'], function( method ) {
-				this.collection.on( method, function( attachment, attachments, options ) {
-					this[ method ]( attachment, options.index );
-				}, this );
+			this._viewsByCid = {};
+
+			this.collection.on( 'add', function( attachment, attachments, options ) {
+				this.views.add( this.createAttachmentView( attachment ), {
+					at: options.index
+				});
+			}, this );
+
+			this.collection.on( 'remove', function( attachment, attachments, options ) {
+				var view = this._viewsByCid[ attachment.cid ];
+				delete this._viewsByCid[ attachment.cid ];
+
+				if ( view )
+					view.remove();
 			}, this );
 
 			this.collection.on( 'reset', this.render, this );
@@ -1211,37 +3253,54 @@
 
 			this.initSortable();
 
-			this.controller.state().on( 'change:edge change:gutter', this.css, this );
+			_.bindAll( this, 'css' );
+			this.model.on( 'change:edge change:gutter', this.css, this );
+			this._resizeCss = _.debounce( _.bind( this.css, this ), this.refreshSensitivity );
+			if ( this.options.resize )
+				$(window).on( 'resize.attachments', this._resizeCss );
 			this.css();
 		},
 
-		destroy: function() {
-			this.collection.off( 'add remove reset', null, this );
-			this.controller.state().off( 'change:edge change:gutter', this.css, this );
+		dispose: function() {
+			this.collection.props.off( null, null, this );
+			$(window).off( 'resize.attachments', this._resizeCss );
+			media.View.prototype.dispose.apply( this, arguments );
 		},
 
 		css: function() {
-			var $css = $( '#' + this.el.id + '-css' ),
-				state = this.controller.state();
+			var $css = $( '#' + this.el.id + '-css' );
 
 			if ( $css.length )
 				$css.remove();
 
-			media.view.Attachments.$head().append( this.template({
+			media.view.Attachments.$head().append( this.cssTemplate({
 				id:     this.el.id,
-				edge:   state.get('edge'),
-				gutter: state.get('gutter')
+				edge:   this.edge(),
+				gutter: this.model.get('gutter')
 			}) );
 		},
 
+		edge: function() {
+			var edge = this.model.get('edge'),
+				gutter, width, columns;
+
+			if ( ! this.$el.is(':visible') )
+				return edge;
+
+			gutter  = this.model.get('gutter') * 2;
+			width   = this.$el.width() - gutter;
+			columns = Math.ceil( width / ( edge + gutter ) );
+			edge = Math.floor( ( width - ( columns * gutter ) ) / columns );
+			return edge;
+		},
+
 		initSortable: function() {
-			var collection = this.collection,
-				from;
+			var collection = this.collection;
 
 			if ( ! this.options.sortable || ! $.fn.sortable )
 				return;
 
-			this.$el.sortable({
+			this.$el.sortable( _.extend({
 				// If the `collection` has a `comparator`, disable sorting.
 				disabled: !! collection.comparator,
 
@@ -1255,73 +3314,89 @@
 
 				// Record the initial `index` of the dragged model.
 				start: function( event, ui ) {
-					from = ui.item.index();
+					ui.item.data('sortableIndexStart', ui.item.index());
 				},
 
 				// Update the model's index in the collection.
 				// Do so silently, as the view is already accurate.
 				update: function( event, ui ) {
-					var model = collection.at( from );
+					var model = collection.at( ui.item.data('sortableIndexStart') ),
+						comparator = collection.comparator;
 
+					// Temporarily disable the comparator to prevent `add`
+					// from re-sorting.
+					delete collection.comparator;
+
+					// Silently shift the model to its new index.
 					collection.remove( model, {
 						silent: true
 					}).add( model, {
-						at:     ui.item.index(),
-						silent: true
+						silent: true,
+						at:     ui.item.index()
 					});
+
+					// Restore the comparator.
+					collection.comparator = comparator;
+
+					// Fire the `reset` event to ensure other collections sync.
+					collection.trigger( 'reset', collection );
+
+					// If the collection is sorted by menu order,
+					// update the menu order.
+					collection.saveMenuOrder();
 				}
-			});
+			}, this.options.sortable ) );
 
 			// If the `orderby` property is changed on the `collection`,
 			// check to see if we have a `comparator`. If so, disable sorting.
 			collection.props.on( 'change:orderby', function() {
 				this.$el.sortable( 'option', 'disabled', !! collection.comparator );
 			}, this );
+
+			this.collection.props.on( 'change:orderby', this.refreshSortable, this );
+			this.refreshSortable();
 		},
 
-		render: function() {
-			// If there are no elements, load some.
-			if ( ! this.collection.length ) {
-				this.collection.more();
-				this.$el.empty();
-				return this;
-			}
+		refreshSortable: function() {
+			if ( ! this.options.sortable || ! $.fn.sortable )
+				return;
 
-			// Otherwise, create all of the Attachment views, and replace
+			// If the `collection` has a `comparator`, disable sorting.
+			var collection = this.collection,
+				orderby = collection.props.get('orderby'),
+				enabled = 'menuOrder' === orderby || ! collection.comparator;
+
+			this.$el.sortable( 'option', 'disabled', ! enabled );
+		},
+
+		createAttachmentView: function( attachment ) {
+			var view = new this.options.AttachmentView({
+				controller: this.controller,
+				model:      attachment,
+				collection: this.collection,
+				selection:  this.options.selection
+			});
+
+			return this._viewsByCid[ attachment.cid ] = view;
+		},
+
+		prepare: function() {
+			// Create all of the Attachment views, and replace
 			// the list in a single DOM operation.
-			this.$el.html( this.collection.map( function( attachment ) {
-				return new this.options.AttachmentView({
-					controller: this.controller,
-					model:      attachment
-				}).render().$el;
-			}, this ) );
+			if ( this.collection.length ) {
+				this.views.set( this.collection.map( this.createAttachmentView, this ) );
 
-			// Then, trigger the scroll event to check if we're within the
+			// If there are no elements, clear the views and load some.
+			} else {
+				this.views.unset();
+				this.collection.more().done( this.scroll );
+			}
+		},
+
+		ready: function() {
+			// Trigger the scroll event to check if we're within the
 			// threshold to query for additional attachments.
 			this.scroll();
-			return this;
-		},
-
-		add: function( attachment, index ) {
-			var view, children;
-
-			view = new this.options.AttachmentView({
-				controller: this.controller,
-				model:      attachment
-			}).render();
-
-			children = this.$el.children();
-
-			if ( children.length > index )
-				children.eq( index ).before( view.$el );
-			else
-				this.$el.append( view.$el );
-		},
-
-		remove: function( attachment, index ) {
-			var children = this.$el.children();
-			if ( children.length )
-				children.eq( index ).detach();
 		},
 
 		scroll: function( event ) {
@@ -1329,8 +3404,8 @@
 			if ( ! this.$el.is(':visible') )
 				return;
 
-			if ( this.el.scrollHeight < this.el.scrollTop + ( this.el.clientHeight * this.options.refreshThreshold ) ) {
-				this.collection.more();
+			if ( this.collection.hasMore() && this.el.scrollHeight < this.el.scrollTop + ( this.el.clientHeight * this.options.refreshThreshold ) ) {
+				this.collection.more().done( this.scroll );
 			}
 		}
 	}, {
@@ -1345,17 +3420,20 @@
 	/**
 	 * wp.media.view.Search
 	 */
-	media.view.Search = Backbone.View.extend({
+	media.view.Search = media.View.extend({
 		tagName:   'input',
 		className: 'search',
 
 		attributes: {
-			type:        'text',
+			type:        'search',
 			placeholder: l10n.search
 		},
 
 		events: {
-			'keyup': 'search'
+			'input':  'search',
+			'keyup':  'search',
+			'change': 'search',
+			'search': 'search'
 		},
 
 		render: function() {
@@ -1372,142 +3450,604 @@
 	});
 
 	/**
-	 * wp.media.view.SelectionPreview
+	 * wp.media.view.AttachmentFilters
 	 */
-	media.view.SelectionPreview = Backbone.View.extend({
-		tagName:   'div',
-		className: 'selection-preview',
-		template:  media.template('media-selection-preview'),
+	media.view.AttachmentFilters = media.View.extend({
+		tagName:   'select',
+		className: 'attachment-filters',
 
 		events: {
+			change: 'change'
+		},
+
+		keys: [],
+
+		initialize: function() {
+			this.createFilters();
+			_.extend( this.filters, this.options.filters );
+
+			// Build `<option>` elements.
+			this.$el.html( _.chain( this.filters ).map( function( filter, value ) {
+				return {
+					el: this.make( 'option', { value: value }, filter.text ),
+					priority: filter.priority || 50
+				};
+			}, this ).sortBy('priority').pluck('el').value() );
+
+			this.model.on( 'change', this.select, this );
+			this.select();
+		},
+
+		createFilters: function() {
+			this.filters = {};
+		},
+
+		change: function( event ) {
+			var filter = this.filters[ this.el.value ];
+
+			if ( filter )
+				this.model.set( filter.props );
+		},
+
+		select: function() {
+			var model = this.model,
+				value = 'all',
+				props = model.toJSON();
+
+			_.find( this.filters, function( filter, id ) {
+				var equal = _.all( filter.props, function( prop, key ) {
+					return prop === ( _.isUndefined( props[ key ] ) ? null : props[ key ] );
+				});
+
+				if ( equal )
+					return value = id;
+			});
+
+			this.$el.val( value );
+		}
+	});
+
+	media.view.AttachmentFilters.Uploaded = media.view.AttachmentFilters.extend({
+		createFilters: function() {
+			var type = this.model.get('type'),
+				types = media.view.settings.mimeTypes,
+				text;
+
+			if ( types && type )
+				text = types[ type ];
+
+			this.filters = {
+				all: {
+					text:  text || l10n.allMediaItems,
+					props: {
+						uploadedTo: null,
+						orderby: 'date',
+						order:   'DESC'
+					},
+					priority: 10
+				},
+
+				uploaded: {
+					text:  l10n.uploadedToThisPost,
+					props: {
+						uploadedTo: media.view.settings.post.id,
+						orderby: 'menuOrder',
+						order:   'ASC'
+					},
+					priority: 20
+				}
+			};
+		}
+	});
+
+	media.view.AttachmentFilters.All = media.view.AttachmentFilters.extend({
+		createFilters: function() {
+			var filters = {};
+
+			_.each( media.view.settings.mimeTypes || {}, function( text, key ) {
+				filters[ key ] = {
+					text: text,
+					props: {
+						type:    key,
+						uploadedTo: null,
+						orderby: 'date',
+						order:   'DESC'
+					}
+				};
+			});
+
+			filters.all = {
+				text:  l10n.allMediaItems,
+				props: {
+					type:    null,
+					uploadedTo: null,
+					orderby: 'date',
+					order:   'DESC'
+				},
+				priority: 10
+			};
+
+			filters.uploaded = {
+				text:  l10n.uploadedToThisPost,
+				props: {
+					type:    null,
+					uploadedTo: media.view.settings.post.id,
+					orderby: 'menuOrder',
+					order:   'ASC'
+				},
+				priority: 20
+			};
+
+			this.filters = filters;
+		}
+	});
+
+
+
+	/**
+	 * wp.media.view.AttachmentsBrowser
+	 */
+	media.view.AttachmentsBrowser = media.View.extend({
+		tagName:   'div',
+		className: 'attachments-browser',
+
+		initialize: function() {
+			_.defaults( this.options, {
+				filters: false,
+				search:  true,
+				display: false,
+
+				AttachmentView: media.view.Attachment.Library
+			});
+
+			this.createToolbar();
+			this.updateContent();
+			this.createSidebar();
+
+			this.collection.on( 'add remove reset', this.updateContent, this );
+		},
+
+		dispose: function() {
+			this.options.selection.off( null, null, this );
+			media.View.prototype.dispose.apply( this, arguments );
+			return this;
+		},
+
+		createToolbar: function() {
+			var filters, FiltersConstructor;
+
+			this.toolbar = new media.view.Toolbar({
+				controller: this.controller
+			});
+
+			this.views.add( this.toolbar );
+
+			filters = this.options.filters;
+			if ( 'uploaded' === filters )
+				FiltersConstructor = media.view.AttachmentFilters.Uploaded;
+			else if ( 'all' === filters )
+				FiltersConstructor = media.view.AttachmentFilters.All;
+
+			if ( FiltersConstructor ) {
+				this.toolbar.set( 'filters', new FiltersConstructor({
+					controller: this.controller,
+					model:      this.collection.props,
+					priority:   -80
+				}).render() );
+			}
+
+			if ( this.options.search ) {
+				this.toolbar.set( 'search', new media.view.Search({
+					controller: this.controller,
+					model:      this.collection.props,
+					priority:   60
+				}).render() );
+			}
+
+			if ( this.options.dragInfo ) {
+				this.toolbar.set( 'dragInfo', new media.View({
+					el: $( '<div class="instructions">' + l10n.dragInfo + '</div>' )[0],
+					priority: -40
+				}) );
+			}
+		},
+
+		updateContent: function() {
+			var view = this;
+
+			if( ! this.attachments )
+				this.createAttachments();
+
+			if ( ! this.collection.length ) {
+				this.collection.more().done( function() {
+					if ( ! view.collection.length )
+						view.createUploader();
+				});
+			}
+		},
+
+		removeContent: function() {
+			_.each(['attachments','uploader'], function( key ) {
+				if ( this[ key ] ) {
+					this[ key ].remove();
+					delete this[ key ];
+				}
+			}, this );
+		},
+
+		createUploader: function() {
+			this.removeContent();
+
+			this.uploader = new media.view.UploaderInline({
+				controller: this.controller,
+				status:     false,
+				message:    l10n.noItemsFound
+			});
+
+			this.views.add( this.uploader );
+		},
+
+		createAttachments: function() {
+			this.removeContent();
+
+			this.attachments = new media.view.Attachments({
+				controller: this.controller,
+				collection: this.collection,
+				selection:  this.options.selection,
+				model:      this.model,
+				sortable:   this.options.sortable,
+
+				// The single `Attachment` view to be used in the `Attachments` view.
+				AttachmentView: this.options.AttachmentView
+			});
+
+			this.views.add( this.attachments );
+		},
+
+		createSidebar: function() {
+			var options = this.options,
+				selection = options.selection,
+				sidebar = this.sidebar = new media.view.Sidebar({
+					controller: this.controller
+				});
+
+			this.views.add( sidebar );
+
+			if ( this.controller.uploader ) {
+				sidebar.set( 'uploads', new media.view.UploaderStatus({
+					controller: this.controller,
+					priority:   40
+				}) );
+			}
+
+			selection.on( 'selection:single', this.createSingle, this );
+			selection.on( 'selection:unsingle', this.disposeSingle, this );
+
+			if ( selection.single() )
+				this.createSingle();
+		},
+
+		createSingle: function() {
+			var sidebar = this.sidebar,
+				single = this.options.selection.single(),
+				views = {};
+
+			sidebar.set( 'details', new media.view.Attachment.Details({
+				controller: this.controller,
+				model:      single,
+				priority:   80
+			}) );
+
+			sidebar.set( 'compat', new media.view.AttachmentCompat({
+				controller: this.controller,
+				model:      single,
+				priority:   120
+			}) );
+
+			if ( this.options.display ) {
+				sidebar.set( 'display', new media.view.Settings.AttachmentDisplay({
+					controller:   this.controller,
+					model:        this.model.display( single ),
+					attachment:   single,
+					priority:     160,
+					userSettings: this.model.get('displayUserSettings')
+				}) );
+			}
+		},
+
+		disposeSingle: function() {
+			var sidebar = this.sidebar;
+			sidebar.unset('details');
+			sidebar.unset('compat');
+			sidebar.unset('display');
+		}
+	});
+
+	/**
+	 * wp.media.view.Selection
+	 */
+	media.view.Selection = media.View.extend({
+		tagName:   'div',
+		className: 'media-selection',
+		template:  media.template('media-selection'),
+
+		events: {
+			'click .edit-selection':  'edit',
 			'click .clear-selection': 'clear'
 		},
 
 		initialize: function() {
 			_.defaults( this.options, {
+				editable:  false,
 				clearable: true
 			});
 
-			this.controller = this.options.controller;
-			this.collection.on( 'add change:url remove', this.render, this );
-			this.render();
+			this.attachments = new media.view.Attachments.Selection({
+				controller: this.controller,
+				collection: this.collection,
+				selection:  this.collection,
+				model:      new Backbone.Model({
+					edge:   40,
+					gutter: 5
+				})
+			});
+
+			this.views.set( '.selection-view', this.attachments );
+			this.collection.on( 'add remove reset', this.refresh, this );
+			this.controller.on( 'content:activate', this.refresh, this );
 		},
 
-		render: function() {
-			var options = _.clone( this.options ),
-				last, sizes, amount;
+		ready: function() {
+			this.refresh();
+		},
+
+		refresh: function() {
+			// If the selection hasn't been rendered, bail.
+			if ( ! this.$el.children().length )
+				return;
+
+			var collection = this.collection,
+				editing = 'edit-selection' === this.controller.content.mode();
 
 			// If nothing is selected, display nothing.
-			if ( ! this.collection.length ) {
-				this.$el.empty();
-				return this;
-			}
+			this.$el.toggleClass( 'empty', ! collection.length );
+			this.$el.toggleClass( 'one', 1 === collection.length );
+			this.$el.toggleClass( 'editing', editing );
 
-			options.count = this.collection.length;
-			last  = this.collection.last();
-			sizes = last.get('sizes');
+			this.$('.count').text( l10n.selected.replace('%d', collection.length) );
+		},
 
-			if ( 'image' === last.get('type') )
-				options.thumbnail = ( sizes && sizes.thumbnail ) ? sizes.thumbnail.url : last.get('url');
-			else
-				options.thumbnail =  last.get('icon');
-
-			this.$el.html( this.template( options ) );
-			return this;
+		edit: function( event ) {
+			event.preventDefault();
+			if ( this.options.editable )
+				this.options.editable.call( this, this.collection );
 		},
 
 		clear: function( event ) {
 			event.preventDefault();
-			this.collection.clear();
+			this.collection.reset();
 		}
 	});
 
 
 	/**
-	 * wp.media.view.AttachmentDisplaySettings
+	 * wp.media.view.Attachment.Selection
 	 */
-	media.view.AttachmentDisplaySettings = Backbone.View.extend({
-		tagName:   'div',
-		className: 'attachment-display-settings',
-		template:  media.template('attachment-display-settings'),
+	media.view.Attachment.Selection = media.view.Attachment.extend({
+		className: 'attachment selection',
 
+		// On click, just select the model, instead of removing the model from
+		// the selection.
+		toggleSelection: function() {
+			this.options.selection.single( this.model );
+		}
+	});
+
+	/**
+	 * wp.media.view.Attachments.Selection
+	 */
+	media.view.Attachments.Selection = media.view.Attachments.extend({
+		events: {},
+		initialize: function() {
+			_.defaults( this.options, {
+				sortable:   true,
+				resize:     false,
+
+				// The single `Attachment` view to be used in the `Attachments` view.
+				AttachmentView: media.view.Attachment.Selection
+			});
+			return media.view.Attachments.prototype.initialize.apply( this, arguments );
+		}
+	});
+
+	/**
+	 * wp.media.view.Attachments.EditSelection
+	 */
+	media.view.Attachment.EditSelection = media.view.Attachment.Selection.extend({
+		buttons: {
+			close: true
+		}
+	});
+
+
+	/**
+	 * wp.media.view.Settings
+	 */
+	media.view.Settings = media.View.extend({
 		events: {
-			'click button': 'updateHandler'
-		},
-
-		settings:   {
-			align: {
-				accepts:  ['left','center','right','none'],
-				name:     'align',
-				fallback: 'none'
-			},
-			link: {
-				accepts:  ['post','file','none'],
-				name:     'urlbutton',
-				fallback: 'post'
-			},
-			size: {
-				// @todo: Dynamically generate these.
-				accepts:  ['thumbnail','medium','large','full'],
-				name:     'imgsize',
-				fallback: 'medium'
-			}
+			'click button':    'updateHandler',
+			'change input':    'updateHandler',
+			'change select':   'updateHandler',
+			'change textarea': 'updateHandler'
 		},
 
 		initialize: function() {
-			var settings = this.settings;
-
-			this.model = new Backbone.Model();
-
-			_.each( settings, function( setting, key ) {
-				this.model.set( key, getUserSetting( setting.name, setting.fallback ) );
-			}, this );
-
-			this.model.validate = function( attrs ) {
-				return _.any( attrs, function( value, key ) {
-					return ! settings[ key ] || ! _.contains( settings[ key ].accepts, value );
-				});
-			};
-
-			this.model.on( 'change', function( model, options ) {
-				if ( ! options.changes )
-					return;
-
-				_.each( _.keys( options.changes ), function( key ) {
-					if ( settings[ key ] )
-						setUserSetting( settings[ key ].name, model.get( key ) );
-				});
-			}, this );
-
+			this.model = this.model || new Backbone.Model();
 			this.model.on( 'change', this.updateChanges, this );
 		},
 
-		render: function() {
-			this.$el.html( this.template( this.model.toJSON() ) );
+		prepare: function() {
+			return _.defaults({
+				model: this.model.toJSON()
+			}, this.options );
+		},
 
+		render: function() {
+			media.View.prototype.render.apply( this, arguments );
 			// Select the correct values.
 			_( this.model.attributes ).chain().keys().each( this.update, this );
 			return this;
 		},
 
 		update: function( key ) {
-			var buttons = this.$('[data-setting="' + key + '"] button').removeClass('active');
-			buttons.filter( '[value="' + this.model.get( key ) + '"]' ).addClass('active');
+			var value = this.model.get( key ),
+				$setting = this.$('[data-setting="' + key + '"]'),
+				$buttons, $value;
+
+			// Bail if we didn't find a matching setting.
+			if ( ! $setting.length )
+				return;
+
+			// Attempt to determine how the setting is rendered and update
+			// the selected value.
+
+			// Handle dropdowns.
+			if ( $setting.is('select') ) {
+				$value = $setting.find('[value="' + value + '"]');
+
+				if ( $value.length ) {
+					$setting.find('option').prop( 'selected', false );
+					$value.prop( 'selected', true );
+				} else {
+					// If we can't find the desired value, record what *is* selected.
+					this.model.set( key, $setting.find(':selected').val() );
+				}
+
+
+			// Handle button groups.
+			} else if ( $setting.hasClass('button-group') ) {
+				$buttons = $setting.find('button').removeClass('active');
+				$buttons.filter( '[value="' + value + '"]' ).addClass('active');
+
+			// Handle text inputs and textareas.
+			} else if ( $setting.is('input[type="text"], textarea') ) {
+				if ( ! $setting.is(':focus') )
+					$setting.val( value );
+
+			// Handle checkboxes.
+			} else if ( $setting.is('input[type="checkbox"]') ) {
+				$setting.attr( 'checked', !! value );
+			}
 		},
 
 		updateHandler: function( event ) {
-			var group = $( event.target ).closest('.button-group');
+			var $setting = $( event.target ).closest('[data-setting]'),
+				value = event.target.value,
+				userSetting;
 
 			event.preventDefault();
 
-			if ( group.length )
-				this.model.set( group.data('setting'), event.target.value );
+			if ( ! $setting.length )
+				return;
+
+			// Use the correct value for checkboxes.
+			if ( $setting.is('input[type="checkbox"]') )
+				value = $setting[0].checked;
+
+			// Update the corresponding setting.
+			this.model.set( $setting.data('setting'), value );
+
+			// If the setting has a corresponding user setting,
+			// update that as well.
+			if ( userSetting = $setting.data('userSetting') )
+				setUserSetting( userSetting, value );
 		},
 
 		updateChanges: function( model, options ) {
 			if ( options.changes )
 				_( options.changes ).chain().keys().each( this.update, this );
 		}
+	});
+
+	/**
+	 * wp.media.view.Settings.AttachmentDisplay
+	 */
+	media.view.Settings.AttachmentDisplay = media.view.Settings.extend({
+		className: 'attachment-display-settings',
+		template:  media.template('attachment-display-settings'),
+
+		initialize: function() {
+			var attachment = this.options.attachment;
+
+			_.defaults( this.options, {
+				userSettings: false
+			});
+
+			media.view.Settings.prototype.initialize.apply( this, arguments );
+			this.model.on( 'change:link', this.updateLinkTo, this );
+
+			if ( attachment )
+				attachment.on( 'change:uploading', this.render, this );
+		},
+
+		dispose: function() {
+			var attachment = this.options.attachment;
+			if ( attachment )
+				attachment.off( null, null, this );
+
+			media.view.Settings.prototype.dispose.apply( this, arguments );
+		},
+
+		render: function() {
+			var attachment = this.options.attachment;
+			if ( attachment ) {
+				_.extend( this.options, {
+					sizes: attachment.get('sizes'),
+					type:  attachment.get('type')
+				});
+			}
+
+			media.view.Settings.prototype.render.call( this );
+			this.updateLinkTo();
+			return this;
+		},
+
+		updateLinkTo: function() {
+			var linkTo = this.model.get('link'),
+				$input = this.$('.link-to-custom'),
+				attachment = this.options.attachment;
+
+			if ( 'none' === linkTo || ( ! attachment && 'custom' !== linkTo ) ) {
+				$input.hide();
+				return;
+			}
+
+			if ( attachment ) {
+				if ( 'post' === linkTo ) {
+					$input.val( attachment.get('link') );
+				} else if ( 'file' === linkTo ) {
+					$input.val( attachment.get('url') );
+				} else if ( ! this.model.get('linkUrl') ) {
+					$input.val('http://');
+				}
+
+				$input.prop( 'readonly', 'custom' !== linkTo );
+			}
+
+			$input.show();
+
+			// If the input is visible, focus and select its contents.
+			if ( $input.is(':visible') )
+				$input.focus()[0].select();
+		}
+	});
+
+	/**
+	 * wp.media.view.Settings.Gallery
+	 */
+	media.view.Settings.Gallery = media.view.Settings.extend({
+		className: 'gallery-settings',
+		template:  media.template('gallery-settings')
 	});
 
 	/**
@@ -1519,7 +4059,247 @@
 		template:  media.template('attachment-details'),
 
 		events: {
-			'change .describe': 'describe'
+			'change [data-setting]':          'updateSetting',
+			'change [data-setting] input':    'updateSetting',
+			'change [data-setting] select':   'updateSetting',
+			'change [data-setting] textarea': 'updateSetting',
+			'click .delete-attachment':       'deleteAttachment',
+			'click .edit-attachment':         'editAttachment',
+			'click .refresh-attachment':      'refreshAttachment'
+		},
+
+		initialize: function() {
+			this.focusManager = new media.view.FocusManager({
+				el: this.el
+			});
+
+			media.view.Attachment.prototype.initialize.apply( this, arguments );
+		},
+
+		render: function() {
+			media.view.Attachment.prototype.render.apply( this, arguments );
+			this.focusManager.focus();
+			return this;
+		},
+
+		deleteAttachment: function( event ) {
+			event.preventDefault();
+
+			if ( confirm( l10n.warnDelete ) )
+				this.model.destroy();
+		},
+
+		editAttachment: function( event ) {
+			this.$el.addClass('needs-refresh');
+		},
+
+		refreshAttachment: function( event ) {
+			this.$el.removeClass('needs-refresh');
+			event.preventDefault();
+			this.model.fetch();
+		}
+	});
+
+	/**
+	 * wp.media.view.AttachmentCompat
+	 */
+	media.view.AttachmentCompat = media.View.extend({
+		tagName:   'form',
+		className: 'compat-item',
+
+		events: {
+			'submit':          'preventDefault',
+			'change input':    'save',
+			'change select':   'save',
+			'change textarea': 'save'
+		},
+
+		initialize: function() {
+			this.focusManager = new media.view.FocusManager({
+				el: this.el
+			});
+
+			this.model.on( 'change:compat', this.render, this );
+		},
+
+		dispose: function() {
+			if ( this.$(':focus').length )
+				this.save();
+
+			return media.View.prototype.dispose.apply( this, arguments );
+		},
+
+		render: function() {
+			var compat = this.model.get('compat');
+			if ( ! compat || ! compat.item )
+				return;
+
+			this.views.detach();
+			this.$el.html( compat.item );
+			this.views.render();
+
+			this.focusManager.focus();
+			return this;
+		},
+
+		preventDefault: function( event ) {
+			event.preventDefault();
+		},
+
+		save: function( event ) {
+			var data = {};
+
+			if ( event )
+				event.preventDefault();
+
+			_.each( this.$el.serializeArray(), function( pair ) {
+				data[ pair.name ] = pair.value;
+			});
+
+			this.model.saveCompat( data );
+		}
+	});
+
+	/**
+	 * wp.media.view.Iframe
+	 */
+	media.view.Iframe = media.View.extend({
+		className: 'media-iframe',
+
+		render: function() {
+			this.views.detach();
+			this.$el.html( '<iframe src="' + this.controller.state().get('src') + '" />' );
+			this.views.render();
+			return this;
+		}
+	});
+
+	/**
+	 * wp.media.view.Embed
+	 */
+	media.view.Embed = media.View.extend({
+		className: 'media-embed',
+
+		initialize: function() {
+			this.url = new media.view.EmbedUrl({
+				controller: this.controller,
+				model:      this.model.props
+			}).render();
+
+			this.views.set([ this.url ]);
+			this.refresh();
+			this.model.on( 'change:type', this.refresh, this );
+			this.model.on( 'change:loading', this.loading, this );
+		},
+
+		settings: function( view ) {
+			if ( this._settings )
+				this._settings.remove();
+			this._settings = view;
+			this.views.add( view );
+		},
+
+		refresh: function() {
+			var type = this.model.get('type'),
+				constructor;
+
+			if ( 'image' === type )
+				constructor = media.view.EmbedImage;
+			else if ( 'link' === type )
+				constructor = media.view.EmbedLink;
+			else
+				return;
+
+			this.settings( new constructor({
+				controller: this.controller,
+				model:      this.model.props,
+				priority:   40
+			}) );
+		},
+
+		loading: function() {
+			this.$el.toggleClass( 'embed-loading', this.model.get('loading') );
+		}
+	});
+
+	/**
+	 * wp.media.view.EmbedUrl
+	 */
+	media.view.EmbedUrl = media.View.extend({
+		tagName:   'label',
+		className: 'embed-url',
+
+		events: {
+			'input':  'url',
+			'keyup':  'url',
+			'change': 'url'
+		},
+
+		initialize: function() {
+			this.input = this.make( 'input', {
+				type:  'text',
+				value: this.model.get('url') || ''
+			});
+
+			this.spinner = this.make( 'span', {
+				'class': 'spinner'
+			});
+
+			this.$input = $( this.input );
+			this.$el.append([ this.input, this.spinner ]);
+
+			this.model.on( 'change:url', this.render, this );
+		},
+
+		render: function() {
+			var $input = this.$input;
+
+			if ( $input.is(':focus') )
+				return;
+
+			this.input.value = this.model.get('url') || 'http://';
+			media.View.prototype.render.apply( this, arguments );
+			return this;
+		},
+
+		ready: function() {
+			this.focus();
+		},
+
+		url: function( event ) {
+			this.model.set( 'url', event.target.value );
+		},
+
+		focus: function() {
+			var $input = this.$input;
+			// If the input is visible, focus and select its contents.
+			if ( $input.is(':visible') )
+				$input.focus()[0].select();
+		}
+	});
+
+	/**
+	 * wp.media.view.EmbedLink
+	 */
+	media.view.EmbedLink = media.view.Settings.extend({
+		className: 'embed-link-settings',
+		template:  media.template('embed-link-settings')
+	});
+
+	/**
+	 * wp.media.view.EmbedImage
+	 */
+	media.view.EmbedImage =  media.view.Settings.AttachmentDisplay.extend({
+		className: 'embed-image-settings',
+		template:  media.template('embed-image-settings'),
+
+		initialize: function() {
+			media.view.Settings.AttachmentDisplay.prototype.initialize.apply( this, arguments );
+			this.model.on( 'change:url', this.updateImage, this );
+		},
+
+		updateImage: function() {
+			this.$('img').attr( 'src', this.model.get('url') );
 		}
 	});
 }(jQuery));
