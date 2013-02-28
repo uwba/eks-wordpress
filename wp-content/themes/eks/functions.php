@@ -415,13 +415,25 @@ function get_volunteer($volunteer_ID = null) {
     return FALSE;
 }
 
-function get_volunteer_tax_sites($volunteer_ID = null) {
-    $volunteer = get_volunteer($volunteer_ID);
-//	var_dump($volunteer);
+/**
+ * Return an array of the tax sites that a given volunteer is assigned to.  In practice this will be an array of at most one element.
+ * 
+ * @param int $volunteer_user_id     The user ID of the volunteer
+ * @return array                Array of Tax Sites, of the form:
+ * Array
+(
+    [$tax_site_post_id] => Array
+        (
+            [0] => preparer|greeter|interpreter
+        )
+
+)
+ */
+function get_volunteer_tax_sites($volunteer_user_id = null) {
+    $volunteer = get_volunteer($volunteer_user_id);
 
     $volunteer_meta = get_post_meta($volunteer->ID);
 
-    //		$tax_sites_position = get_post_meta($volunteer->ID, 'preparer') + get_post_meta($volunteer->ID, 'interpreter') + get_post_meta($volunteer->ID, 'screener') + get_post_meta($volunteer->ID, 'greeter');
     $tax_sites = array();
     foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
         if (!empty($volunteer_meta[$position])) {

@@ -7,25 +7,35 @@ wp_enqueue_script('jquery-ui-datepicker');
         global $wpdb;
 
         foreach (array_keys($_POST) as $k) {
-            update_post_meta($post->ID, $k, $wpdb->escape($_POST[$k]));
+            if ($k == 'tax_site') {
+                update_post_meta($post->ID, $wpdb->escape($_POST['position']), $wpdb->escape($_POST[$k]));
+            } else {
+                update_post_meta($post->ID, $k, $wpdb->escape($_POST[$k]));
+            }
         }
         ?>
         <div class="notice success">
-            <span>The volunteer notes have been updated.</span>
+            <span>The volunteer details have been updated.</span>
         </div>
-        <?php
-    }
-    ?>
+    <?php
+}
+?>
 
     <?php if (!is_user_logged_in()) { ?>
         <div class="notice error">
             <span>You do not have access to this page.</span>
         </div>
-    <?php } else { // logged in, so display the volunteer information 
-        ?>
+<?php } else { // logged in, so display the volunteer information 
+    ?>
         <?php appthemes_before_blog_loop(); ?>
 
-        <?php while (have_posts()) : the_post(); ?>
+        <?php
+        while (have_posts()) {
+
+            the_post();
+
+            $volunteer = get_post(get_the_ID());
+            ?>
 
             <?php appthemes_before_blog_post(); ?>
 
@@ -34,7 +44,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                 <?php appthemes_before_blog_post_title(); ?>
 
                 <h1 class="post-heading"><a href="<?php the_permalink(); ?>" rel="bookmark"></a><span class="left-hanger"><?php the_title(); ?></span></a></h1>
-                <?php // comments_popup_link( "0", "1", "%", "comment-count" );  ?>
+                <?php // comments_popup_link( "0", "1", "%", "comment-count" );   ?>
 
                 <?php appthemes_after_blog_post_title(); ?>
 
@@ -78,7 +88,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                     ?>
 
                     <h2>Volunteer Documents</h2>
-                    <?
+                    <?php
                     $files = get_posts(array('post_type' => 'attachment', 'author' => $post->post_author));
                     $items = array();
                     foreach ($files as $f) {
@@ -92,53 +102,79 @@ wp_enqueue_script('jquery-ui-datepicker');
                     }
                     echo OutputArrayToTable($items, array('File', 'Date Modified'));
                     ?>
-                    </p>
 
-                    <h2>Volunteer Notes</h2>
+                    <h2>Volunteer Details</h2>
                     <form method="POST">
 
-                        <label for="notes_contacted">Date Contacted:</label><br/>
-                        <input type="text" id="contacted" value="<?php echo get_post_meta($post->ID, 'notes_contacted', true); ?>" name="notes_contacted"/>
+                        <label for="tax_site">Assigned to Tax Site:</label><br/>
+                        <select id="tax_site" name="tax_site">
+                            <option value=""></option>
+                            <?php
+                            $sites = get_volunteer_tax_sites($volunteer->post_author);
+                            $tax_site_ids = array_keys($sites);
+                            
+
+                            // Modified from dashboard-listings.php
+                            $listings = va_get_dashboard_listings($user_ID, true);
+
+                            if ($listings->post_count > 0) {
+                                while ($listings->have_posts()) {
+                                    $listings->the_post();
+                                    $tax_site_id = get_the_ID();
+                                    ?>
+                                    <option <?php echo $tax_site_id == $tax_site_ids[0] ? 'selected' : '' ?> value="<?php echo $tax_site_id ?>"><?php the_title(); ?></option>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </select>
+                        <?php // Add a hidden field with the position to save a lookup upon POST ?>
+                        <input type="hidden" name="position" value="<?php echo $sites[$tax_site_ids[0]][0] ?>" />
                         <br/>
 
-        <?php
-        function render_checkbox($post, $name, $label) {
-                        ?>
-                        <div style="padding:5px 0;">                       
-                            <input name="notes_<?php echo $name ?>" type="hidden" value="0"/>
-                            <input name="notes_<?php echo $name ?>" type="checkbox" value="1" <?php echo get_post_meta($post->ID, "notes_" . $name, true) == 1 ? 'checked="checked"' : ''; ?> />
-                            <label for="notes_<?php echo $name ?>"><?php echo $label ?></label>
-                        </div>
-            <?php
-        }
+                        <label for="notes_contacted">Date Contacted:</label><br/>
+                        <input type="text" id="contacted" value="<?php echo get_post_meta($volunteer->ID, 'notes_contacted', true); ?>" name="notes_contacted"/>
+                        <br/>
 
-        render_checkbox($post, 'signed_up_for_appropriate_training', 'Signed Up for Appropriate Training');
-        render_checkbox($post, 'confirmed_as_my_volunteer', 'Confirmed as My Volunteer');
-        render_checkbox($post, 'certified_in_ethics', 'Certified in Ethics');
-        render_checkbox($post, 'certified_in_basic_level', 'Certified in Basic Level Tax Return Preparation');
-        render_checkbox($post, 'certified_in_intermediate_level', 'Certified in Intermediate Level Tax Return Preparation');
-        render_checkbox($post, 'certified_specialized', 'Certified Specialized Tax Return Preparation');
-        render_checkbox($post, 'volunteered_at_my_site', 'Volunteered at My Site');
-        render_checkbox($post, 'also_volunteers_at_another_vita_site', 'Also Volunteers at Another VITA Site');
-        ?>
+                        <?php
+
+                        function render_checkbox($volunteer_post, $name, $label) {
+                            ?>
+                            <div style="padding:5px 0;">                       
+                                <input name="notes_<?php echo $name ?>" type="hidden" value="0"/>
+                                <input name="notes_<?php echo $name ?>" type="checkbox" value="1" <?php echo get_post_meta($volunteer_post->ID, "notes_" . $name, true) == 1 ? 'checked="checked"' : ''; ?> />
+                                <label for="notes_<?php echo $name ?>"><?php echo $label ?></label>
+                            </div>
+                            <?php
+                            
+                        }
+                        render_checkbox($volunteer, 'signed_up_for_appropriate_training', 'Signed Up for Appropriate Training');
+                        render_checkbox($volunteer, 'confirmed_as_my_volunteer', 'Confirmed as My Volunteer');
+                        render_checkbox($volunteer, 'certified_in_ethics', 'Certified in Ethics');
+                        render_checkbox($volunteer, 'certified_in_basic_level', 'Certified in Basic Level Tax Return Preparation');
+                        render_checkbox($volunteer, 'certified_in_intermediate_level', 'Certified in Intermediate Level Tax Return Preparation');
+                        render_checkbox($volunteer, 'certified_specialized', 'Certified Specialized Tax Return Preparation');
+                        render_checkbox($volunteer, 'volunteered_at_my_site', 'Volunteered at My Site');
+                        render_checkbox($volunteer, 'also_volunteers_at_another_vita_site', 'Also Volunteers at Another VITA Site');
+                        ?>
                         <fieldset class="submit">
                             <input type="submit" value="Update" tabindex="40" />
                         </fieldset>
                     </form>
 
-        <?php appthemes_after_blog_post_content(); ?>
+                    <?php appthemes_after_blog_post_content(); ?>
                 </section>
 
-                <!--<small>Created at <?php // va_the_post_byline();   ?></small>-->
-        <?php //edit_post_link( __( 'Edit', APP_TD ), '<span class="edit-link">', '</span>' );   ?>	
+                        <!--<small>Created at <?php // va_the_post_byline();    ?></small>-->
+                <?php //edit_post_link( __( 'Edit', APP_TD ), '<span class="edit-link">', '</span>' );   ?>	
 
                 <?php //comments_template();    ?>
 
             </article>
 
-        <?php appthemes_after_blog_post(); ?>
+            <?php appthemes_after_blog_post(); ?>
 
-        <?php endwhile; ?>
+        <?php } ?>
 
         <?php appthemes_after_blog_loop(); ?>
 
