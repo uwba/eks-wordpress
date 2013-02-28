@@ -13,8 +13,10 @@ add_action('admin_menu', 'eks_update_menu_items');
 
 function eks_update_menu_items() {
 
-    // Remove the old "Add New" submenu for clarity
+    // Remove the old "Add New" submenus under Listings and Volunteers for clarity
     remove_submenu_page('edit.php?post_type=listing', 'post-new.php?post_type=listing');
+    remove_submenu_page('edit.php?post_type=volunteer', 'post-new.php?post_type=volunteer');
+    
     add_submenu_page('edit.php?post_type=listing', 'Add New Tax Site', 'Add New Tax Site', 'export', '../coordinators/create-listing');
     add_submenu_page('edit.php?post_type=listing', 'Export All Tax Sites', 'Export All Tax Sites', 'export', '../export-sites');
 

@@ -112,10 +112,19 @@ wp_enqueue_script('jquery-ui-datepicker');
                             <?php
                             $sites = get_volunteer_tax_sites($volunteer->post_author);
                             $tax_site_ids = array_keys($sites);
-                            
+                                
+                            // Inspired by va_get_dashboard_listings()
+                            $args = array(
+                                'post_type' => VA_LISTING_PTYPE,
+                                'post_status' => array('publish', 'pending', 'expired'),
+                                'posts_per_page' => -1,
+                                'orderby' => 'title',
+                                'order' => 'ASC'
+                            );
+                            if (!eks_is_admin())
+                                $args['author'] = $user_ID;
 
-                            // Modified from dashboard-listings.php
-                            $listings = va_get_dashboard_listings($user_ID, true);
+                            $listings = new WP_Query($args);
 
                             if ($listings->post_count > 0) {
                                 while ($listings->have_posts()) {

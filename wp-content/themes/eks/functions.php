@@ -146,8 +146,6 @@ function eks_handle_download_document() {
                         $row[] = $meta_values[$k][0];
                 }
 
-                
-
                 if (!empty($tax_site_id)) {
                     $tax_site_post = get_post($tax_site_id);
                     $tax_site = $tax_site_post->post_title;
@@ -206,7 +204,9 @@ function eks_handle_download_document() {
         $args = array(
             'post_type' => VA_LISTING_PTYPE,
             'post_status' => array('publish', 'pending', 'expired'),
-            'posts_per_page' => -1
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC'
         );
         if (!eks_is_admin())
             $args['author'] = $u->ID;
@@ -461,7 +461,9 @@ function get_volunteers() {
     $conditions = array(
         'numberposts' => -1,
         'post_type' => 'listing',
-        'post_status' => array('publish', 'pending')
+        'post_status' => array('publish', 'pending'),
+        'orderby' => 'title',
+        'order' => 'ASC'
     );
     if (!eks_is_admin())
         $conditions['author'] = $user_ID;
