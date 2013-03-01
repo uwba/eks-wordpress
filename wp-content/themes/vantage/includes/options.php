@@ -2,6 +2,7 @@
 
 $GLOBALS['va_options'] = new scbOptions( 'va_options', false, array(
 	'geo_region' => 'US',
+	'geo_language' => 'en',
 	'geo_unit' => 'mi',
 	'currency_code' => 'USD',
 
@@ -18,6 +19,12 @@ $GLOBALS['va_options'] = new scbOptions( 'va_options', false, array(
 	'featured_per_page' => 5,
 	'featured_sort' => 'newest',
 
+
+	// Search
+	'default_geo_search_sort' => 'distance',
+	'default_search_sort' => 'rating',
+	'default_radius' => '',
+	
 	// Featured Listings
 	'addons' => array(
 		VA_ITEM_FEATURED_HOME => array(

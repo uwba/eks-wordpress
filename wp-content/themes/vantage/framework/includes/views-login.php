@@ -7,10 +7,11 @@ class APP_Login extends APP_View_Page {
 	function __construct( $template ) {
 		parent::__construct( $template, __('Login', APP_TD) );
 		add_filter( 'login_url', array( $this, '_change_login_url' ), 10, 2 );
+		add_filter( 'register', array( $this, 'register_link') );
 	}
 
 	function _change_login_url( $url, $redirect_to ) {
-		return self::get_url( 'redirect', $redirect_to );
+		return APP_Login::get_url( 'redirect', $redirect_to );
 	}
 
 	function init() {
@@ -24,12 +25,37 @@ class APP_Login extends APP_View_Page {
 				wp_redirect(APP_Login::get_url('redirect'));
 				exit();
 			}
-
 		}
 	}
 
 	static function get_id() {
 		return parent::_get_id( __CLASS__ );
+	}
+
+	function register_link($link) {
+		$new_url = appthemes_get_registration_url();
+		
+		if ( isset( $_REQUEST['redirect_to'] ) ) {
+			$new_url = add_query_arg('redirect_to', urlencode( $_REQUEST['redirect_to'] ), $new_url );
+		}
+		
+		$link = str_ireplace( site_url('wp-login.php?action=register'), $new_url, $link );
+		
+		return $link;
+	}
+
+	static function redirect_field() {
+		if ( isset( $_REQUEST['redirect_to'] ) ) {
+			$redirect = $_REQUEST['redirect_to'];
+		} else {
+			$redirect = home_url();
+		}
+
+		return html( 'input', array(
+			'type' => 'hidden',
+			'name' => 'redirect_to',
+			'value' => $redirect
+		) );
 	}
 
 	static function get_url( $context = 'display', $redirect_to = '' ) {
@@ -52,11 +78,11 @@ class APP_Login extends APP_View_Page {
 	}
 
 	function process_form() {
-		
+
 		if ( is_user_logged_in() ) {
 			do_action('app_login');
 		}
-		
+
 		if ( empty( $_POST['login'] ) ) return;
 
 		if ( isset( $_REQUEST['redirect_to'] ) )
@@ -83,61 +109,46 @@ class APP_Login extends APP_View_Page {
 
 	function notices() {
 		$message = '';
-		$message_type = '';
 
-		// Clear errors if loggedout is set.
-		if ( !empty($_GET['loggedout']) ) $errors = new WP_Error();
+		if ( !isset( $this->error ) || !empty($_GET['loggedout']) )
+			$this->error = new WP_Error;
 
 		if ( isset($_POST['testcookie']) && empty($_COOKIE[TEST_COOKIE]) ) {
-			$errors->add('test_cookie', __('Cookies are blocked or not supported by your browser. You must enable cookies to continue.', APP_TD));
+			$this->error->add('test_cookie', __('Cookies are blocked or not supported by your browser. You must enable cookies to continue.', APP_TD));
 		}
 
 		if ( isset($_GET['loggedout']) && TRUE == $_GET['loggedout'] ) {
-			$message_type = 'success';
 			$message = __('You are now logged out.', APP_TD);
 
-		} elseif	( isset($_GET['registration']) && 'disabled' == $_GET['registration'] )	{
-			$message_type = 'error';
-			$errors->add('registerdisabled', __('User registration is currently not allowed.', APP_TD));
+		} elseif ( isset($_GET['registration']) && 'disabled' == $_GET['registration'] )	{
+			$this->error->add('registerdisabled', __('User registration is currently not allowed.', APP_TD));
 
-		} elseif	( isset($_GET['checkemail']) && 'confirm' == $_GET['checkemail'] )	{
-			$message_type = 'success';
+		} elseif ( isset($_GET['checkemail']) && 'confirm' == $_GET['checkemail'] ) {
 			$message = __('Check your email for the confirmation link.', APP_TD);
 
-		} elseif	( isset($_GET['checkemail']) && 'newpass' == $_GET['checkemail'] ) {
-			$message_type = 'success';
+		} elseif ( isset($_GET['checkemail']) && 'newpass' == $_GET['checkemail'] ) {
 			$message = __('Check your email for your new password.', APP_TD);
 
-		} elseif	( isset($_GET['checkemail']) && 'registered' == $_GET['checkemail'] ) {
-			$message_type = 'success';
+		} elseif ( isset($_GET['checkemail']) && 'registered' == $_GET['checkemail'] ) {
 			$message = __('Registration complete. Please check your e-mail.', APP_TD);
-		} elseif	( isset($_GET['action']) && 'lostpassword' == $_GET['action'] && !empty($_GET['success'])) {
-			$message_type = 'success';
+		} elseif ( isset($_GET['action']) && 'lostpassword' == $_GET['action'] && !empty($_GET['success'])) {
 			$message = __('Your password has been reset. Please login.', APP_TD);
 		}
 
-		if (isset($errors) && sizeof($errors)>0 && $errors->get_error_code()) {
-			$error_html ='<ul class="errors">';
-			foreach ($errors->errors as $error) {
-				$error_html .='<li>'.$error[0].'</li>';
+		if ( $transient_notice = get_transient( 'login_notice' ) ) {
+			appthemes_display_notice( $transient_notice[0], $transient_notice[1] );
+			delete_transient( 'login_notice' );
+		}
+
+		if ( $this->error->get_error_code() ) {
+			$error_html = '';
+			foreach ( $this->error->errors as $error ) {
+				$error_html .= html( 'li', $error[0] );
 			}
-			$error_html .='</ul>';
-			appthemes_display_notice( 'error', $error_html );
+			appthemes_display_notice( 'error', html( 'ul class="errors"', $error_html ) );
+		} elseif ( !empty( $message ) ) {
+			appthemes_display_notice( 'success', $message );
 		}
-
-		if (isset($this->error) && sizeof($this->error)>0 && $this->error->get_error_code()) {
-			$error_html ='<ul class="errors">';
-			foreach ($this->error->errors as $error) {
-				$error_html .='<li>'.$error[0].'</li>';
-			}
-			$error_html .='</ul>';
-			appthemes_display_notice( 'error', $error_html );
-		}
-
-		if ( !empty( $message) ) {
-			appthemes_display_notice( $message_type, $message );
-		}
-
 	}
 }
 
@@ -169,7 +180,6 @@ class APP_Password_Recovery extends APP_View_Page {
 	}
 
 	function process_form() {
-
 		$errors = new WP_Error();
 
 		if ( !empty($_POST['user_login']) ) {
@@ -412,6 +422,8 @@ class APP_Registration extends APP_View_Page {
 
 	function __construct( $template ) {
 		parent::__construct( $template, __('Register', APP_TD) );
+
+		add_action ( 'appthemes_after_registration', 'wp_new_user_notification', 10, 2 );
 	}
 
 	static function get_id() {
@@ -546,12 +558,7 @@ class APP_Registration extends APP_View_Page {
 			}
 		}
 
-		// change role if needed
-		// wp_update_user( array ('ID' => $user_id, 'role' => 'contributor') ) ;
-
-		// send the user a confirmation and their login details
-		//app_new_user_notification($user_id, $user_pass);
-		wp_new_user_notification( $user_id, $user_pass );
+		do_action( 'appthemes_after_registration', $user_id, $user_pass );
 
 		if ( $show_password_fields ) {
 			// set the WP login cookie (log the user in)

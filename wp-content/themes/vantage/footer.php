@@ -11,6 +11,6 @@
 			'fallback_cb' => false
 		) ); ?>
 
-		<div id="theme-info">&copy; Vantage Theme, business directory software created by <a href="http://www.appthemes.com" target="_blank">AppThemes</a>, powered by <a href="http://www.wordpress.org" target="_blank">WordPress</a>.</div>
+		<div id="theme-info">Vantage Theme, <a href="http://www.appthemes.com/themes/vantage/" target="_blank">business directory software</a>, powered by <a href="http://www.wordpress.org" target="_blank">WordPress</a>.</div>
 	</div>
 </div>

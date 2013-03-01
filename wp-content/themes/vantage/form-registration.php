@@ -17,7 +17,7 @@ if (!isset($redirect)) $redirect = home_url();
 	
 	
 	<?php if ( get_option('users_can_register') ) : ?>
-	<form action="<?php echo appthemes_get_registration_url(); ?>" method="post" class="login-form register-form" name="registerform" id="login-form">
+		<form action="<?php echo appthemes_get_registration_url(); ?>" method="post" class="login-form register-form" name="registerform" id="login-form">
 			
 			<p><?php _e('Complete the fields below to register.', APP_TD ) ?></p>
 			

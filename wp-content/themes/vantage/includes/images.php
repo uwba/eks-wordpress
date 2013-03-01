@@ -86,7 +86,7 @@ function va_get_attachment_link( $att_id, $size = 'thumbnail' ) {
 	), wp_get_attachment_image( $att_id, $size ) );
 }
 
-function the_listing_thumbnail ( $listing_id = '' ) {
+function get_the_listing_thumbnail( $listing_id = '' ) {
 	$listing_id = ( !empty( $listing_id ) ) ? $listing_id : get_the_ID();
 
 	$featured_id = get_post_thumbnail_id( $listing_id );
@@ -95,14 +95,23 @@ function the_listing_thumbnail ( $listing_id = '' ) {
 		$attachments = va_get_listing_attachments( $listing_id, 1 );
 
 		if ( empty( $attachments ) ) {
-			echo html( 'img', array( 'src' => get_bloginfo('template_directory') . '/images/no-thumb-sm.jpg' ) );
+			return html( 'img', array( 'src' => get_bloginfo('template_directory') . '/images/no-thumb-sm.jpg' ) );
 			return;
 		}
 
 		$featured_id = $attachments[0]->ID;
 	}
 
-	echo wp_get_attachment_image( $featured_id, 'thumbnail' );
+	return wp_get_attachment_image( $featured_id, 'thumbnail' );
+
+}
+
+function the_listing_thumbnail ( $listing_id = '' ) {
+
+	$listing_id = ( !empty( $listing_id ) ) ? $listing_id : get_the_ID();
+
+	echo get_the_listing_thumbnail($listing_id);
+
 }
 
 function the_listing_image_gallery() {

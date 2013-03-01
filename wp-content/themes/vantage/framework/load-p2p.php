@@ -5,8 +5,9 @@ if ( !function_exists( 'p2p_register_connection_type' ) ) {
 
 	foreach ( array(
 		'storage', 'query', 'query-post', 'query-user', 'url-query',
-		'util', 'side', 'type-factory', 'type', 'directed-type',
-		'api'
+		'util', 'item', 'list', 'side',
+		'type-factory', 'type', 'directed-type', 'indeterminate-type',
+		'api', 'extra'
 	) as $file ) {
 		require dirname( __FILE__ ) . "/p2p-core/$file.php";
 	}

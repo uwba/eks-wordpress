@@ -49,9 +49,30 @@ function appthemes_pricing_setup(){
 }
 
 function appthemes_pricing_add_menu(){
+	global $pagenow, $typenow;
 	$ptype = APPTHEMES_PRICE_PLAN_PTYPE;
 	$ptype_obj = get_post_type_object( $ptype );
+	
 	add_submenu_page( 'app-payments', $ptype_obj->labels->name, $ptype_obj->labels->all_items, $ptype_obj->cap->edit_posts, "edit.php?post_type=$ptype" );
+
+	if($pagenow == 'post-new.php' && $typenow == $ptype) {
+		add_submenu_page( 'app-payments', $ptype_obj->labels->new_item, $ptype_obj->labels->new_item, $ptype_obj->cap->edit_posts, "post-new.php?post_type=$ptype" );
+	}
+}
+
+add_filter('parent_file', 'appthemes_pricing_menu_edit_page_menu_workaround'); 
+
+function appthemes_pricing_menu_edit_page_menu_workaround($parent_file) {
+	global $pagenow, $typenow;
+
+	$ptype = APPTHEMES_PRICE_PLAN_PTYPE;
+	$ptype_obj = get_post_type_object( $ptype );
+	
+	if($parent_file == "edit.php?post_type=$ptype" && ($pagenow == 'post.php' || $pagenow == 'post-new.php') && $typenow == $ptype) {
+		return 'app-payments';
+	}
+	
+	return $parent_file;
 }
 
 function appthemes_pricing_modify_title( $title, $post_id ){

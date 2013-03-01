@@ -74,7 +74,8 @@ function appthemes_setup_orders() {
 		'to' => $post_types,
 		'cardinality' => 'many-to-many',
 		'admin_box' => false,
-		'prevent_duplicates' => false
+		'prevent_duplicates' => false,
+		'self_connections' => true,
 	) );
 
 }

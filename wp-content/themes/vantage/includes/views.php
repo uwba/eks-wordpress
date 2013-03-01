@@ -4,10 +4,21 @@ class VA_Blog_Archive extends APP_View_Page {
 
 	function __construct() {
 		parent::__construct( 'index.php', __( 'Blog', APP_TD ) );
+
+		add_action('appthemes_before_blog_post_content', array($this, 'blog_featured_image'));
 	}
 
 	static function get_id() {
 		return parent::_get_id( __CLASS__ );
+	}
+
+	public function blog_featured_image() {
+		if ( has_post_thumbnail() ) {
+			echo html('a', array(
+				'href' => get_permalink(),
+				'title' => the_title_attribute(array('echo'=>0)),
+				), get_the_post_thumbnail( get_the_ID(), array( 420, 150 ), array( 'class' => 'alignleft' ) ) );
+		}
 	}
 }
 
@@ -73,16 +84,32 @@ class VA_Listing_Search extends APP_View {
 		$wp_query->set( 'post_type', VA_LISTING_PTYPE );
 		$wp_query->set( 'posts_per_page', $va_options->listings_per_page );
 
-		switch ( $wp_query->get( 'orderby' ) ) {
-		case 'distance':
-		case 'title':
-			if ( '' == $wp_query->get( 'order' ) )
-				$wp_query->set( 'order', 'asc' );
+		if ( '' == $wp_query->get( 'order' ) )
+			$wp_query->set( 'order', 'asc' );
 
-			break;
+		$orderby = $wp_query->get( 'orderby' );
+
+		if ( empty( $orderby ) ) {
+			$location = trim( $wp_query->get( 'location' ) );
+
+			if ( !empty( $location ) ) {
+				$orderby = $va_options->default_geo_search_sort;
+			} else {
+				$orderby = $va_options->default_search_sort;
+			}
+
+			$wp_query->set( 'orderby', $orderby );
+		}
+
+		switch ( $orderby ) {
 		case 'rating':
 			$wp_query->set( 'meta_key', 'rating_avg' );
 			$wp_query->set( 'orderby', 'meta_value' );
+			$wp_query->set( 'order', 'desc' );
+			break;
+		case 'distance':
+		case 'title':
+		default:
 			break;
 		}
 
@@ -106,14 +133,11 @@ class VA_Listing_Search extends APP_View {
 		$q = $wp_query->query_vars;
 		$search = '';
 
+		if ( empty( $q['search_terms'] ) ) return $sql;
+
 		// BEGIN COPY FROM WP_Query
 		$n = !empty($q['exact']) ? '' : '%';
 		$searchand = '';
-                
-                // EKS hack to avoid undefined variable error if search terms are not set
-                if (!isset($q['search_terms']))
-                    $q['search_terms'] = array();
-                
 		foreach( (array) $q['search_terms'] as $term ) {
 			$term = esc_sql( like_escape( $term ) );
 
@@ -126,25 +150,15 @@ class VA_Listing_Search extends APP_View {
 
 			$searchand = ' AND ';
 		}
-                
+
 		if ( !empty($search) ) {
 			$search = " AND ({$search}) ";
 			if ( !is_user_logged_in() )
 				$search .= " AND ($wpdb->posts.post_password = '') ";
 		}
-                
-                // EKS hack to add additional search filters               
-                if (!empty($_GET['county']))
-                    $search .= " AND tter.name = '".esc_sql($_GET['county'])."'";
-                                
-                if (!empty($_GET['city']))
-                    $search .= " AND $wpdb->posts.id IN (SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'address' AND meta_value LIKE '%".esc_sql(like_escape($_GET['city']))."%')";
-                
 		// END COPY
 
 		return $search;
-
-		return $sql;
 	}
 
 	function posts_clauses( $clauses ) {
@@ -231,12 +245,12 @@ class VA_Listing_Dashboard extends APP_View {
 		// dashboard permalinks
 
 		appthemes_add_rewrite_rule( $dashboard_permalink . '/?$', array(
-			'dashboard' => 'listings',
+			'dashboard' => $dashboard_listings_permalink,
 			'dashboard_author' => 'self'
 		) );
 
-		appthemes_add_rewrite_rule( $dashboard_permalink . '/page/(\d)/?$', array(
-			'dashboard' => 'listings',
+		appthemes_add_rewrite_rule( $dashboard_permalink . '/page/([0-9]+)/?$', array(
+			'dashboard' => $dashboard_listings_permalink,
 			'dashboard_author' => 'self',
 			'paged' => '$matches[1]',
 		) );
@@ -247,7 +261,7 @@ class VA_Listing_Dashboard extends APP_View {
 			'dashboard' => '$matches[1]',
 			'dashboard_author' => 'self'
 		) );
-		appthemes_add_rewrite_rule( $dashboard_permalink . '/(' . $dashboard_all_permalinks . '?)/?page/(\d)/?$', array(
+		appthemes_add_rewrite_rule( $dashboard_permalink . '/(' . $dashboard_all_permalinks . '?)/?page/([0-9]+)/?$', array(
 			'dashboard' => '$matches[1]',
 			'dashboard_author' => 'self',
 			'paged' => '$matches[2]',
@@ -255,7 +269,7 @@ class VA_Listing_Dashboard extends APP_View {
 
 		// dashboard author permalinks
 
-		appthemes_add_rewrite_rule( $dashboard_permalink . '/(' . $dashboard_all_permalinks . '?)/(.*?)/page/(\d)?/?$', array(
+		appthemes_add_rewrite_rule( $dashboard_permalink . '/(' . $dashboard_all_permalinks . '?)/(.*?)/page/([0-9]+)/?$', array(
 			'dashboard' => '$matches[1]',
 			'dashboard_author' => '$matches[2]',
 			'paged' => '$matches[3]',
@@ -348,8 +362,29 @@ class VA_Listing_Author extends APP_View {
 
 class VA_Listing_Create extends APP_View_Page {
 
+	private $errors;
+	
 	function __construct() {
 		parent::__construct( 'create-listing.php', __( 'Create Listing', APP_TD ) );
+		add_action( 'wp_ajax_vantage_create_listing_geocode', array( __CLASS__, 'handle_ajax' ) );
+		add_action( 'wp_ajax_nopriv_vantage_create_listing_geocode', array( __CLASS__, 'handle_ajax' ) );
+	}
+
+	public function handle_ajax() {
+		if ( !isset( $_GET['address'] ) && (!isset( $_GET['lat'] ) && !isset( $_GET['lng'] )) )
+			return;
+
+		if( isset( $_GET['address'] ) ) {
+			$api_response = va_geocode_address_api( $_GET['address'] );
+		} else if( isset( $_GET['lat'] ) ) {
+			$api_response = va_geocode_lat_lng_api( $_GET['lat'], $_GET['lng'] );
+		}
+
+		if ( !$api_response )
+			die( "error" );
+
+		die( json_encode( $api_response ) );
+
 	}
 
 	static function get_id() {
@@ -357,13 +392,24 @@ class VA_Listing_Create extends APP_View_Page {
 	}
 
 	function template_include( $path ) {
-		if ( !current_user_can( 'edit_listings' ) )
-			return locate_template( 'create-listing-no-auth.php' );
+
+		if ( !current_user_can( 'edit_listings' ) ) {
+			if ( get_option( 'users_can_register' ) ) {
+				$message = sprintf( __( 'You must first login or <a href="%s">register</a> to Create a Listing.' , APP_TD ), add_query_arg( array( 'redirect_to' => urlencode(va_get_listing_create_url()) ), appthemes_get_registration_url() ) );
+			} else {
+				$message = __( 'You must first login to Create a Listing.' , APP_TD );
+			}
+			set_transient( 'login_notice', array( 'error', $message ), 300);
+			wp_redirect( add_query_arg( array( 'redirect_to' => urlencode(va_get_listing_create_url()) ), APP_Login::get_url('redirect') ) );
+			exit();
+		}
 
 		return $path;
 	}
 
 	function template_redirect() {
+		$this->check_failed_upload();
+		
 		wp_register_script(
 			'jquery-validate',
 			get_template_directory_uri() . '/scripts/jquery.validate.min.js',
@@ -397,7 +443,41 @@ class VA_Listing_Create extends APP_View_Page {
 	function body_class($classes) {
 		$classes[] = 'va_listing_create';
 		return $classes;	
-	}	
+	}
+	
+	function check_failed_upload() {
+		if ( 'POST' != $_SERVER['REQUEST_METHOD'] ) return;
+		
+		$max_size = $this->convert_hr_to_bytes( ini_get( 'upload_max_filesize' ) );
+		$max_size_string = $this->convert_bytes_to_hr( $max_size );
+		
+		if ( !empty( $_SERVER['CONTENT_LENGTH'] ) && $_SERVER['CONTENT_LENGTH'] > $max_size ) {
+			$errors = va_get_listing_error_obj();
+			$errors->add( 'file-too-large', sprintf( __('Uploaded file was too large, maximum file size is %s', APP_TD ), $max_size_string ) );
+		}
+	}
+	
+	function convert_hr_to_bytes( $size ) {
+		$size = strtolower($size);
+		$bytes = (int) $size;
+		if ( strpos($size, 'k') !== false )
+			$bytes = intval($size) * 1024;
+		elseif ( strpos($size, 'm') !== false )
+			$bytes = intval($size) * 1024 * 1024;
+		elseif ( strpos($size, 'g') !== false )
+			$bytes = intval($size) * 1024 * 1024 * 1024;
+		return $bytes;
+	
+	}
+	
+	function convert_bytes_to_hr( $bytes ) {
+		$units = array( 0 => 'B', 1 => 'kB', 2 => 'MB', 3 => 'GB' );
+		$log = log( $bytes, 1024 );
+		$power = (int) $log;
+		$size = pow(1024, $log - $power);
+		return $size . $units[$power];
+	}
+	
 }
 
 class VA_Listing_Edit extends VA_Listing_Create {
@@ -407,9 +487,10 @@ class VA_Listing_Edit extends VA_Listing_Create {
 
 		$wp->add_query_var( 'listing_edit' );
 
+		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->edit_listing_permalink;
 
-		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( $listing_permalink. '/' . $permalink . '/(\d+)/?$', array(
 			'listing_edit' => '$matches[1]'
 		) );
 	}
@@ -464,10 +545,11 @@ class VA_Listing_Purchase extends APP_View {
 		global $wp, $va_options;
 
 		$wp->add_query_var( 'listing_purchase' );
-
+		
+		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->purchase_listing_permalink;
 
-		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( $listing_permalink . '/' . $permalink . '/(\d+)/?$', array(
 			'listing_purchase' => '$matches[1]'
 		) );
 	}
@@ -520,9 +602,10 @@ class VA_Listing_Claim extends APP_View {
 
 		$wp->add_query_var( 'listing_claim' );
 
+		$listing_permalink = $va_options->listing_permalink;
 		$permalink = $va_options->claim_listing_permalink;
 
-		appthemes_add_rewrite_rule( 'listings/' . $permalink . '/(\d+)/?$', array(
+		appthemes_add_rewrite_rule( $listing_permalink . '/' . $permalink . '/(\d+)/?$', array(
 			'listing_claim' => '$matches[1]'
 		) );
 		
@@ -532,6 +615,7 @@ class VA_Listing_Claim extends APP_View {
 		add_action( 'appthemes_transaction_completed', array( $this, 'handle_claim_transaction_completed' ) );
 		add_action( 'pending-claimed_to_publish', array( $this, 'update_listing_author' ) );
 		add_action( 'va_purchase_activated', array( $this, 'update_order_listing_author' ) );
+		add_action( 'appthemes_transaction_activated', array( $this, 'update_order_listing_author' ) );
 		add_action( 'appthemes_after_import_upload_form', array( $this, 'import_form_option' ) );
 		add_action( 'app_importer_import_row_post_meta', array( $this, 'import_form_action' ) );
 		
@@ -586,12 +670,19 @@ class VA_Listing_Claim extends APP_View {
 			
 			if ( empty( $claimable ) )
 				$errors->add( 'not-claimable', __( 'This listing is not claimable.', APP_TD ) );
+
+			if ( get_current_user_id() == get_post( $_POST['ID'] )->post_author )
+				$errors->add( 'own-not-claimable', __( 'This listing already belongs to you.', APP_TD ) );
+
 		}
 
 		return $errors;	
 	}
 	
 	function add_claiming_field( $listing ) {
+		if ( get_current_user_id() == get_post( $listing->ID )->post_author )
+			return false;
+
 		$claiming = get_post_meta( $listing->ID, 'listing_claimable', true );
 		
 		if ( empty( $claiming ) ) return;
@@ -691,7 +782,7 @@ class VA_Listing_Claim extends APP_View {
 		
 	function import_form_option() {
 		?>
-		<label><?php _e('Mark All as Claimable?:', APP_TD) ?> <input type="checkbox" name="listing_claimable" value="1" /></label>
+		<p><label><?php _e('Mark All as Claimable?:', APP_TD) ?> <input type="checkbox" name="listing_claimable" value="1" /></label></p>
 		<?php
 	}
 	

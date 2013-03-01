@@ -9,7 +9,7 @@
  */
 
 // Constants
-define( 'VA_VERSION', '1.1.1' );
+define( 'VA_VERSION', '1.1.4' );
 
 define( 'VA_LISTING_PTYPE', 'listing' );
 define( 'VA_LISTING_CATEGORY', 'listing_category' );
@@ -88,6 +88,7 @@ if ( is_admin() ) {
 	new VA_Listing_Claimable_Meta;
 	new VA_Listing_Gallery_Meta;
 	new VA_Listing_Reviews_Status_Meta;
+	new VA_Listing_Author_Meta;
 
 	$va_settings_admin = new VA_Settings_Admin( $va_options );
 	add_action( 'admin_init', array( $va_settings_admin, 'init_integrated_options' ), 10 );
@@ -101,7 +102,12 @@ add_theme_support( 'app-versions', array(
 
 add_theme_support( 'app-wrapping' );
 
-add_theme_support( 'app-geo', $va_options->geo_unit, $va_options->geo_region );
+add_theme_support( 'app-geo', array(
+	'unit' => $va_options->geo_unit,
+	'region' => $va_options->geo_region,
+	'language' => $va_options->geo_language,
+	'default_radius' => $va_options->default_radius
+) );
 
 add_theme_support( 'app-login', array(
 	'login' => 'form-login.php',
@@ -140,6 +146,11 @@ add_theme_support( 'app-payments', array(
 	),
 	'items_post_types' => array( VA_LISTING_PTYPE ),
 	'options' => $va_options,
+) );
+
+add_theme_support( 'app-term-counts', array(
+	'post_type' => array( VA_LISTING_PTYPE ),
+	'post_status' => array( 'publish' ),
 ) );
 
 new APP_User_Profile;

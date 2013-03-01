@@ -26,7 +26,7 @@ class APP_Order_Items extends APP_Meta_Box{
 	 * See APP_Meta_Box::__construct()
 	 */
 	function __construct(){
-		parent::__construct( 'order-summary', 'Order Summary', APPTHEMES_ORDER_PTYPE, 'standalone', 'high' );
+		parent::__construct( 'order-summary', 'Order Summary', APPTHEMES_ORDER_PTYPE, 'standalone', 'default' );
 	}
 
 	/**
@@ -88,6 +88,13 @@ class APP_Admin_Order_Summary_Table extends APP_Order_Summary_Table{
 
 	protected function row( $item ){
 
+		if( ! APP_Item_Registry::is_registered( $item['type'] ) ){
+			return html( 'tr', array(), html( 'td', array(
+				'colspan' => '3',
+				'style' => 'font-style: italic;'
+			), __('This item could not be recognized. It might be from another theme or an uninstalled plugin.', APP_TD ) ) );
+		}
+
 		$cells = array(
 			APP_Item_Registry::get_title( $item['type'] ),
 			APP_Currencies::get_price( $item['price'], $this->currency ),
@@ -112,7 +119,7 @@ class APP_Order_Status extends APP_Meta_Box{
 	 * See APP_Meta_Box::__construct()
 	 */
 	function __construct(){
-		parent::__construct( 'order-status', 'Order Status', APPTHEMES_ORDER_PTYPE, 'side', 'high' );
+		parent::__construct( 'order-status', 'Order Status', APPTHEMES_ORDER_PTYPE, 'side', 'default' );
 	}
 
 	/**
@@ -182,7 +189,7 @@ class APP_Order_Author extends APP_Meta_Box{
 	 * See APP_Meta_Box::__construct()
 	 */
 	function __construct(){
-		parent::__construct( 'order-author', 'Order Author', APPTHEMES_ORDER_PTYPE, 'side', 'high' );
+		parent::__construct( 'order-author', 'Order Author', APPTHEMES_ORDER_PTYPE, 'side', 'default' );
 	}
 
 	/**

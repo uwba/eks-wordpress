@@ -53,8 +53,15 @@ if ( have_posts() ) : ?>
 <?php appthemes_before_loop( VA_LISTING_PTYPE ); ?>
 <?php while ( have_posts() ) : the_post(); ?>
 	<?php appthemes_before_post( VA_LISTING_PTYPE ); ?>
+	<?php if ( is_search() && va_is_listing_featured(get_the_ID())) : ?>
+	<article id="post-<?php the_ID(); ?>" <?php post_class( 'featured' ); ?>>
+		<div class="featured-head">
+			<h3><?php _e( 'Featured', APP_TD ); ?></h3>
+		</div>
+	<?php else: ?>
 	<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<?php get_template_part( 'content-listing' ); ?>
+	<?php endif; ?>
+			<?php get_template_part( 'content-listing' ); ?>
 	</article>
 	<?php appthemes_after_post( VA_LISTING_PTYPE ); ?>
 <?php endwhile; ?>
@@ -71,7 +78,7 @@ if ( have_posts() ) : ?>
 	<?php endif; ?>
 <?php endif; ?>
 	<div class="advert">
-		<?php dynamic_sidebar( 'Listings Pages Ad' ); ?>
+		<?php dynamic_sidebar( 'va-listings-ad' ); ?>
 	</div>
 <?php if ( $wp_query->max_num_pages > 1 ) : ?>
 	<nav class="pagination">

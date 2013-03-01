@@ -68,7 +68,7 @@ function appthemes_payments_icon(){
 	.icon32-posts-pricing-plan,
 	.icon32-posts-transaction {
 		background-image: url('<?php echo $url; ?>');
-		background-position: -2px -5px !important;
+		background-position: -12px -5px !important;
 	}
 </style>
 <?php
@@ -125,7 +125,7 @@ function va_order_add_column_data( $column_index, $post_id ) {
 	switch( $column_index ){
 	
 		case 'order' : 
-			echo $order->get_ID();
+			echo '<a href="' . get_edit_post_link( $post_id ) . '">' . $order->get_ID() . '</a>';
 			break;
 
 		case 'order_author':
@@ -141,16 +141,14 @@ function va_order_add_column_data( $column_index, $post_id ) {
 			$string = _n( 'Purchased %s item', 'Purchased %s items', $count, APP_TD );
 
 			printf( $string, $count );
-			echo '<br>';
-			echo '<a href="' . get_edit_post_link( $post_id ) . '">' . __('View', APP_TD ) . '</a>';
 			break;
 			
 		case 'price':
 			$currency = $order->get_currency();
 			if( !empty( $currency ) ){
-				echo APP_Currencies::get_symbol( $order->get_currency() )  . $order->get_total();
+				echo APP_Currencies::get_price( $order->get_total(), $order->get_currency() );
 			}else{
-				echo APP_Currencies::get_current_symbol() . $order->get_total();
+				echo APP_Currencies::get_price( $order->get_total() );
 			}
 			break;
 			
@@ -167,6 +165,7 @@ function va_order_add_column_data( $column_index, $post_id ) {
 				}
 			}else{
 				_e( 'Undecided', APP_TD );
+				return;
 			}
 			
 			echo '</br>';
@@ -185,7 +184,7 @@ function va_order_add_column_data( $column_index, $post_id ) {
 			break;
 		
 		case 'order_date':
-			$order_post = get_post( $order->ID );
+			$order_post = get_post( $order->get_ID() );
 			if ( '0000-00-00 00:00:00' == $order_post->post_date ) {
 				$t_time = $h_time = __( 'Unpublished' );
 				$time_diff = 0;

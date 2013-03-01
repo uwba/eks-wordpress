@@ -33,6 +33,7 @@ class VA_Pricing_General_Box extends APP_Meta_Box{
 				'title' => __( 'Price', APP_TD ),
 				'type' => 'text',
 				'name' => 'price',
+				'desc' => sprintf( __( 'Example: %s ' , APP_TD ), '1.00' ),
 				'extra' => array(
 					'style' => 'width: 50px;'
 				)
@@ -41,7 +42,7 @@ class VA_Pricing_General_Box extends APP_Meta_Box{
 				'title' => __( 'Listing Duration', APP_TD ),
 				'type' => 'text',
 				'name' => 'duration',
-				'desc' => __( '( 0 = Infinite )', APP_TD),
+				'desc' => __( 'days ( 0 = Infinite )', APP_TD),
 				'extra' => array(
 					'style' => 'width: 50px;'
 				)
@@ -107,6 +108,7 @@ class VA_Pricing_Addon_Box extends APP_Meta_Box{
 				'title' => __( 'Duration', APP_TD ),
 				'type' => 'text',
 				'name' => $addon . '_duration',
+				'desc' => __( 'days', APP_TD ),
 				'extra' => array(
 					'size' => '3'
 				),

@@ -115,7 +115,7 @@
       }
     };
     
-    var updateValues = function(){
+    var updateValues = function(new_value){
 
       var prev;
       if(options.range){
@@ -129,7 +129,12 @@
       } else {
       
         prev = options.values;
-        options.values = pxToValue($handle);
+        
+        if(new_value) {
+	        options.values = new_value;
+        } else {
+	        options.values = pxToValue($handle);
+        }
         
         // set value on original element
         $original.val(options.values);
@@ -149,7 +154,7 @@
         }
       }
       
-      updateValues();
+      updateValues(options.values);
     };
     
     var pxToValue = function($h){

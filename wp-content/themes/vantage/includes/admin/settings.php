@@ -17,6 +17,16 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 			'admin_action_priority' => 99,
 		);
 
+		add_action( 'admin_notices', array( $this, 'prune_listings' ) );
+
+	}
+
+	public function prune_listings(){
+
+		if( isset( $_GET['prune'] ) && $_GET['prune'] == 1 ){
+			va_prune_expired_listings();
+			echo scb_admin_notice( 'Expired listings have been pruned.' );
+		}
 	}
 
 	protected function init_tabs() {
@@ -26,6 +36,17 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 		$this->tab_sections['general']['appearance'] = array(
 			'title' => __( 'Appearance', APP_TD ),
 			'fields' => array(
+				array(
+					'title' => __( 'Theme Customizer', APP_TD ),
+					'desc' => sprintf( __( '<a href="%s">Customize Vantage</a> design and settings and see the results real-time without opening or refreshing a new browser window.' , APP_TD), 'customize.php' ),
+					'type' => 'text',
+					'name' => '_blank',
+					'extra' => array(
+						'style' => 'display: none;'
+					),
+					'tip' => __( 'Use the WordPress Theme Customizer to try out different design optoins and other Vantage settings.' ),
+					
+				),
 				array(
 					'title' => __( 'Theme Color', APP_TD ),
 					'type' => 'select',
@@ -70,6 +91,40 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 					'name' => 'moderate_claimed_listings',
 					'desc' => __( 'Yes', APP_TD ),
 					'tip' => __( 'Do you want to moderate listing claims before they are transfered to the requesting claimee?', APP_TD ),
+				),
+			)
+		);
+
+		$this->tab_sections['listings']['search'] = array(
+			'title' => __( 'Search', APP_TD ),
+			'fields' => array(
+				array(
+					'title' => __( 'Default Search Result Sort', APP_TD ),
+					'name' => 'default_search_sort',
+					'type' => 'select',
+					'values' => array(
+						'rating' => __( 'Highest Rated First', APP_TD ),
+						'title' => __( 'Alphabetical', APP_TD ),
+					),
+					'tip' => __( 'The default search result sorting method when search is made without a location entered in search.', APP_TD ),
+				),
+				array(
+					'title' => __( 'Default Location Based Search Result Sort', APP_TD ),
+					'name' => 'default_geo_search_sort',
+					'type' => 'select',
+					'values' => array(
+						'rating' => __( 'Highest Rated First', APP_TD ),
+						'title' => __( 'Alphabetical', APP_TD ),
+						'distance' => __( 'Closest Distance First', APP_TD ),
+					),
+					'tip' => __( 'The default search result sorting method when search is made with a location entered in search.', APP_TD ),
+				),
+				array(
+					'title' => __( 'Default Standard Location Search Radius', APP_TD ),
+					'type' => 'text',
+					'name' => 'default_radius',
+					'extra' => array( 'size' => 2),
+					'tip' => __( 'The default search radius used for a location based search. If you leave this blank, the radius will automatically be calculated based on the location query.', APP_TD ),
 				),
 			)
 		);
@@ -151,7 +206,18 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 					),
 					'tip' => __( 'Manage default Payments Settings including featured pricing and duration, enable/disable available payment gateways, and manage individual payment gateway\'s settings.', APP_TD ),
 				),
-			),
+			
+			array(
+					'title' => __( 'Expired Listings', APP_TD ),
+					'name' => '_blank',
+					'type' => '',
+					'desc' => sprintf( __( 'Prune  <a href="%s">Expired Listings</a> now.', APP_TD ), 'admin.php?page=app-settings&prune=1' ),
+					'extra' => array(
+						'style' => 'display: none;'
+					),
+					'tip' => __( 'Run expired listings check.', APP_TD ),
+				),
+			),	
 		);
 
 		$this->tab_sections['general']['google_maps'] = array(
@@ -166,6 +232,14 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 					'tip' => __( "When a user enters 'Florence' in the location search field, you can let Google know that they probably meant 'Florence, Italy' rather than 'Florence, Alabama'.", APP_TD )
 				),
 				array(
+					'title' => __( 'Language', APP_TD ),
+					'desc' => sprintf( __( 'Find your two-letter language code <a href="%s">here</a>.', APP_TD ), 'https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1' ),
+					'type' => 'text',
+					'name' => 'geo_language',
+					'extra' => array( 'size' => 2 ),
+					'tip' => __( "Used to let Google know to use this language in the formatting of addresses and for the map controls.", APP_TD )
+				),				
+				array(
 					'title' => __( 'Distance Unit', APP_TD ),
 					'type' => 'radio',
 					'name' => 'geo_unit',
@@ -177,6 +251,23 @@ class VA_Settings_Admin extends APP_Tabs_Page {
 				),
 			),
 		);
+
+		$this->tab_sections['general']['permalinks'] = array(
+			'title' => __( 'Permalinks', APP_TD ),
+			'fields' => array(
+				array(
+					'title' => __( 'Manage', APP_TD ),
+					'desc' => sprintf( __( 'Manage <a href="%s">Vantage Permalinks</a>.', APP_TD ), 'options-permalink.php' ),
+					'type' => 'text',
+					'name' => '_blank',
+					'extra' => array( 
+						'style' => 'display: none;',
+					),
+					'tip' => __( 'Manage Vantage\'s permalinks settings for listings, listing categories, listing tags, dashboard pages, etc.', APP_TD )
+				),
+			),
+		);
+
 
 		$this->tab_sections['general']['category_menu_options'] = array(
 			'title' => __( 'Categories Menu Item Options', APP_TD ),

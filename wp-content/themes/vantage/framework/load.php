@@ -39,6 +39,9 @@ function _appthemes_load_features() {
 
 	if ( is_admin() && current_theme_supports( 'app-versions' ) )
 		require dirname( __FILE__ ) . '/admin/versions.php';
+
+	if ( current_theme_supports( 'app-term-counts' ) )
+		require dirname( __FILE__ ) . '/includes/term-counts.php';
 }
 
 // Breadcrumbs plugin
@@ -48,9 +51,13 @@ if ( !is_admin() && !function_exists( 'breadcrumb_trail' ) ) {
 
 if ( is_admin() ) {
 	require dirname( __FILE__ ) . '/admin/functions.php';
-	require dirname( __FILE__ ) . '/admin/taxonomy-columns.php';
+
 	require dirname( __FILE__ ) . '/admin/class-dashboard.php';
 	require dirname( __FILE__ ) . '/admin/class-tabs-page.php';
+
+	if ( version_compare( $GLOBALS['wp_version'], '3.5-alpha', '<' ) ) {
+		require dirname( __FILE__ ) . '/admin/taxonomy-columns.php';
+	}
 }
 
 add_filter( 'wp_title', 'appthemes_title_tag', 9 );

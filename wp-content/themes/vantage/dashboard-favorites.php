@@ -11,13 +11,6 @@ if ( $favorites->post_count > 0 ) {
 	$post_status = $is_own_dashboard ? 'post-status' : '';
 ?>
 	<article id="post-<?php the_ID(); ?>" <?php post_class( $post_status ); ?>>
-		<?php if ( $is_own_dashboard ) { ?>
-    	<div class="featured-head <?php echo 'post-status-'.get_post_status( get_the_ID() ).'-head'; ?>">
-			<h3><?php echo va_get_dashboard_verbiage( get_post_status( get_the_ID() ) ); ?></h3>
-        </div>
-        <?php va_the_listing_expiration_notice(); ?>
-        <?php } ?>
-
 		<?php get_template_part( 'content-listing', get_post_status() ); ?>
 	</article>
 <?php

@@ -1,5 +1,4 @@
 function vantage_map_edit() {
-
 	var geocoder = new google.maps.Geocoder();
 
 	var map = new google.maps.Map(document.getElementById('listing-map'), {
@@ -8,8 +7,32 @@ function vantage_map_edit() {
 	});
 
 	var marker = new google.maps.Marker({
-		map: map
+		map: map,
+		draggable: true
 	});
+	
+	google.maps.event.addListener(marker, 'dragend', function() {
+		var drag_position = marker.getPosition();
+
+		jQuery('input[name="lat"]').val(drag_position.lat());
+		jQuery('input[name="lng"]').val(drag_position.lng());
+		update_position(drag_position);
+
+		jQuery.getJSON( Vantage.ajaxurl, {
+			action: 'vantage_create_listing_geocode',
+			lat: drag_position.lat(),
+			lng: drag_position.lng()
+		}, function(response) {
+			if ( response.status == 'OK' ) {
+				var found_location = response.results[0].geometry.location;
+
+				jQuery('#listing-address').val(response.results[0].formatted_address);
+
+			} else {
+				alert("Google Maps error: " + response.status );
+			}
+		} );
+	});	
 
 	function update_position(found_location) {
 		map.setCenter(found_location);
@@ -30,28 +53,32 @@ function vantage_map_edit() {
 	var map_initialized = false;
 
 	function update_map(callback) {
-		map_initialized = true;
-
-		var data = {
-			address: jQuery('#listing-address').val()
+		if ( typeof Vantage === 'undefined' ) {
+			return setTimeout('update_map(callback)', 500);
 		}
 
-		geocoder.geocode( data, function(results, status) {
-			if ( status == google.maps.GeocoderStatus.OK ) {
-				var found_location = results[0].geometry.location;
+		map_initialized = true;
 
-				jQuery('#listing-address').val(results[0].formatted_address);
+		jQuery.getJSON( Vantage.ajaxurl, {
+			action: 'vantage_create_listing_geocode',
+			address: jQuery('#listing-address').val(),
+		}, function(response) {
+			if ( response.status == 'OK' ) {
+				var found_location = response.results[0].geometry.location;
 
-				jQuery('input[name="lat"]').val(found_location.lat());
-				jQuery('input[name="lng"]').val(found_location.lng());
+				jQuery('#listing-address').val(response.results[0].formatted_address);
 
-				update_position(found_location);
+				jQuery('input[name="lat"]').val(found_location.lat);
+				jQuery('input[name="lng"]').val(found_location.lng);
+
+				update_position(new google.maps.LatLng(found_location.lat,found_location.lng));
+
 			} else {
-				alert("Google Maps error: " + status );
+				alert("Google Maps error: " + response.status );
 			}
 
 			callback(status);
-		});
+		} );
 	}
 
 	jQuery('#listing-find-on-map').click(function(ev) {
@@ -69,7 +96,6 @@ function vantage_map_edit() {
 		});
 	}
 
-        // Added by EKS: If the global-scope function onCategoryLoadComplete exists, call it upon load complete 
 	function loadFormFields() {
 		var data = {
 			action: 'app-render-form',
@@ -78,23 +104,18 @@ function vantage_map_edit() {
 
 		jQuery.post(VA_i18n.ajaxurl, data, function(response) {
 			jQuery('#custom-fields').html(response);
-                        if (typeof (onCategoryLoadComplete) == 'function')
-                            onCategoryLoadComplete();
 		});
 	}
-	jQuery('#listing_category')
+
+	jQuery('#_listing_category')
 		.change(loadFormFields)
 		.find('option').eq(0).val(''); // needed for jQuery.validate()
-        
+
 	jQuery('.uploaded').sortable();
 
 	jQuery('#create-listing').validate({
 		submitHandler: ensureMapInit
 	});
-        
-        // Added by EKS: If the global-scope function onMapLoadComplete exists, call it now
-        if (typeof (onMapLoadComplete) == 'function')
-            onMapLoadComplete();
 }
 
 	jQuery('#create-listing input[type="file"]').after('<input type="button" class="clear-file" value="' + VA_i18n.clear + '">');

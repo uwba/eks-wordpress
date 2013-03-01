@@ -1,3 +1,91 @@
+Changelog for 1.1.4 - 2013-02-06
+
+Make navigation menu responsive, becomes native select menu at smaller screen sizes.
+Add responsive styling to front end pages.
+Fix wp-admin created listings not showing in search results when results sorted by rating.
+Fix redirect when following the registration link on claim listing page.
+Fix bug to allow upgrades on claimed listing on free plan.
+Added prune now button for immediately expiring listings.
+Fix date formatting bug on wp-admin edit listing form.
+Fix bug for custom form not showing on create/edit listing on front end.
+
+Changelog for 1.1.3 - 2012-11-09
+
+Fix error when searching with no search term.
+Fix listing expiration, schedule featured expiration check for hourly.
+Format user contact fields in wp-admin listing edit listing.
+Fix date format to use WP setting on wp-admin listing edit in Pricing Information meta box.
+Fix search pagination error affecting multisite.
+Disallow children plans from being available to be chosen.
+Fix js error on wp-admin listing edit.
+use _n() instead of __ngettext() (deprecated WordPress function).
+Fix expiration of featured status.
+Add listing_duration field to csv importer.
+Add featured image to blog posts.
+Login/Register redirect setup if not logged and click Create Listing.
+Add language setting to Google Maps API usage.
+Allow listings w/o plan (created in wp-admin) to be upgraded.
+Fix upgrade listing error.
+Fix search sort by rating not including listings with 0 reviews.
+Fix dashboard pagination.
+Fix bug causing claimed accepting and subsequent order activation and plan data to get overidden by meta box values on wp-admin publish(accept).
+Option to geocode imported listings.
+Added units to listing duration meta boxes and pricing meta boxes.
+In the future, the pricing example should be updated to use the current currency.
+Fix slider rounding and sync slider value to actual sql distance used.
+Implement search options, default sorting, default radius.
+Cleanup reviews code.
+Listing form updates, fix bug with wp_tax_query on form submission.
+Fix Payments menu collapsed when editing plan.
+Update url with anchor to the tab so it's easy to link to business listings page tabs.
+Removed status headline hangers for dashboard favorties.
+Fix Favorite button text alignment and underline.
+Allow checkbox to disable emails generated during import.
+Fix purchase receipt email content, removing the duplicate links and providing purchase summary table.
+Fix purchase form to only take checked options from selected plan.
+Fix Sharethis misaligned when logged out.
+Updates to listing create/edit form to deal with image upload errors and other errors on edit listing.
+Make listing thumbnail clickable.
+Featured listings are now shown as featured in search.
+Change existing listing purchase text to show unlimited days.
+Change text showing featured can never expire.
+Format listing contact fields like webste, twitter, facebook.
+Fix listing expiration, now checks hourly.
+Admin can now change author to any user, including subscribers.
+
+Changelog for 1.1.2 - 2012-10-02
+
+Change display order for Popular Listings Categories widget.
+Add missed changes for term count fix.
+Fix javascript bug preventing clicking overview tab after submitting review, in Windows IE, FF, and Safari.
+Make map pin draggable in crete and edit listing pages.
+Fix broken author reviews link url
+Add Bank Transfer payment gateway.
+Fixed default pricing plan not being create during an upgrade.
+Fixed currency changes to be displayed properly.
+Fixed permalinks issues for dashboard and claimed listings in certain scenarios.
+Fixed tags not being able to be saved.
+Reviews now display line breaks to show paragraphs.
+Notes about base64 usage in CSS & link to FAQ.
+Changed "no expiration date" display from "0 days" to "Unlimited Days".
+Fixed bug disallowing puplishing a moderated listing. 
+Fixed bug disallowing accepting a moderated claimed listing.
+Can now quick edit listings as claimable from wp-admin.
+Can now bulk edit listings as claimable from wp-admin.
+Redirect after claimed listing no longer ends in listing not found page.
+Error returned if owner tries to claim their own listing.
+Upgrade listing no longer visible when charging is turned off.
+Pricing plans no longer increase the category count.
+Remove options text from pricing plan when no option available
+Fixed XSS vulnerability.
+Move search refinement preserving logic out of header template.
+Fixed problems with the language pack.
+Fixed fatal error on login page.
+
+Changelog for 1.1.1 - 2012-08-26
+
+Fixed issue with dissapearing images.
+
 Changelog for 1.1 - 2012-08-22
 
 Pricing Plans which offer multiple pricing options to be offered, and are connected to categories.

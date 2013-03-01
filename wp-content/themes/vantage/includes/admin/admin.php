@@ -3,6 +3,7 @@
 // Installation procedures
 add_action( 'appthemes_first_run', 'va_init_settings' );
 add_action( 'appthemes_first_run', 'va_init_content' );
+add_action( 'appthemes_first_run', 'va_setup_postmeta' );
 add_action( 'appthemes_first_run', 'va_init_menu' );
 
 add_action( 'load-post-new.php', 'va_disable_admin_listing_creation' );
@@ -37,6 +38,7 @@ function va_csv_importer() {
 			'facebook' => array(),
 			'twitter' => array(),
 			'website' => array(),
+			'listing_duration' => array('internal_key' => 'listing_duration', 'default' => 0),
 		),
 
 		'geodata' => true,
@@ -60,6 +62,24 @@ function va_init_settings() {
 	flush_rewrite_rules();
 }
 
+function va_setup_postmeta() {
+
+	list( $args ) = get_theme_support( 'app-versions' );
+	$previous_version = get_option( $args['option_key'] );
+
+	if ( version_compare( $previous_version, '1.1.3', '<' ) ) {
+
+		$listings = get_posts( array (
+			'post_type'   	=> VA_LISTING_PTYPE,
+			'nopaging' => true,
+		) );
+
+		foreach ( $listings  as $listing ) {
+			va_set_meta_defaults( $listing );
+		}
+	}
+}
+
 function va_init_content() {
 	// Deliberately left untranslated
 
@@ -68,75 +88,84 @@ function va_init_content() {
 		'posts_per_page' => 1
 	) );
 
-	if ( !empty( $listings ) )
-		return;
+	if ( empty( $listings ) ) {
 
-	$cat = appthemes_maybe_insert_term( 'Software', VA_LISTING_CATEGORY );
-
-	$listing_id = wp_insert_post( array(
-		'post_type' => VA_LISTING_PTYPE,
-		'post_status' => 'publish',
-		'post_author' => get_current_user_id(),
-		'post_title' => 'AppThemes',
-		'post_content' => 'AppThemes is a fast growing company that employs talent from all around the world. Our diverse team consists of highly skilled WordPress developers, designers, and enthusiasts who come together to make awesome premium themes available in over two dozen different languages.',
-		'tax_input' => array(
-			VA_LISTING_CATEGORY => array( $cat['term_id'] ),
-			VA_LISTING_TAG => 'wordpress, themes'
-		)
-	) );
-
-	$data = array(
-		'phone' => '415-287-3474',
-		'address' => '548 Market St, San Francisco, CA 94104, USA',
-		'website' => 'appthemes.com',
-		'twitter' => 'appthemes',
-		'facebook' => 'appthemes',
-		'rating_avg' => '5',
-	);
-
-	foreach ( $data as $key => $value )
-		add_post_meta( $listing_id, $key, $value );
-
-	appthemes_set_coordinates( $listing_id, '37.7899027', '-122.40078460000001' );
-
-	$user_id = username_exists( 'customer' );
-	if ( !$user_id ) {
-		$user_id = wp_insert_user( array(
-			'user_login' => 'customer',
-			'display_name' => 'Satisfied Customer',
-			'user_pass' => wp_generate_password()
+		$cat = appthemes_maybe_insert_term( 'Software', VA_LISTING_CATEGORY );
+	
+		$listing_id = wp_insert_post( array(
+			'post_type' => VA_LISTING_PTYPE,
+			'post_status' => 'publish',
+			'post_author' => get_current_user_id(),
+			'post_title' => 'AppThemes',
+			'post_content' => 'AppThemes is a fast growing company that employs talent from all around the world. Our diverse team consists of highly skilled WordPress developers, designers, and enthusiasts who come together to make awesome premium themes available in over two dozen different languages.',
+			'tax_input' => array(
+				VA_LISTING_CATEGORY => array( $cat['term_id'] ),
+				VA_LISTING_TAG => 'wordpress, themes'
+			)
 		) );
+	
+		$data = array(
+			'phone' => '415-287-3474',
+			'address' => '548 Market St, San Francisco, CA 94104, USA',
+			'website' => 'appthemes.com',
+			'twitter' => 'appthemes',
+			'facebook' => 'appthemes',
+			'rating_avg' => '5',
+		);
+	
+		foreach ( $data as $key => $value )
+			add_post_meta( $listing_id, $key, $value );
+	
+		appthemes_set_coordinates( $listing_id, '37.7899027', '-122.40078460000001' );
+	
+		$user_id = username_exists( 'customer' );
+		if ( !$user_id ) {
+			$user_id = wp_insert_user( array(
+				'user_login' => 'customer',
+				'display_name' => 'Satisfied Customer',
+				'user_pass' => wp_generate_password()
+			) );
+		}
+	
+		$review_id = wp_insert_comment( array(
+			'comment_type' => VA_REVIEWS_CTYPE,
+			'comment_post_ID' => $listing_id,
+			'user_id' => $user_id,
+			'comment_content' => "Wow! Really powerful stuff from AppThemes. Their themes simply blow away the competition. It seems like everyone is trying to make money online and AppThemes makes it easy to do just that. After downloading and installing their themes, it's just a few button clicks before you have an amazing website - no not a website, a web application. That's what you're getting with AppThemes, really powerful web applications. All you have to take care of is getting traffic to your site. The themes from AppThemes do the rest."
+		) );
+	
+		va_set_rating( $review_id, 5 );
 	}
-
-	$review_id = wp_insert_comment( array(
-		'comment_type' => VA_REVIEWS_CTYPE,
-		'comment_post_ID' => $listing_id,
-		'user_id' => $user_id,
-		'comment_content' => "Wow! Really powerful stuff from AppThemes. Their themes simply blow away the competition. It seems like everyone is trying to make money online and AppThemes makes it easy to do just that. After downloading and installing their themes, it's just a few button clicks before you have an amazing website - no not a website, a web application. That's what you're getting with AppThemes, really powerful web applications. All you have to take care of is getting traffic to your site. The themes from AppThemes do the rest."
-	) );
-
-	va_set_rating( $review_id, 5 );
-
-	$plan_id = wp_insert_post( array(
+	
+	$plans = get_posts( array(
 		'post_type' => APPTHEMES_PRICE_PLAN_PTYPE,
-		'post_status' => 'publish',
-		'post_author' => get_current_user_id(),
-		'post_title' => 'Basic',
-		'post_content' => '',
-		'tax_input' => array(
-			VA_LISTING_CATEGORY => array( $cat['term_id'] ),
-		)
+		'posts_per_page' => 1
 	) );
 
-	$data = array(
-		'title' => 'Basic',
-		'description' => 'Get your listing out there with our Basic plan. No frills, no fuss.',
-		'duration' => 30,
-		'price' => 0,
-	);
-
-	foreach ( $data as $key => $value )
-		add_post_meta( $plan_id, $key, $value );
+	if ( empty( $plans ) ) {
+		
+		$plan_id = wp_insert_post( array(
+			'post_type' => APPTHEMES_PRICE_PLAN_PTYPE,
+			'post_status' => 'publish',
+			'post_author' => get_current_user_id(),
+			'post_title' => 'Basic',
+			'post_content' => '',
+			'tax_input' => array(
+				VA_LISTING_CATEGORY => array( $cat['term_id'] ),
+			)
+		) );
+	
+		$data = array(
+			'title' => 'Basic',
+			'description' => 'Get your listing out there with our Basic plan. No frills, no fuss.',
+			'duration' => 30,
+			'price' => 0,
+		);
+	
+		foreach ( $data as $key => $value )
+			add_post_meta( $plan_id, $key, $value );
+	
+	}
 }
 
 function va_init_menu() {
@@ -196,8 +225,14 @@ function va_admin_styles() {
 		.inline-edit-listing .inline-edit-group .alignleft {
 			display: none;
 		}
-		.inline-edit-listing .inline-edit-group .alignleft.inline-edit-status{
+		.inline-edit-listing .inline-edit-group .alignleft.inline-edit-status,
+		.inline-edit-listing .inline-edit-group .alignleft.inline-edit-claimable{
 			display: block;
+		}
+		
+		.wp-list-table th.column-claimable,
+		.wp-list-table td.column-claimable {
+			display: none;
 		}
 	</style>
 	<?php

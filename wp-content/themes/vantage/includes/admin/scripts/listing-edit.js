@@ -221,8 +221,33 @@ function vantage_map_edit() {
 	});
 
 	var marker = new google.maps.Marker({
-		map: map
+		map: map,
+		draggable: true
 	});
+	
+	google.maps.event.addListener(marker, 'dragend', function() {
+		var drag_position = marker.getPosition();
+
+		jQuery('input[name="lat"]').val(drag_position.lat());
+		jQuery('input[name="lng"]').val(drag_position.lng());
+		update_position(drag_position);
+
+		jQuery.getJSON( ajaxurl, {
+			action: 'vantage_single_listing_geocode',
+			lat: drag_position.lat(),
+			lng: drag_position.lng()
+		}, function(response) {
+			if ( response.status == 'OK' ) {
+				var found_location = response.results[0].geometry.location;
+
+				jQuery('#listing-address').val(response.results[0].formatted_address);
+
+			} else {
+				alert("Google Maps error: " + response.status );
+			}
+		} );
+
+	});	
 
 	function update_position(found_location) {
 		map.setCenter(found_location);
@@ -239,45 +264,67 @@ function vantage_map_edit() {
 
 	function update_map(callback) {
 		map_initialized = true;
-
-		var data = {
-			address: jQuery('#listing-address').val()
+		if ( typeof ajaxurl === 'undefined' ) {
+			return setTimeout('update_map(callback)', 500);
 		}
 
-		geocoder.geocode( data, function(results, status) {
-			if ( status == google.maps.GeocoderStatus.OK ) {
-				var found_location = results[0].geometry.location;
+		jQuery.getJSON( ajaxurl, {
+			action: 'vantage_single_listing_geocode',
+			address: jQuery('#listing-address').val(),
+		}, function(response) {
+			if ( response.status == 'OK' ) {
+				var found_location = response.results[0].geometry.location;
 
-				jQuery('#listing-address').val(results[0].formatted_address);
+				jQuery('#listing-address').val(response.results[0].formatted_address);
 
-				jQuery('input[name="lat"]').val(found_location.lat());
-				jQuery('input[name="lng"]').val(found_location.lng());
+				jQuery('input[name="lat"]').val(found_location.lat);
+				jQuery('input[name="lng"]').val(found_location.lng);
 
-				update_position(found_location);
+				update_position(new google.maps.LatLng(found_location.lat,found_location.lng));
+
 			} else {
-				alert("Google Maps error: " + status );
+				alert("Google Maps error: " + response.status );
 			}
 
 			callback(status);
-		});
+		} );
 	}
 
 	jQuery('#listing-find-on-map').click(function(ev) {
 		update_map(jQuery.noop);
 	});
 
-	function ensureMapInit(form) {
-		if ( map_initialized ) {
-			form.submit();
-			return;
+}
+
+function quickEditListing() {
+
+	if(typeof inlineEditPost === 'undefined') return;
+
+	var _edit = inlineEditPost.edit;
+	inlineEditPost.edit = function( id ) {
+
+		var args = [].slice.call( arguments );
+		_edit.apply( this, args );
+		
+		if ( typeof( id ) == 'object' ) {
+			id = this.getId( id );
 		}
 
-		update_map(function(status) {
-			form.submit();
-		});
-	}
+		if ( this.type == 'post' ) {
+			var editRow = jQuery( '#edit-' + id ), postRow = jQuery( '#post-'+id );
+			
+			// get the existing values
+			var listing_claimable = ( 1 == jQuery( 'input[name="listing_claimable"]', postRow ).val() ? true : false );
 
-	jQuery('#post').validate({
-		submitHandler: ensureMapInit
-	});
+			// set the values in the quick-editor
+			jQuery( ':input[name="listing_claimable"]', editRow ).attr( 'checked', listing_claimable );
+		}
+	};
+}
+
+// Ensure inlineEditPost.edit isn't patched until it's defined
+if ( typeof inlineEditPost !== 'undefined' ) {
+	quickEditListing();
+} else {
+	jQuery( quickEditListing );
 }

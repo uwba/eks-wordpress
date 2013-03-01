@@ -5,6 +5,7 @@ add_action( 'draft_to_publish', 'va_update_listing_start_date' );
 add_action( 'pending-claimed_to_publish', 'va_update_listing_start_date' );
 
 add_action( 'init', 'va_schedule_listing_prune' );
+add_action( 'va_prune_expired_listings', 'va_prune_expired_listings' );
 
 add_filter( 'posts_clauses', 'va_expired_listing_sql', 10, 2 );
 
@@ -33,14 +34,15 @@ function va_update_listing_start_date( $post ) {
 
 function va_schedule_listing_prune() {
 	if ( !wp_next_scheduled( 'va_prune_expired_listings' ) )
-		wp_schedule_event( time(), 'daily', 'va_prune_expired_listings' );
+		wp_schedule_event( time(), 'hourly', 'va_prune_expired_listings' );
 }
 
 function va_prune_expired_listings() {
 
 	$expired_posts = new WP_Query( array(
 		'post_type' => VA_LISTING_PTYPE,
-		'expired_listings' => true
+		'expired_listings' => true,
+		'nopaging' => true,
 	) );
 
 	foreach ( $expired_posts->posts as $post ) {

@@ -7,7 +7,7 @@
 	<h1><?php echo $title; ?></h1>
 </div>
 
-<form id="create-listing" enctype="multipart/form-data" method="post" action="<?php echo va_get_listing_create_url(); ?>">
+<form id="create-listing" enctype="multipart/form-data" method="post" action="<?php echo $form_action; ?>">
 	<?php wp_nonce_field( 'va_create_listing' ); ?>
 	<input type="hidden" name="action" value="<?php echo ( get_query_var('listing_edit') ? 'edit-listing' : 'new-listing' ); ?>" />
 	<input type="hidden" name="ID" value="<?php echo esc_attr( $listing->ID ); ?>" />
@@ -52,7 +52,7 @@
 			'taxonomy' => VA_LISTING_CATEGORY,
 			'hide_empty' => false,
 			'hierarchical' => true,
-			'name' => VA_LISTING_CATEGORY,
+			'name' => '_'.VA_LISTING_CATEGORY,
 			'selected' => $listing->category,
 			'show_option_none' => __( 'Select Category', APP_TD ),
 			'class' => 'required',

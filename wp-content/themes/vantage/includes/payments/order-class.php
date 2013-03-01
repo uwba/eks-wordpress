@@ -26,7 +26,16 @@ class APP_Order {
 			'post_type' => APPTHEMES_ORDER_PTYPE,
 			'post_status' => APPTHEMES_ORDER_PENDING, 
 		) );
+
+		$currency = APP_Gateway_Registry::get_options()->currency_code;
+
 		add_post_meta( $order_id, 'ip_address', $_SERVER['REMOTE_ADDR'], true );
+		add_post_meta( $order_id, 'currency', $currency, true );
+
+		wp_update_post(array(
+			'ID' => $order_id,
+			'post_name' => $order_id
+		));
 
 		return self::retrieve( $order_id );
 	}
@@ -42,7 +51,7 @@ class APP_Order {
 			return self::$instances[ $order_id ];
 
 		$order_data = get_post( $order_id );
-		if ( $order_data->post_type != APPTHEMES_ORDER_PTYPE )
+		if ( !$order_data || $order_data->post_type != APPTHEMES_ORDER_PTYPE )
 			return false;
 
 		$items = array();

@@ -39,7 +39,7 @@ function appthemes_delete_coordinates( $post_id ) {
 }
 
 function appthemes_enqueue_geo_scripts( $callback ) {
-	list( $unit, $region ) = get_theme_support( 'app-geo' );
+	extract(appthemes_geo_get_args());
 
 	$google_maps_url = is_ssl() ? 'https://maps-api-ssl.google.com/maps/api/js' : 'http://maps.google.com/maps/api/js';
 
@@ -47,6 +47,7 @@ function appthemes_enqueue_geo_scripts( $callback ) {
 		'v' => 3,
 		'sensor' => 'false',
 		'region' => $region,
+		'language' => $language,
 		'callback' => $callback
 	);
 
@@ -55,6 +56,14 @@ function appthemes_enqueue_geo_scripts( $callback ) {
 	wp_enqueue_script( 'google-maps-api', $google_maps_url, array(), '3', true );
 }
 
+function appthemes_geo_get_args() {
+	if( !current_theme_supports( 'app-geo' ) )
+		return array();
+
+	list($args) = get_theme_support( 'app-geo' );
+
+	return $args;
+}
 
 /**
  * Provides 'location' => 'San Francisco' and 'orderby' => 'distance' public query vars.
@@ -74,13 +83,14 @@ class APP_Geo_Query {
 		scb_uninstall_table( 'app_geodata' );
 	}
 
-	function distance($lat_1, $lng_1, $lat_2, $lng_2, $unit = 'mi') {
-		list( $unit, $region ) = get_theme_support( 'app-geo' );
+	/**
+	 * Calculates the distance between two points on the surface of an Earth-sized sphere
+	 */
+	protected function distance( $lat_1, $lng_1, $lat_2, $lng_2, $unit ) {
+		$earth_radius = ('mi' == $unit) ? 3959 : 6371;
 
-		$earth_radius = 'mi' == $unit ? 3959 : 6371;
-
-		$delta_lat = $lat_2 - $lat_1 ;
-		$delta_lon = $lng_2 - $lng_1 ;
+		$delta_lat = $lat_2 - $lat_1;
+		$delta_lon = $lng_2 - $lng_1;
 		$alpha    = $delta_lat/2;
 		$beta     = $delta_lon/2;
 		$a        = sin(deg2rad($alpha)) * sin(deg2rad($alpha)) + cos(deg2rad($lat_1)) * cos(deg2rad($lat_2)) * sin(deg2rad($beta)) * sin(deg2rad($beta)) ;
@@ -97,9 +107,10 @@ class APP_Geo_Query {
 		$wp->add_query_var( 'location' );
 		$wp->add_query_var( 'radius' );
 	}
-
+	
+	
 	function parse_query( $wp_query ) {
-		list( $unit, $region ) = get_theme_support( 'app-geo' );
+		extract(appthemes_geo_get_args());
 
 		$location = trim( $wp_query->get( 'location' ) );
 		if ( !$location )
@@ -107,14 +118,17 @@ class APP_Geo_Query {
 
 		$wp_query->is_search = true;
 
-		$radius = (int) $wp_query->get( 'radius' );
+		$smart_radius = false;
+
+		$radius = is_numeric($wp_query->get( 'radius' )) ? $wp_query->get( 'radius' ) : false;
 		if ( !$radius )
-			$radius = 50;
+			$radius = !empty($default_radius) && is_numeric( $default_radius ) ? $default_radius : false;
 
 		$args = array(
 			'address' => urlencode($location),
 			'sensor' => 'false',
-			'region' => $region
+			'region' => $region,
+			'language' => $language,
 		);
 
 		$url = add_query_arg( $args, 'http://maps.googleapis.com/maps/api/geocode/json' );
@@ -131,18 +145,44 @@ class APP_Geo_Query {
 
 			$geocode = json_decode( wp_remote_retrieve_body( $response ) );
 
-		    $radius = (int) $wp_query->get( 'radius' );
-
 			if ( !$radius ) {
-				$bounds_distance = self::distance(
-					$geocode->results[0]->geometry->bounds->northeast->lat,
-					$geocode->results[0]->geometry->bounds->northeast->lng,
-					$geocode->results[0]->geometry->bounds->southwest->lat,
-					$geocode->results[0]->geometry->bounds->southwest->lng
-				);
+				if ( isset( $geocode->results[0]->geometry ) ) {
+					$geometry = $geocode->results[0]->geometry;
 
-				// since distance is more of a diameter, and since the bounds are a square, lets use something more than half the diameter to make a radius (circle) thats clsoe to the the area of the square bounds
-				$radius = $bounds_distance * .65;
+					// bounds are not always returned, so fall back to viewport
+					$bounds_type = isset( $geometry->bounds ) ? 'bounds' : 'viewport';
+
+					$distance_a = self::distance(
+						$geometry->{$bounds_type}->northeast->lat,
+						$geometry->{$bounds_type}->southwest->lng,
+						$geometry->{$bounds_type}->southwest->lat,
+						$geometry->{$bounds_type}->southwest->lng,
+						$unit
+					);
+
+					$distance_b = self::distance(
+						$geometry->{$bounds_type}->northeast->lat,
+						$geometry->{$bounds_type}->northeast->lng,
+						$geometry->{$bounds_type}->northeast->lat,
+						$geometry->{$bounds_type}->southwest->lng,
+						$unit
+					);
+
+					// Find the longest distance, so we can make a square that covers the full area.
+					$longer_distance = $distance_a > $distance_b ? $distance_a : $distance_b;
+
+					// Make a square out of the non-square bounds.
+					$distance_c = sqrt( pow($longer_distance, 2) * 2 );
+
+					/* 
+					 * Since distance is a diameter, and since the bounds are a square,
+					 * use half the "diameter" of the square to make a radius (circle)
+					 * so that it covers the area of the square bounds.
+					 */
+					$radius = $distance_c / 2;
+
+					$smart_radius = true;
+				}
 			}
 
 			if ( $geocode && 'OK' == $geocode->status ) {
@@ -154,12 +194,17 @@ class APP_Geo_Query {
 			}
 		}
 
+		// Final fallback just in case $wp_query->get( 'radius' ) and default_radius are not set and smart_radius fails due to API not returning a bounds/viewport.
+		if ( !$radius )
+			$radius = 50;
+
 		if ( $geo_coord ) {
-			$wp_query->set( 'app_geo_query', array(
+			$wp_query->set( 'app_geo_query', apply_filters('appthemes_geo_query', array(
 				'lat' => $geo_coord['lat'],
 				'lng' => $geo_coord['lng'],
-				'rad' => $radius
-			) );
+				'rad' => $radius,
+				'smart_radius' => $smart_radius,
+			) ) );
 		} else {
 			// Fall back to basic string matching
 			$wp_query->set( 'meta_query', array(
@@ -173,7 +218,7 @@ class APP_Geo_Query {
 	}
 
 	function posts_clauses( $clauses, $wp_query ) {
-		list( $unit, $region ) = get_theme_support( 'app-geo' );
+		extract(appthemes_geo_get_args());
 
 		global $wpdb;
 
@@ -191,7 +236,7 @@ class APP_Geo_Query {
 		) as distances ON ($wpdb->posts.ID = distances.post_id)
 		", $R, $lat, $lng, $lat );
 
-		$clauses['where'] .= $wpdb->prepare( " AND distance < %d", $rad );
+		$clauses['where'] .= $wpdb->prepare( " AND distance < %f", (float) $rad );
 
 		if ( 'distance' == $wp_query->get( 'orderby' ) ) {
 			$clauses['orderby'] = 'distance ' . ( 'DESC' == strtoupper( $wp_query->get( 'order' ) ) ? 'DESC' : 'ASC' );

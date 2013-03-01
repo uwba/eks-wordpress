@@ -1,6 +1,12 @@
 <?php global $va_options; ?>
 
-<?php the_listing_thumbnail(); ?>
+<?php 
+	echo html( 'a', array(
+		'href' => get_permalink( get_the_ID() ),
+		'title' => esc_attr( get_the_title() ),
+		'rel' => 'bookmark',
+	), get_the_listing_thumbnail());
+?>
 
 <div class="review-meta">
 	<?php the_listing_star_rating(); ?>

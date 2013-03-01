@@ -7,14 +7,22 @@ add_filter( 'preprocess_comment', 'va_process_review' );
 add_action( 'transition_comment_status', 'va_refresh_average_rating', 10, 3 );
 
 add_filter( 'pre_option_comments_notify', 'va_comments_notify_intercept', 99, 1);
+add_filter( 'pre_option_moderation_notify', 'va_comments_notify_intercept', 99, 1);
 
 add_action( 'wp_set_comment_status', 'va_set_comment_status', 10, 2 );
 
 add_action( 'comment_post', 'va_comment_post', 10, 2 );
 
+add_filter( 'admin_comment_types_dropdown' , 'va_review_comment_type' );
+
+add_action( 'admin_menu', 'va_reviews_add_menu', 11 );
+
 if ( !is_admin() )
 	add_filter( 'comments_clauses', 'va_exclude_reviews', 10, 2 );
 
+function va_reviews_add_menu(){
+	add_submenu_page( 'edit.php?post_type='.VA_LISTING_PTYPE, 'Reviews', 'Reviews', 'moderate_comments', 'edit-comments.php?comment_type='.VA_REVIEWS_CTYPE );
+}
 
 function va_process_review( $data ) {
 	if ( !isset( $_POST['comment_type'] ) || VA_REVIEWS_CTYPE != $_POST['comment_type'] )
@@ -357,6 +365,56 @@ function va_notify_listingauthor( $comment_id ) {
 	return true;
 }
 
+function va_notify_moderator($comment_id) {
+	global $wpdb;
+
+	$comment = get_comment($comment_id);
+	$post = get_post($comment->comment_post_ID);
+	$user = get_userdata( $post->post_author );
+	// Send to the administration and to the post author if the author can modify the comment.
+	$email_to = array( get_option('admin_email') );
+	if ( user_can($user->ID, 'edit_comment', $comment_id) && !empty($user->user_email) && ( get_option('admin_email') != $user->user_email) )
+		$email_to[] = $user->user_email;
+
+	$comment_author_domain = @gethostbyaddr($comment->comment_author_IP);
+	$comments_waiting = $wpdb->get_var("SELECT count(comment_ID) FROM $wpdb->comments WHERE comment_approved = '0'");
+
+	// The blogname option is escaped with esc_html on the way into the database in sanitize_option
+	// we want to reverse this for the plain text arena of emails.
+	$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+
+	$notify_message  = sprintf( __('A new review on the listing "%s" is waiting for your approval', APP_TD), $post->post_title ) . "\r\n";
+	$notify_message .= get_permalink($comment->comment_post_ID) . "\r\n\r\n";
+	$notify_message .= sprintf( __('Author : %1$s (IP: %2$s , %3$s)', APP_TD), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
+	$notify_message .= sprintf( __('E-mail : %s', APP_TD), $comment->comment_author_email ) . "\r\n";
+	$notify_message .= sprintf( __('URL    : %s', APP_TD), $comment->comment_author_url ) . "\r\n";
+	$notify_message .= sprintf( __('Whois  : http://whois.arin.net/rest/ip/%s', APP_TD), $comment->comment_author_IP ) . "\r\n";
+	$notify_message .= __('Comment: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
+
+	$notify_message .= sprintf( __('Approve it: %s', APP_TD),  admin_url("comment.php?action=approve&c=$comment_id") ) . "\r\n";
+	if ( EMPTY_TRASH_DAYS )
+		$notify_message .= sprintf( __('Trash it: %s', APP_TD), admin_url("comment.php?action=trash&c=$comment_id") ) . "\r\n";
+	else
+		$notify_message .= sprintf( __('Delete it: %s', APP_TD), admin_url("comment.php?action=delete&c=$comment_id") ) . "\r\n";
+	$notify_message .= sprintf( __('Spam it: %s', APP_TD), admin_url("comment.php?action=spam&c=$comment_id") ) . "\r\n";
+
+	$notify_message .= sprintf( _n('Currently %s review is waiting for approval. Please visit the moderation panel:',
+ 		'Currently %s reviews are waiting for approval. Please visit the moderation panel:', $comments_waiting), number_format_i18n($comments_waiting) ) . "\r\n";
+	$notify_message .= admin_url("edit-comments.php?comment_status=moderated&comment_type=".VA_REVIEWS_CTYPE) . "\r\n";
+
+	$subject = sprintf( __('[%1$s] Please moderate: "%2$s"'), $blogname, $post->post_title );
+	$message_headers = '';
+
+	$notify_message = apply_filters('review_moderation_text', $notify_message, $comment_id);
+	$subject = apply_filters('review_moderation_subject', $subject, $comment_id);
+	$message_headers = apply_filters('review_moderation_headers', $message_headers);
+
+	foreach ( $email_to as $email )
+		@wp_mail($email, $subject, $notify_message, $message_headers);
+
+	return true;
+}
+
 function va_handle_comments_notify($comment_id, $comment_approved = 1)
 {
 	$all_options = wp_load_alloptions();
@@ -369,12 +427,13 @@ function va_handle_comments_notify($comment_id, $comment_approved = 1)
 
 		va_notify_listingauthor($comment_id);
 
-	} elseif( VA_REVIEWS_CTYPE != $comment->comment_type && $comment_approved == 1 && $post->post_author != $comment->user_id) {
-
-		wp_notify_postauthor($comment_id, isset( $comment->comment_type ) ? $comment->comment_type : '' );
-
 	}
 
+	if ( 1 != $all_options['moderation_notify'] ) return;
+	
+	if ( VA_REVIEWS_CTYPE == $comment->comment_type && $comment_approved !=1 ) {
+		va_notify_moderator( $comment_id );
+	}
 }
 
 function va_comment_post($comment_id, $comment_approved) {
@@ -391,13 +450,19 @@ function va_set_comment_status($comment_id, $comment_status) {
 }
 
 function va_comments_notify_intercept($option) {
-
-	$who_called = debug_backtrace();
-
-	if ( !empty( $who_called[4]['function'] ) ) {
-
-		if ( in_array( $who_called[4]['function'], array( 'wp_new_comment', 'wp_set_comment_status' ) ) ) return 0;
+	
+	if ( !empty($_POST['comment_type']) && $_POST['comment_type'] == VA_REVIEWS_CTYPE ) {
+		return 0;
 	}
 
 	return false;
+}
+
+function va_review_comment_type($comment_types) {
+
+	$comment_types = $comment_types + array(
+		VA_REVIEWS_CTYPE => __('Reviews', APP_TD)
+	);
+	
+	return $comment_types;
 }

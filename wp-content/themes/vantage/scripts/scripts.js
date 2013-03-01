@@ -14,6 +14,10 @@ jQuery(function() {
 			jQuery('#overview-tab').removeClass('active-tab');
 			jQuery('#overview').hide();
 		}
+		
+		var yScroll = document.body.scrollTop;
+		window.location.hash = tab_id;
+		document.body.scrollTop = yScroll;
 	}
 
 	if ( 0 === window.location.hash.indexOf('#review') ) {
@@ -36,8 +40,8 @@ jQuery(function() {
 		jQuery('#refine-distance input[type="range"]').range({
 			range: false,
 			change: function(val) {
-				jQuery('#radius-info').html(val);
-			}
+				jQuery('#radius-info').html( ( Math.round( parseFloat(val) * 100 ) / 100 ) );
+			},
 		});
 	}
 
@@ -62,8 +66,8 @@ jQuery(function() {
 			current:'',
 			slideshow: false,
 			slideshowAuto: false,
-			maxWidth: '600px',
-			maxHeight: '600px',
+			maxWidth: '100%',
+			maxHeight: '100%',
 			scalePhotos: true
 		});
 	}
@@ -113,7 +117,7 @@ jQuery(function() {
 			current_url: Vantage.current_url,
 			_ajax_nonce: fave_data['ajax_nonce'],
 			favorite: fave_data['favorite'],
-			listing_id: fave_data['listing_id'],
+			listing_id: fave_data['listing_id']
 		}, function(data) {
 
 				jQuery('.notice').fadeOut('slow');

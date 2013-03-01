@@ -1,9 +1,12 @@
 /*
 Theme Name: Vantage
-Version: 1.1.1
+Version: 1.1.4
 Description: A Premium Directory Theme For WordPress
+Theme URI: http://www.appthemes.com/themes/vantage/
 Author: AppThemes
 Author URI: http://www.appthemes.com
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 /*  =========== [ Default Stylesheet Table of Contents ] =========== */
@@ -23,10 +26,12 @@ Author URI: http://www.appthemes.com
  * 13. Sidebar
  * 14. 404 Page
  * 15. Dashboard
- * 16. Categories List
- * 17. Footer
- * 18. Admin Bar
- * 19. IE Fixes
+ * 16. Pricing Plans
+ * 17. Categories List
+ * 18. Footer
+ * 19. Admin Bar
+ * 20. IE Fixes
+ * 21. Responsive
  */
 
 
@@ -63,7 +68,7 @@ label {
 .row {
 	width: 100%;
 	max-width: 1140px;
-	min-width: 755px;
+	min-width: 900px;
 	margin: 0 auto;
 }
 
@@ -312,6 +317,13 @@ small {
 	border-left: none;
 }
 
+/* tinynav navigation menu */
+.tinynav {
+	width: 93.5%;
+	margin: 12px 2%;
+	display: none;
+}
+
 /* Dropdown navigation menu */
 #main-navigation .menu ul li ul.sub-menu {
 	display: none;
@@ -519,7 +531,7 @@ small {
 
 .search-for, .search-location {
 	width:40%;
-	min-width:375px;
+	min-width:300px;
 	margin:0 0 0 2%;
 	padding:0;
 	position:relative;
@@ -672,6 +684,12 @@ small {
 	display: inline-block;
 	border: 1px solid #CFCFCF;
 	background: #F5F5F5; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#ededed)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #ffffff,  #ededed); /* for firefox 3.6+ */
@@ -793,7 +811,8 @@ small {
 }
 
 input.error,
-select.error {
+select.error,
+textarea.error {
 	outline: 2px solid #FCC;
 }
 
@@ -842,6 +861,12 @@ label.error {
 	border-radius: 5px;
 	display:inline-block;
 	background: #EEE; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#EEEEEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #ffffff,  #EEEEEE); /* for firefox 3.6+ */
@@ -1053,6 +1078,10 @@ article.post ol {
 	float: right;
 }
 
+.listing-share { 
+	clear: both;
+}
+
 /* Featured */
 
 article.listing.featured {
@@ -1116,6 +1145,10 @@ article.listing.featured img {
 
 .single-listing article.listing ul {
 	margin:10px 0;
+}
+
+.author {
+	display:inline-block;
 }
 
 /* single listing stars */
@@ -1212,6 +1245,12 @@ a.listing-edit-link {
 	padding: 5px 8px;
 	margin:0 10px 0 0;
 	background: #FFF; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
@@ -1221,6 +1260,7 @@ a.listing-fave-link,
 a.listing-unfave-link {
 	float:left;
 	font-size: 11px;
+	line-height: 16px;
 	font-weight:bold;
 	font-style:italic;
 	color: #666;
@@ -1230,6 +1270,12 @@ a.listing-unfave-link {
 	border-radius: 5px;
 	padding: 3px 8px;
 	background: #FFF; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
@@ -1249,7 +1295,13 @@ a.listing-claim-link {
 	padding: 5px 8px;
 	margin:0 10px 0 0;
 	background: #FFF; /* for non-css3 browsers */
-		background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
 }
@@ -1424,6 +1476,12 @@ div.single-listing.listing-faves .fave-button {
 	color: #696969;
 	font-size: 14px;
 	background: #e3e3e3;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFM0UzRTMiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFRUVFRUUiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMDgpIiAvPgo8L3N2Zz4=);
 	background: -moz-linear-gradient(top,  #e3e3e3 0%, #eeeeee 100%);
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#e3e3e3), color-stop(100%,#eeeeee));
@@ -1435,6 +1493,12 @@ div.single-listing.listing-faves .fave-button {
 
 #listing-tabs .tabs a:hover {
 	background: #eeeeee;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc0MzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFRUVFRUUiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFM0UzRTMiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c0MzkpIiAvPgo8L3N2Zz4=);
 	background: -moz-linear-gradient(top,  #eeeeee 0%, #e3e3e3 100%);
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#e3e3e3));
@@ -1467,6 +1531,12 @@ div.single-listing.listing-faves .fave-button {
 	border-radius: 5px;
 	padding: 3px 8px 8px 13px;
 	background: #FFF; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
@@ -1554,6 +1624,12 @@ div.single-listing.listing-faves .fave-button {
 	padding: 5px 8px;
 	margin:0 10px 0 0;
 	background: #FFF; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
@@ -1612,119 +1688,28 @@ div.single-listing.listing-faves .fave-button {
 	padding-bottom: 25px;
 }
 
-#add-review-form {
-
+#add-review-form label {
+	color:#8A8A8A;
 }
 
-#add-review-form table,
-#reply-review-form table {
-	margin: 15px 0 40px 30px;
+#review-rating {
+	margin:10px 0;
 }
 
-#add-review-form table tr {
-
-}
-
-#add-review-form table td,
-#reply-review-form table td {
-	color: #8A8A8A;
-	font-style: italic;
-	vertical-align: middle;
-}
-
-#add-review-form table td.first_col,
-#reply-review-form table td.first_col {
-	width: 150px;
-}
-
-#add-review-form table td.submit,
-#reply-review-form table td.submit {
-	padding-top:10px;
-}
-
-#add-review-form table td.second_col,
-#reply-review-form table td.second_col {
-	width: 300px;
-}
-
-#add-review-form table td label,
-#reply-review-form table td label {
-	color: #8A8A8A;
-	font-style: italic;
+#add-review-form label.error {
+	margin-bottom:20px;
 }
 
 #add-review-form textarea,
 #reply-review-form textarea {
-	width: 450px;
-	height: 100px;
-	margin: 6px 0 0;
-	background: #F4F4F4; /* for non-css3 browsers */
-	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5ODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGNEY0RjQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c5ODApIiAvPgo8L3N2Zz4=);
-	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F4F4F4)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #ffffff,  #F4F4F4); /* for firefox 3.6+ */
-
-	border: 1px solid #C2C1C2;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
-	color: #5E5E5E;
-	font-size: 13px;
-	overflow: hidden;
+	width: 90%;
+	max-width:500px;
+	height:150px;
 }
 
-#add-review-form .submit div,
-#reply-review-form .submit div {
-	width:164px;
-	height:49px;
-	background: transparent url('images/submit-review-button.png') no-repeat 0 0;
-	display: inline-block;
-	position: relative;
-	color: #ffffff;
-	text-shadow: 0 1px 0 #9b4600;
-}
-
-#add-review-form .submit div input,
-#reply-review-form .submit div input {
-	position: relative;
-	top: 16px;
-	left: 41px;
-	color: #ffffff;
-	text-shadow: 0 1px 0 #9b4600;
-	font-size: 15px;
-
-}
-
-input[type=submit].review-manage-link,
-a.review-manage-link {
-	float:left;
-	font-size: 11px;
-	font-weight:bold;
-	font-style:italic;
-	color: #666;
-	border: 1px solid #CCC;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	border-radius: 5px;
-	padding: 5px 8px;
-	margin:0 5px;
-	background: #EFEFEF; /* for non-css3 browsers */
-	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
-	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
-	-moz-box-shadow:none;
-	-webkit-box-shadow:none;
-	box-shadow:none;
-	-moz-text-shadow:none;
-	-webkit-text-shadow:none;
-	text-shadow:none;
-	cursor:pointer;
-}
-input[type=submit].review-manage-link:hover,
-a.review-manage-link:hover {
-	background: #FEFEFE; /* for non-css3 browsers */
-	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5MzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFRUVFRUUiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c5MzgpIiAvPgo8L3N2Zz4=);
-	background: -webkit-gradient(linear, left top, left bottom, from(#EEE), to(#FFF)); /* for webkit browsers */
-	background: -moz-linear-gradient(top,  #EEE,  #FFF); /* for firefox 3.6+ */
+#add-review-form input[type=submit],
+#reply-review-form input[type=submit] {
+	margin: 30px 0 0 0;
 }
 
 /* =========== [ 10. SINGLE PAGE ] =========== */
@@ -1930,7 +1915,13 @@ a.review-manage-link:hover {
 	padding: 5px 8px;
 	margin:0 10px 0 0;
 	background: #FFF; /* for non-css3 browsers */
-		background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
+	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImcyMzkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFREVERUQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2cyMzkpIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#EEE)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #FFF,  #EEE); /* for firefox 3.6+ */
 }
@@ -1956,6 +1947,12 @@ input[type=password] {
 	margin: 6px 0;
 	padding: 5px;
 	background: #F4F4F4; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5ODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGNEY0RjQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c5ODApIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F4F4F4)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #ffffff,  #F4F4F4); /* for firefox 3.6+ */
@@ -1973,6 +1970,12 @@ textarea {
 	margin: 6px 0 0;
 	padding: 5px;
 	background: #F4F4F4; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5ODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGNEY0RjQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c5ODApIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F4F4F4)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #ffffff,  #F4F4F4); /* for firefox 3.6+ */
@@ -2097,8 +2100,9 @@ textarea {
 }
 
 #create-listing input[type="text"],
-#create-listing textarea {
-	width: 100%;
+#create-listing textarea,
+#create-listing select {
+	width: 90%;
 }
 
 textarea {
@@ -2232,6 +2236,12 @@ textarea {
 	margin: 6px 0;
 	padding: 5px;
 	background: #F4F4F4; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5ODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZGRkYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGNEY0RjQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c5ODApIiAvPgo8L3N2Zz4=);
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F4F4F4)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #ffffff,  #F4F4F4); /* for firefox 3.6+ */
@@ -2705,6 +2715,12 @@ span.reviewer-date {
 	border: 1px solid #666;
 	left: -40px;
 	background: #999; /* for non-css3 browsers */
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc5MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0NDQ0NDQyIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzk5OTk5OSIgb2Zmc2V0PSIxIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InVybCgjZzkwKSIgLz4KPC9zdmc+);
 	background: -webkit-gradient(linear, left top, left bottom, from(#CCCCCC), to(#999999)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #CCCCCC,  #999999); /* for firefox 3.6+ */
@@ -2837,7 +2853,92 @@ span.reviewer-date {
 	border: none;
 }
 
-/* =========== [ 16. CATEGORIES LIST PAGE ] =========== */
+/* =========== [ 16. PRICING PLANS ] =========== */
+
+.plan{
+	border: 1px solid #CCC;
+	margin: 5px;
+	padding: 3px;
+	font-size: 13px;
+	position: relative;
+}
+
+.plan:after {
+	content: "";
+	position: absolute;
+	top: 106px;
+	right: -10px;
+	border-top: 10px solid #000;
+    border-right: 10px solid transparent;
+}
+
+.plan .content{
+	background-color: #EEEEEF;
+	padding: 8px;
+	min-height: 95px;
+}
+
+.plan .title{
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.plan .description{
+	font-style: italic;
+	margin-bottom: 10px;
+	padding-right: 190px;
+	width: auto;
+}
+
+.plan .featured-options {
+	padding-right: 190px;
+}
+
+.plan .option-header{
+	font-weight: bold;
+	margin-bottom: 2px;
+}
+
+.plan .price-box{
+	position: absolute;
+	top: 10px;
+	right: -10px;
+	background-color: white;
+	padding: 10px;
+	padding-right: 0px;
+	border: 1px solid #CCC;
+	border-bottom-left-radius: 5px;
+	border-top-left-radius: 5px;
+}
+
+.plan .price-box .price{
+	color: #0066CC;
+	font-size: 40px;
+	float: left;
+	margin-right: 5px;
+}
+
+.plan .price-box .duration{
+	margin-top: 4px;
+	font-size: 15px;
+	float: left;
+}
+
+.plan .price-box .radio-button{
+	background-color: #CCC;
+	clear: both;
+	padding: 5px;
+	padding-right: 20px;
+	font-weight: bold;
+	border-bottom-left-radius: 5px;
+	border-top-left-radius: 5px;
+}
+
+.plan .price-box .radio-button label{
+	font-style: normal;
+}
+	
+/* =========== [ 17. CATEGORIES LIST PAGE ] =========== */
 
 .categories-list {
 	border: 0 none;
@@ -2933,7 +3034,7 @@ span.reviewer-date {
 	text-decoration: underline;
 }
 
-/* =========== [ 17. FOOTER ] =========== */
+/* =========== [ 18. FOOTER ] =========== */
 
 #footer {
 	min-height: 245px;
@@ -2980,6 +3081,11 @@ span.reviewer-date {
 	font-weight:normal;
 }
 
+#footer .widget_sidebar_ad img {
+	width:100%;
+	max-width:250px;
+}
+
 #post-footer {
 	margin:0;
 	padding:25px 0;
@@ -3022,7 +3128,7 @@ span.reviewer-date {
 	background:none;
 }
 
-/* =========== [ 18. ADMIN BAR ] =========== */
+/* =========== [ 19. ADMIN BAR ] =========== */
 
 #wpadminbar * {
 	color: #2F2F2F;
@@ -3157,6 +3263,12 @@ span.reviewer-date {
 	text-align: center;
 	white-space: nowrap;
 	background: #21759B;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9ImczOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzFENjM4NSIgb2Zmc2V0PSIwIi8+PHN0b3Agc3RvcC1jb2xvcj0iIzI5OENCQSIgb2Zmc2V0PSIxIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InVybCgjZzM4KSIgLz4KPC9zdmc+);
 	background: -moz-linear-gradient(bottom, #1D6385, #298CBA);
 	background: -webkit-gradient(linear, left bottom, left top, from(#1D6385), to(#298CBA));
@@ -3176,6 +3288,12 @@ span.reviewer-date {
 
 #wp-admin-bar-bar-login-form #wp-submit:active {
 	background: #21759B;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc1NTYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiMyOThDQkEiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiMxRDYzODUiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c1NTYpIiAvPgo8L3N2Zz4=);
 	background: -moz-linear-gradient(bottom, #298CBA, #1D6385);
 	background: -webkit-gradient(linear, left bottom, left top, from(#298CBA), to(#1D6385));
@@ -3248,6 +3366,12 @@ span.reviewer-date {
 	text-align: center;
 	white-space: nowrap;
 	background: #b3b3b3;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc4NDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNCM0IzQjMiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNEREREREQiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c4NDApIiAvPgo8L3N2Zz4=);
 	background: -moz-linear-gradient(bottom, #B3B3B3, #DDD);
 	background: -webkit-gradient(linear, left bottom, left top, from(#B3B3B3), to(#DDD));
@@ -3266,6 +3390,12 @@ span.reviewer-date {
 
 #adminloginform #wp-submit:active {
 	background: #CCC;
+	/*
+	 * Why base64?
+	 * 
+	 * In a nutshell, it's being used to render gradients and rounded corners together for IE9 and older. You can read more here:
+	 * http://www.appthemes.com/support/faq/#css-base64
+	 */
 	background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc3MTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNDQ0NDQ0MiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNFRUVFRUUiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c3MTIpIiAvPgo8L3N2Zz4=);
 	background: -moz-linear-gradient(bottom, #CCC, #EEE);
 	background: -webkit-gradient(linear, left bottom, left top, from(#CCC), to(#EEE));
@@ -3326,7 +3456,7 @@ span.reviewer-date {
 }
 
 
-/* =========== [ 19. IE Fixes ] =========== */
+/* =========== [ 20. IE Fixes ] =========== */
 
 /* IE 7 Fixes */
 /* Fix Dropdown menu displaying behind search divs */
@@ -3361,4 +3491,483 @@ span.reviewer-date {
 .ie7 #listing-images .larger img,
 .ie7 #listing-images .smaller img {
 	z-index: 1;
+}
+
+
+/* =========== [ 21. RESPONSIVE ] =========== */
+
+
+@media screen and (max-width: 1000px) {
+	input[type=text],
+	textarea {
+		max-width:93%;
+	}
+	
+	.row {
+		min-width: 1px;
+	}
+	
+/* header and main navigation */
+
+	#masthead .advert {
+		width:100%;
+		margin:20px 0 0 0;
+		position: relative;
+	}
+	
+	#masthead .advert .widget {
+		width: 470px;
+		margin:0 auto;
+	}
+	
+	.search-for, 
+	.search-location {
+		width:47.5%;
+	}
+	
+	.search-button {
+		height:auto;
+		margin-left:2%;
+	}
+	
+	#search-submit {
+		margin:20px 0;
+	}
+	
+/* listings */
+	
+	article.listing .review-meta {
+		float:none;
+		position:relative;
+	}
+	
+	article.listing .review-meta p {
+		float:none;
+	}
+	
+	article.listing .review-meta .stars-cont {
+		float:left;
+		margin:0 10px 0 0;
+	}
+	
+	.listing h2 {
+		margin:10px 0;
+		clear:left;
+		float:none;
+	}
+	
+	.dashboard-review .review-listing p.listing-cat,
+	article.listing p.listing-cat {
+		float:none;
+	}
+
+	/* fave buttons */
+	a.listing-fave-link,
+	a.listing-unfave-link {
+		display:inline-block;
+		margin:5px 0;
+		float:none;
+	}
+	
+	.listing-faves {
+		display:relative;
+		clear:both;
+	}
+	
+	div.content-listing.listing-faves .fave-button {
+		float:none;
+		clear:both;
+	}
+
+	.single-listing article.listing .listing-actions {
+		margin: 5px 0;
+	}	
+	
+	/* main content banner advert */
+	#main .advert .widget_listings_ad {
+		width:90%;
+		max-width:460px;
+	}
+	
+	#main .advert .widget_listings_ad img {
+		width:100%;
+	}
+
+/* blog and pages */
+
+	/* blog and page images */
+	article.page img,
+	.blog article.post img,
+	.single-post article.post img {
+		max-width:98%;
+		height:auto;
+	}
+
+	article.page img .wp-caption,
+	.blog article.post .wp-caption,
+	.single-post article.post .wp-caption {
+		max-width:98%;
+	}
+
+	article.page img .wp-caption img,
+	.blog article.post .wp-caption img,
+	.single-post article.post .wp-caption img {
+		max-width:80%;
+		height:auto;
+	}
+
+	/* blog comments */
+	.commentlist .comment-author {
+		float:none;
+	}
+	
+	.commentlist .comment-author cite {
+		float:none;
+	}
+
+	.commentlist .comment-body .comment-meta {
+		margin:10px 0;
+		float:none;
+	}
+
+/* forms */
+
+	.form-field {
+		width:90%;
+	}
+}
+
+@media screen and (max-width: 800px) {
+
+/* header and main navigation */
+	
+	.search-for, .search-location {
+		width:99%;
+		float:none;
+	}
+	
+	#masthead .advert {
+		width:100%;
+		text-align:center;
+	}
+	
+	#masthead .advert .widget {
+		width:100%;
+		max-width:468px;
+		margin:0 auto;
+		text-align:left;
+	}
+	
+	#masthead .advert .widget img {
+		width:100%;
+	}
+
+/* adjust main content area so we can tuck sidebar underneath */
+	
+	#main {
+		float:none;
+	}
+	
+	#content-mid {
+		background-image:none;
+	}
+
+	#content-inner {
+		padding-right:0;
+	}
+
+/* categories page */
+
+	.categories-list .catcol {
+		width: 90%;
+		float:none;
+	}
+
+/* sidebar */
+
+	#sidebar {
+		width:auto;
+		margin:0 15px;
+		float:none;
+	}
+	
+	#sidebar .section-head {
+		width:100%;
+		-webkit-border-radius: 4px;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+	}
+	
+	#sidebar .section-head h3 {
+		background-image: none;
+		padding: 7px;
+		overflow:hidden;
+	}
+	
+	.widget_listing_categories {
+		width:auto;
+	}
+	
+	#dashboard-acct-stats {
+		padding-bottom:40px;
+		overflow:hidden;
+		padding-right:5px;
+	}
+
+/* footer */
+
+	#footer .widget {
+		width:auto;
+		float:none;
+		clear:both;
+		overflow:hidden;
+	}
+	
+	#post-footer {
+		overflow:hidden;
+	}
+	
+	#post-footer .menu li a {
+		padding:10px;
+		display:inline-block;
+		font-size:16px;
+	}
+
+/* admin bar */
+	
+	#wpadminbar {
+		min-width:1px;
+		height:auto;
+	}
+
+}
+
+@media screen and (max-width: 600px) {
+
+/* header and main navigation */
+
+	.search-for, .search-location {
+		width:96%;
+		min-width:1px;
+	}
+	
+	#main-search .search-title {
+		font-size: 16px;
+	}
+
+	/* tinynav navigation menu */
+	.tinynav {
+		display: block;
+	}
+
+	#navigation {
+		display: none;
+	}
+
+/* main content */
+
+	#main .section-head {
+		height:auto;
+		min-height: 40px;
+	}
+
+	#main .section-head h1,
+	#main .section-head h2 {
+		padding: 8px 27px;
+		background:none;
+	}
+
+/* listings */
+
+	article.listing {
+		padding: 25px 10px 25px 0;
+	}
+	
+	a.listing-fave-link, a.listing-unfave-link {
+		margin: 5px 0 0;
+	}
+	
+	.single-listing article.listing .listing-actions {
+		margin: 0 0 5px;
+	}
+	
+	.single-listing article.listing .listing-actions a {
+		clear: left;
+		margin-top: 4px; 
+	}
+
+	/* single listing images */
+	.home article.listing img,
+	.archive article.listing img{
+		display:none;
+	}
+	
+	article.listing.featured {
+		padding: 25px 10px 25px 25px;
+	}
+
+	article.listing.featured img {
+		display:none;
+	}
+	
+	#listing-images {
+		width:68px;
+	}
+	
+	#listing-images .larger {
+		padding:6px 6px 0 6px;
+		border:0;
+	}
+	
+	#listing-images .larger img {
+		width: 50px;
+		height: 50px;
+		padding: 2px;
+	}
+	
+	#listing-images .smaller {
+		margin:0;
+		padding:0 6px 6px 6px;
+	}
+	
+	#listing-images .smaller a + a {
+		margin:0;
+	}
+
+/* forms */
+	#create-listing .listing-urls label span {
+		display:none;
+	}
+	
+	#create-listing .phone label input[type="text"],
+	#create-listing .listing-urls label input[type="text"],
+	#create-listing .twitter label input[type="text"],
+	#create-listing .facebook label input[type="text"] {
+		width:100%;
+		padding-left:5px;
+	}
+
+/* sidebar */
+
+	#sidebar .section-head h3 {
+		width:auto;
+	}
+	
+	.widget_sidebar_ad img {
+		width:90%;
+		max-width:250px;
+		margin:0 auto;
+	}
+	
+	#sidebar .widget_create_listing_button {
+		max-width:100%;
+	}
+
+	#sidebar .widget_create_listing_button a {
+		padding:12px 0;
+		text-align:center;
+		background-image:none;
+	}
+
+/* admin bar */
+	
+	#masthead .row {
+		margin-top:40px;
+	}
+	
+	#wpadminbar {
+		height:auto;
+	}
+	
+	#wpadminbar .quicklinks > ul > li,
+	#wpadminbar .quicklinks > ul > li.opposite,
+	#wpadminbar .quicklinks .ab-top-secondary > li{
+		border:0;
+	}
+}
+
+@media screen and (max-width: 400px) {
+
+/* listings */
+
+	article.listing .review-meta {
+		width:auto;
+	}
+	
+	article.listing .review-meta .stars-cont {
+		float:none;
+	}
+	
+	/* single listing images */
+	#listing-images {
+		width:auto;
+		margin:0;
+		padding:0;
+		border:0;
+		float:none;
+		background-color:transparent;
+	}
+	
+	#listing-images .larger {
+		display:inline;
+		margin:0;
+		padding:0;
+		background-color:transparent;		
+	}
+	
+	#listing-images .smaller {
+		display:inline;
+		margin:0;
+		padding:0;
+		background-color:transparent;
+	}
+	
+	/* listing description and reviews */
+	#listing-tabs .tabs a {
+		padding: 10px 3px;
+	}
+	
+	#comments .social_connect_ui label {
+		width:100%;
+		display:block;
+	}
+	
+/* pricing plans */
+
+	.plan .content {
+		padding-top: 115px;
+	}
+	
+	.plan .description {
+		padding-right:20px;
+	}
+	
+	.plan .featured-options {
+		padding-right:20px;
+	}
+
+/* blog comments */
+	.single-post article.post ol.commentlist li {
+		padding:10px 0;
+	}
+	
+	.single-post article.post ol.commentlist li ul {
+		margin:10px 0 0 25px;
+	}
+	
+	.commentlist .comment-author img {
+		display:none;
+	}
+	
+	.commentlist .comment-body p,
+	.commentlist .comment-body .reply {
+		margin-left:0;
+	}
+
+/* sidebar */
+
+	#sidebar .section-head {
+		height:auto;
+		min-height: 35px;
+	}
 }

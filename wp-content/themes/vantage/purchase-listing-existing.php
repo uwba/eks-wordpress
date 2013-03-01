@@ -14,9 +14,9 @@
 	    	    				<?php echo $plan['description'][0]; ?>
 	    	    			</div>
 	    	    			<div class="featured-options">
-	    	    			<?php if( !empty($plan['disable_featured'][0])) { ?>
+	    	    			<?php if( _va_no_featured_available( $plan, $listing ) ) { ?>	    	    			
 	    	    				<div class="option-header">
-	    	    					<?php _e( 'Featured Listings are not available for this price option.', APP_TD ); ?>
+	    	    					<?php _e( 'Featured Listings are not available for this price plan.', APP_TD ); ?>
 	    	    				</div>		    	    				
 	    	    			<?php } else { ?>
 	    	    			
@@ -25,7 +25,7 @@
 	    	    				</div>
 	    	    				<?php foreach ( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ) : ?>
 									<div class="featured-option"><label>
-										<?php _va_show_featured_addon( $addon, $listing->ID ); ?>
+										<?php _va_show_featured_addon( $addon, $listing->ID, $plan['ID'] ); ?>
 									</label></div>
 								<?php endforeach; ?>
 	    	    			
@@ -37,11 +37,15 @@
 	    	    				<?php echo APP_Currencies::get_price($plan['price'][0]); ?>
 	    	    			</div>
 	    	    			<div class="duration">
-	    	    				<?php printf( _n( 'for <br /> %s day', 'for <br /> %s days', $plan['duration'][0], APP_TD ), $plan['duration'][0] ); ?>
+								<?php if ( $plan['duration'] != 0 ) { ?>
+		    	    				<?php printf( _n( 'for <br /> %s day', 'for <br /> %s days', $plan['duration'][0], APP_TD ), $plan['duration'][0] ); ?>
+								<?php } else { ?>
+	    	    					<?php _e( 'Unlimited</br> days', APP_TD ); ?>
+								<?php } ?>
 	    	    			</div>
 		    				<div class="radio-button">
 		    					<label>
-		    						<input disabled="disabled" checked="checked" type="radio" />
+		    						<input readonly="readonly" name="plan" checked="checked" type="radio" value="<?php echo $plan['ID']; ?>" />
 		    						<?php _e( 'You chose this option', APP_TD ); ?>
 		    					</label>
 		    				</div>
@@ -49,10 +53,12 @@
 		    		</div>
 		    </div>
 		</fieldset>
+		<?php if( !_va_no_featured_purchasable( $plan, $listing ) ): ?>
 		<fieldset>
 			<input type="hidden" name="action" value="purchase-listing">
 			<input type="hidden" name="ID" value="<?php echo $listing->ID; ?>">
 			<div classess="form-field"><input type="submit" value="<?php _e( 'Continue', APP_TD ) ?>" /></div>
 		</fieldset>
+		<?php endif; ?>
 	</form>
 </div>

@@ -5,7 +5,10 @@ add_action( 'wp_loaded', 'va_handle_listing_form' );
 add_action( 'va_listing_validate_fields', 'va_validate_listing_title' );
 add_action( 'va_listing_validate_fields', 'va_validate_listing_category' );
 
+add_action( 'va_handle_listing_contact_fields', 'va_format_listing_contact_fields', 10, 2 );
+
 add_filter( 'va_handle_update_listing', 'va_validate_update_listing' );
+add_action( 'va_handle_update_listing', 'va_set_meta_defaults');
 
 add_action( 'appthemes_notices', 'va_listing_error_notice' );
 
@@ -23,13 +26,7 @@ function va_handle_listing_form() {
 
 	$listing = va_handle_update_listing();
 	if ( ! $listing ) {
-
-		// there are errors, redirect the user to the edit or create listing form
-		if ( 'edit-listing' == $_POST['action'] ) {
-			wp_redirect( $_REQUEST['_wp_http_referer'] );
-			exit;
-		}
-		// return to current page
+		// there are errors, return to current page
 		return;
 	}
 	
@@ -51,6 +48,7 @@ function va_handle_listing_form() {
 function va_handle_update_listing() {
 
 	$listing_cat = va_get_listing_cat_id();
+
 	$args = wp_array_slice_assoc( $_POST, array( 'ID', 'post_title', 'post_content', 'tax_input' ) );
 
 	$errors = apply_filters( 'va_listing_validate_fields', va_get_listing_error_obj() );
@@ -66,10 +64,15 @@ function va_handle_update_listing() {
 		$listing_id = wp_update_post( $args );
 	}
 
+	$tags = va_get_listing_tags($args['tax_input'][VA_LISTING_TAG]);
+
+	wp_set_object_terms( $listing_id, $tags, VA_LISTING_TAG );
+	
 	wp_set_object_terms( $listing_id, (int) $listing_cat, VA_LISTING_CATEGORY );
 
 	foreach ( va_get_listing_contact_fields() as $field ) {
-		update_post_meta( $listing_id, $field, strip_tags( _va_get_initial_field_value( $field ) ) );
+		$field_value = apply_filters('va_handle_listing_contact_fields', strip_tags( _va_get_initial_field_value( $field ) ), $field, $listing_id );
+		update_post_meta( $listing_id, $field, $field_value );
 	}
 
 	va_update_form_builder( $listing_cat, $listing_id );
@@ -88,6 +91,33 @@ function va_validate_update_listing( $listing ) {
 	if ( $errors->get_error_codes( )) {
 		set_transient('va-errors', $errors );
 		$listing = false;
+	}
+
+	return $listing;
+}
+
+function va_set_meta_defaults( $listing ) {
+
+	if ( empty( $listing ) ) return false;
+	
+	if ( isset( $listing->ID ) ) {
+		$listing_id = $listing->ID;
+	} elseif ( is_numeric( $listing ) ) {
+		$listing_id = $listing;
+	} else {
+		return false;
+	}
+
+
+	$defaults = array(
+		'rating_avg' => '0',
+	);
+
+	foreach($defaults as $k=>$v) {
+		$existing = get_post_meta($listing_id, $k, true);
+		if ( empty( $existing ) ) {
+			update_post_meta( $listing_id, $k, $v);
+		}
 	}
 
 	return $listing;
@@ -116,17 +146,36 @@ function va_validate_listing_title( $errors ){
 
 	$args = wp_array_slice_assoc( $_POST, array( 'ID', 'post_title', 'post_content', 'tax_input' ) );
 	if ( empty( $args['post_title'] ) ) 
-		$errors->add( 'no-title', 'No title was submitted.' );
+		$errors->add( 'no-title', __( 'No title was submitted.', ADD_TD ) );
 	
 	return $errors;
 
 }
 
+
+function va_format_listing_contact_fields( $field_value, $field ){
+
+	if( 'website' == $field ) {
+		$field_value = str_ireplace('http://', '', $field_value);
+	}
+
+	if( 'facebook' == $field ) {
+		$field_value = str_ireplace(array('http://', 'www.facebook.com/', 'facebook.com/'), '', $field_value);
+	}
+
+	if( 'twitter' == $field ) {
+		$field_value = str_ireplace(array('@'), '', $field_value);
+	}
+
+	return $field_value;
+}
+
+
 function va_validate_listing_category( $errors ){
 
 	$listing_cat = va_get_listing_cat_id();
 	if ( !$listing_cat ) 
-		$errors->add( 'wrong-cat', 'No category was submitted.' );
+		$errors->add( 'wrong-cat', __( 'No category was submitted.', APP_TD ) );
 	
 	return $errors;
 
@@ -144,8 +193,8 @@ function va_get_listing_cat_id() {
 	static $cat_id;
 
 	if ( is_null( $cat_id ) ) {
-		if ( isset( $_REQUEST[VA_LISTING_CATEGORY] ) && $_REQUEST[VA_LISTING_CATEGORY] != -1 ) {
-			$listing_cat = get_term( $_REQUEST[VA_LISTING_CATEGORY], VA_LISTING_CATEGORY );
+		if ( isset( $_REQUEST['_'.VA_LISTING_CATEGORY] ) && $_REQUEST['_'.VA_LISTING_CATEGORY] != -1 ) {
+			$listing_cat = get_term( $_REQUEST['_'.VA_LISTING_CATEGORY], VA_LISTING_CATEGORY );
 			$cat_id = is_wp_error( $listing_cat ) ? false : $listing_cat->term_id;
 		} else {
 			$cat_id = false;
@@ -153,6 +202,11 @@ function va_get_listing_cat_id() {
 	}
 
 	return $cat_id;
+}
+
+function va_get_listing_tags($tags_string) {
+	$trim_strings = explode( ',', $tags_string );
+	return array_map( 'trim', $trim_strings );
 }
 
 function the_listing_tags_to_edit( $listing_id ) {

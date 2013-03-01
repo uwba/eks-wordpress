@@ -29,6 +29,20 @@ function va_excerpt_length() {
 	return 15;
 }
 
+function va_round_to_nearest($num, $nearest = 5, $min = ''){ 
+	if($nearest < 1) {
+		$new = round( ( 100 * $num ) / ( 100 * $nearest ) ) * ( 100 * $nearest )  / 100;;
+	} else {
+		$new = round( $num / $nearest ) * $nearest; 
+	}
+	
+	if ( !empty( $min ) ) {
+		return max( $min, $new );
+	} else {
+		return $new;
+	}
+} 
+
 function va_string_ago( $time ) {
 	$now = time();
 	$diff = time() - strtotime( $time );
@@ -85,26 +99,65 @@ function va_geocode_address( $listing_id ) {
 	if ( $coord )
 		return $coord;
 
-	$base_url = 'http://maps.google.com/maps/geo?output=json';
-
 	$address = get_post_meta( $listing_id, 'address', true );
 	if ( empty( $address ) )
 		return false;
 
-	$response = wp_remote_get( add_query_arg( 'q', urlencode( $address ), $base_url ) );
+	$results = va_geocode_address_api( $address );
+
+	if ( !$results || 'OK' != $results['status'] )
+		return false;
+
+	$lat = $results['results'][0]['geometry']['location']['lat'];
+	$lng = $results['results'][0]['geometry']['location']['lng'];
+
+	appthemes_set_coordinates( $listing_id, $lat, $lng );
+
+	return appthemes_get_coordinates( $listing_id );
+}
+
+function va_geocode_address_api( $address ) {
+	$args = array(
+		'address' => urlencode($address)
+	);
+	
+	return va_geocode_api($args);
+}
+
+function va_geocode_lat_lng_api( $lat, $lng ) {
+	$args = array(
+		'latlng' => (float) $lat . ',' . (float) $lng,
+	);
+	
+	return va_geocode_api($args);
+}
+
+function va_geocode_api( $args = '' ) {
+
+	if ( empty( $args ) )
+		return false;
+
+	extract(appthemes_geo_get_args());
+
+	$defaults = array(
+		'sensor' => 'false',
+		'region' => $region,
+		'language' => $language,
+	);
+	
+	$args = wp_parse_args($args, $defaults);
+
+	$response = wp_remote_get( add_query_arg( $args, 'http://maps.googleapis.com/maps/api/geocode/json' ) );
 
 	if ( 200 != wp_remote_retrieve_response_code( $response ) )
 		return false;
 
 	$results = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( !$results )
+
+	if ( !$results || 'OK' != $results['status'] )
 		return false;
 
-	list( $lng, $lat ) = $results['Placemark'][0]['Point']['coordinates'];
-
-	appthemes_set_coordinates( $listing_id, $lat, $lng );
-
-	return appthemes_get_coordinates( $listing_id );
+	return $results;
 }
 
 function get_blog_page_title() {

@@ -2,7 +2,34 @@
 
 add_action( 'admin_init', 'va_listing_hide_meta' );
 add_action( 'admin_init', 'va_init_category_walker' );
+add_action( 'save_post', 'va_set_listing_meta_defaults', 10, 2 );
 add_action( 'wp_terms_checklist_args', 'va_category_checklist', 10, 2 );
+
+add_action( 'wp_ajax_vantage_single_listing_geocode', 'va_handle_listing_geocode_ajax' );
+
+
+function va_set_listing_meta_defaults( $post_id, $post ) {
+	if ( VA_LISTING_PTYPE !== $post->post_type ) return;
+	
+	if ( !wp_is_post_revision( $post_id ) )
+		va_set_meta_defaults( $post_id );
+}
+
+function va_handle_listing_geocode_ajax() {
+	if ( !isset( $_GET['address'] ) && (!isset( $_GET['lat'] ) && !isset( $_GET['lng'] )) )
+		return;
+
+	if( isset( $_GET['address'] ) ) {
+		$api_response = va_geocode_address_api( $_GET['address'] );
+	} else if( isset( $_GET['lat'] ) ) {
+		$api_response = va_geocode_lat_lng_api( $_GET['lat'], $_GET['lng'] );	
+	}
+		
+	if ( !$api_response )
+		die( "error" );
+
+	die( json_encode( $api_response ) );
+}
 
 /*
  * Override the 'Walker_Category_Checklist' method, 'start_el', to replace checkboxes with radio buttons
@@ -49,12 +76,11 @@ function va_init_category_walker() {
  * Hook into 'wp_terms_checklist_args' to override the category Walker and display radios buttons instead of checkboxes
  */
 function va_category_checklist( $args, $post_id ) {
-	global $post;
-
-	if ( is_admin() && VA_LISTING_PTYPE == $post->post_type ) {
+	if ( get_current_screen()->post_type == VA_LISTING_PTYPE ) {
 		$args['walker'] = new VA_Category_Walker( $post_id, $args['taxonomy'] );
 		$args['checked_ontop'] = FALSE;
 	}
+
 	return $args;
 }
 
@@ -63,18 +89,14 @@ function va_category_checklist( $args, $post_id ) {
  */
 function va_listing_hide_meta(){
 
-	$remove_boxes = array( 'commentstatusdiv', 'commentsdiv', 'postexcerpt', 'revisionsdiv', 'postcustom' );
+	$remove_boxes = array( 'commentstatusdiv', 'commentsdiv', 'postexcerpt', 'revisionsdiv', 'postcustom', 'authordiv' );
 	foreach( $remove_boxes as $id ){
 		remove_meta_box( $id, VA_LISTING_PTYPE, 'normal' );
 	}
-
-	remove_meta_box( 'authordiv', VA_LISTING_PTYPE, 'normal');
-	add_meta_box('authordiv', __( 'Author', APP_TD ), 'post_author_meta_box', VA_LISTING_PTYPE, 'side', 'low'); // uses core Text Domain
-
 }
 
 class VA_Listing_Location_Meta extends APP_Meta_Box {
-	
+
 	public function __construct(){
 
 		if ( isset($_GET['post']) ) {
@@ -84,7 +106,7 @@ class VA_Listing_Location_Meta extends APP_Meta_Box {
 		} else if ( isset( $_POST['post_type'] ) && VA_LISTING_PTYPE != $_POST['post_type'] ) {
 			return;
 		}
-		
+
 		parent::__construct( 'listing-location', __( 'Location', APP_TD ), VA_LISTING_PTYPE, 'normal', 'default' );
 
 	}
@@ -148,7 +170,7 @@ class VA_Listing_Location_Meta extends APP_Meta_Box {
 }
 
 class VA_Listing_Claimable_Meta extends APP_Meta_Box {
-	
+
 	public function __construct(){
 		parent::__construct( 'listing-claimable', __( 'Claimable Listing', APP_TD ), VA_LISTING_PTYPE, 'advanced', 'default' );
 	}
@@ -175,23 +197,23 @@ class VA_Listing_Claimable_Meta extends APP_Meta_Box {
 }
 
 class VA_Listing_Reviews_Status_Meta extends APP_Meta_Box {
-	
+
 	public function __construct(){
 		parent::__construct( 'listing-reviews', __( 'Reviews Status', APP_TD ), VA_LISTING_PTYPE, 'advanced', 'default' );
 	}
-	
+
 	public function display( $post ) {
-		
+
 		$form_fields = $this->form();
-		
+
 		$form_data = array('comment_status' => ( $post->comment_status=='open' ? 'open' : '' ) );
 
 		$form = $this->table( $form_fields, $form_data );
-		
+
 		echo $form;
-		
+
 	}
-	
+
 	public function form(){
 		return array(
 			array(
@@ -203,11 +225,11 @@ class VA_Listing_Reviews_Status_Meta extends APP_Meta_Box {
 			),
 		);
 	}
-	
+
 	function save() {
-	
+
 	}
-	
+
 }
 
 class VA_Listing_Claim_Moderation extends APP_Meta_Box {
@@ -218,7 +240,7 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 			return;
 
 		parent::__construct( 'listing-claim-moderation', __( 'Moderation Queue', APP_TD ), VA_LISTING_PTYPE, 'side', 'high' );
-		
+
 		add_action( 'admin_init', array($this, 'reject_claim'), 10, 1 );
 	}
 
@@ -227,9 +249,9 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 		echo html( 'p', array(), __( 'Someone wants to claim this listing.', APP_TD ) );
 
 		$claimee = get_userdata( get_post_meta( $post->ID, 'claimee', true ) );
-		
+
 		echo html( 'p', array(), sprintf( __( '<strong>New Owner:</strong> %s', APP_TD ), html( 'a', array( 'href'=>va_get_the_author_listings_url($claimee->ID), 'target'=>'_blank' ), $claimee->display_name) ) );
-		
+
 		echo html( 'p', array(), html( 'a', array('href'=>'mailto: ' . $claimee->user_email, 'target'=>'_blank' ), sprintf( __( 'Email %s', APP_TD ), $claimee->display_name ) ) );
 
 		echo html( 'input', array(
@@ -251,27 +273,27 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 			), __( 'Rejecting will return it to being published on the site.', APP_TD ) );
 
 	}
-	
+
 	function get_edit_post_link($post_id, $context, $vars) {
 		$link = get_edit_post_link($post_id, $context);
-		
+
 		if ( !empty( $vars ) && is_array( $vars ) ) {
 			$context_and = 'display' == $context ? '&amp;' : '&';
 			foreach($vars as $k=>$v)
 				$link .= $context_and . $k . '=' . $v;
 		}
-		
+
 		return $link;
 	}
-	
-	function reject_claim() {		
+
+	function reject_claim() {
 		if ( !isset( $_GET['reject'] ) ) return;
-		
+
 		if( VA_Listing_Claim::reject_claim() ) {
 			wp_redirect( $this->get_edit_post_link( $_GET['post'], 'url', array('rejected'=>1) ) );
 		}
 	}
-	
+
 	function rejected_claim_success_notice() {
 		echo scb_admin_notice( __( 'You have rejected the claim, and now this listing has been reset to <a href="#listing-claimable">claimable</a>.', APP_TD ) );
 	}
@@ -279,7 +301,7 @@ class VA_Listing_Claim_Moderation extends APP_Meta_Box {
 }
 
 class VA_Listing_Contact_Meta extends APP_Meta_Box{
-	
+
 	public function __construct(){
 		parent::__construct( 'listing-contact', __( 'Contact Information', APP_TD ), VA_LISTING_PTYPE, 'normal', 'default' );
 	}
@@ -311,10 +333,21 @@ class VA_Listing_Contact_Meta extends APP_Meta_Box{
 
 	}
 
+	function before_save( $data, $post_id ) {
+		
+		foreach ( va_get_listing_contact_fields() as $field ) {
+		
+			if(!empty($data[$field]))
+				$data[$field] = va_format_listing_contact_fields($data[$field], $field);
+				
+		}
+		
+		return $data;
+	}
 }
 
 class VA_Listing_Pricing_Meta extends APP_Meta_Box{
-	
+
 	public function __construct(){
 		parent::__construct( 'listing-pricing', __( 'Pricing Information', APP_TD ), VA_LISTING_PTYPE, 'normal', 'low' );
 	}
@@ -327,41 +360,83 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 	}
 
 	public function before_display( $form_data, $post ){
-		
+
 		$form_data['_blank_listing_start_date'] = $post->post_date;
 
-		if( isset ( $form_data['featured-home_start_date'] ) )
-			$form_data['featured-home_start_date'] = date( 'n/j/Y', strtotime($form_data['featured-home_start_date']));
+		$date_format = get_option('date_format');
+		$date_format = str_ireplace('m', 'n', $date_format);
+		$date_format = str_ireplace('d', 'j', $date_format);
 
-		if( isset ( $form_data['featured-cat_start_date'] ) )
-			$form_data['featured-cat_start_date'] = date( 'n/j/Y', strtotime($form_data['featured-cat_start_date']));
+		if( !empty ( $form_data['featured-home_start_date'] ) ) {
+			$form_data['_blank_featured-home_start_date'] = mysql2date( $date_format, $form_data['featured-home_start_date']);
+			$form_data['featured-home_start_date'] = mysql2date( 'm/d/Y', $form_data['featured-home_start_date']);
+		}
+
+		if( !empty ( $form_data['featured-cat_start_date'] ) ) {
+			$form_data['_blank_featured-cat_start_date'] = mysql2date( $date_format, $form_data['featured-cat_start_date']);
+			$form_data['featured-cat_start_date'] = mysql2date( 'm/d/Y', $form_data['featured-cat_start_date']);
+		}
 
 		return $form_data;
 
 	}
 
 	public function before_form(){
+		$date_format = get_option('date_format', 'm/d/Y');
+
+		switch ( $date_format ) {
+			case "d/m/Y":
+			case "j/n/Y":
+				$ui_display_format = 'dd/mm/yy';
+			break;
+			case "Y/m/d":
+			case "Y/n/j":
+				$ui_display_format = 'yy/mm/dd';
+			break;
+			case "m/d/Y":
+			case "n/j/Y":
+			default:
+				$ui_display_format = 'mm/dd/yy';
+			break;
+		}
 
 		?>
 		<script type="text/javascript">
 			jQuery(function($){
-				createExpireHandler( undefined, $("#listing_duration"), $("#_blank_listing_start_date"), $("#_blank_expire_listing"), $ );
+				createExpireHandler( undefined, $("#listing_duration"), $("#_blank_listing_start_date"), $(''), $("#_blank_expire_listing"), $ );
 				$("#_blank_listing_start_date").parent().parent().parent().hide();
 
-				createExpireHandler( $("#featured-home"), $("#featured-home_duration"), $("#featured-home_start_date"), $("#_blank_expire_featured-home"), $ );
-				$( "#featured-home_start_date" ).datepicker();
+				createExpireHandler( $("#featured-home"), $("#featured-home_duration"), $("#featured-home_start_date"), $("#_blank_featured-home_start_date"), $("#_blank_expire_featured-home"), $ );
+				$( "#_blank_featured-home_start_date" ).datepicker({
+					dateFormat: "<?php echo $ui_display_format; ?>",
+					altField: "#featured-home_start_date",
+					altFormat: "mm/dd/yy"
+				});
+				$("#featured-home_start_date").parent().parent().parent().hide();
 
-				createExpireHandler( $("#featured-cat"), $("#featured-cat_duration"), $("#featured-cat_start_date"), $("#_blank_expire_featured-cat"), $ );
-				$( "#featured-cat_start_date" ).datepicker();
+				createExpireHandler( $("#featured-cat"), $("#featured-cat_duration"), $("#featured-cat_start_date"), $("#_blank_featured-cat_start_date"), $("#_blank_expire_featured-cat"), $ );
+				$( "#_blank_featured-cat_start_date" ).datepicker({
+					dateFormat: "<?php echo $ui_display_format; ?>",
+					altField: "#featured-cat_start_date",
+					altFormat: "mm/dd/yy"
+				});
+				$("#featured-cat_start_date").parent().parent().parent().hide();
 			});
 
-			function createExpireHandler( enableBox, durationBox, startDateBox, textBox, $ ){
+			function createExpireHandler( enableBox, durationBox, startDateBox, startDateDisplayBox, textBox, $ ){
 
 				$(enableBox).change(function(){
 					if( $(this).attr("checked") == "checked" && $(startDateBox).val() == "" ){
-						$(startDateBox).val( dateToString( new Date ) );
+						$(startDateDisplayBox).val( dateToString( new Date ) );
+						$(startDateBox).val( dateToStdString( new Date ) );
+						$(durationBox).val( '0' );
+					} else {
+						$(startDateBox).val( '' );
+						$(startDateDisplayBox).val( '' );
+						$(durationBox).val( '' );
+						$(textBox).val( '' );
 					}
-				})
+				});
 
 				var checker = function(){
 					var string = "";
@@ -375,7 +450,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 				}
 
 				var get_expiration_time = function(){
-					
+
 					var startDate = $(startDateBox).val();
 					if( startDate == "" ){
 						startDate = new Date();
@@ -385,7 +460,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 					if ( duration == "" ){
 						return "";
 					}
-					
+
 					return getDateString( parseInt( duration, 10 ), startDate );
 				}
 
@@ -406,8 +481,31 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 					}
 				}
 
-				var dateToString = function( date ){
+				var dateToStdString = function( date ){
 					return ( date.getMonth() + 1 )+ "/" + date.getDate() + "/" + date.getFullYear();
+				}
+
+				var dateToString = function( date ){
+					<?php
+						$date_format = get_option('date_format', 'm/d/Y');
+
+						switch ( $date_format ) {
+							case "d/m/Y":
+							case "j/n/Y":
+								$js_date_format = 'date.getDate() + "/" + ( date.getMonth() + 1 ) + "/" + date.getFullYear()';
+							break;
+							case "Y/m/d":
+							case "Y/n/j":
+								$js_date_format = 'date.getFullYear() + "/" + ( date.getMonth() + 1 ) + "/" + date.getDate()';
+							break;
+							case "m/d/Y":
+							case "n/j/Y":
+							default:
+								$js_date_format = '( date.getMonth() + 1 )+ "/" + date.getDate() + "/" + date.getFullYear()';
+							break;
+						}
+					?>
+					return <?php echo $js_date_format; ?>;
 				}
 
 				setInterval( checker, 10 );
@@ -425,6 +523,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 				'title' => __( 'Listing Duration', APP_TD ),
 				'type' => 'text',
 				'name' => 'listing_duration',
+				'desc' => __( 'days', APP_TD ),
 				'extra' => array(
 					'size' => '3'
 				),
@@ -460,7 +559,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 
 			$duration = array(
 				'title' => __( 'Duration', APP_TD ),
-				'desc' => __( '(0 = Infinite)', APP_TD ),
+				'desc' => __( 'days (0 = Infinite)', APP_TD ),
 				'type' => 'text',
 				'name' => $addon . '_duration',
 				'extra' => array(
@@ -474,6 +573,12 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 				'name' => $addon . '_start_date',
 			);
 
+			$start_display = array(
+				'title' => __( 'Start Date', APP_TD ),
+				'type' => 'text',
+				'name' => '_blank_'.$addon . '_start_date',
+			);
+
 			$expires = array(
 				'title' => __( 'Expires on', APP_TD ),
 				'type' => 'text',
@@ -485,7 +590,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 				)
 			);
 
-			$output = array_merge( $output, array( $enabled, $duration, $start, $expires ));
+			$output = array_merge( $output, array( $enabled, $duration, $start, $start_display, $expires ));
 
 		}
 
@@ -493,13 +598,25 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 
 	}
 
+	function disable_save() {
+		if ( !empty( $_POST['original_post_status'] ) && $_POST['original_post_status'] == 'pending-claimed' && !empty($_POST['publish'])) {
+			return true;
+		}
+
+		return false;
+	}
+
 	function before_save( $data, $post_id ){
 		global $va_options;
+
+		if ( $this->disable_save() ) return array();
 
 		unset( $data['_blank_listing_start_date'] );
 		unset( $data['_blank'] );
 
 		foreach( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ){
+
+			unset( $data['_blank_'.$addon.'_start_date'] );
 
 			if( $data[$addon.'_start_date'] ){
 				$data[$addon.'_start_date'] = date('Y-m-d H:i:s', strtotime( $data[$addon.'_start_date'] ) );
@@ -525,7 +642,7 @@ class VA_Listing_Pricing_Meta extends APP_Meta_Box{
 }
 
 class VA_Listing_Publish_Moderation extends APP_Meta_Box {
-	
+
 	public function __construct(){
 
 		if( !isset( $_GET['post'] ) || get_post_status( $_GET['post'] ) != 'pending' )
@@ -558,6 +675,26 @@ class VA_Listing_Publish_Moderation extends APP_Meta_Box {
 
 	}
 
+}
+
+class VA_Listing_Author_Meta extends APP_Meta_Box {
+
+	public function __construct() {
+		parent::__construct( 'listingauthordiv', __( 'Author', APP_TD ), VA_LISTING_PTYPE, 'side', 'low' );
+	}
+
+	public function display( $post ) {
+		global $user_ID;
+		?>
+		<label class="screen-reader-text" for="post_author_override"><?php _e('Author'); ?></label>
+		<?php
+		wp_dropdown_users( array(
+			/* 'who' => 'authors', */
+			'name' => 'post_author_override',
+			'selected' => empty($post->ID) ? $user_ID : $post->post_author,
+			'include_selected' => true
+		) );
+	}
 }
 
 class VA_Listing_Gallery_Meta extends APP_Meta_Box {
@@ -629,7 +766,7 @@ class VA_Listing_Gallery_Meta extends APP_Meta_Box {
 		echo sprintf( $manage_images, $upload_iframe_src, esc_html__( 'Gallery Manager' ) );
 
 		$info = html( 'p' , array( 'class' => 'listing-gallery-info' ), '%1$s' );
-		echo sprintf ( $info, sprintf( __( 'Only the first %1$s %2$s will be visible on the listing' ) , VA_MAX_IMAGES, __ngettext( 'image', 'images', VA_MAX_IMAGES, APP_TD ) ) );
+		echo sprintf ( $info, sprintf( __( 'Only the first %1$s %2$s will be visible on the listing' ) , VA_MAX_IMAGES, _n( 'image', 'images', VA_MAX_IMAGES, APP_TD ) ) );
 	}
 
 	public function ajax_update_listing_attachment() {

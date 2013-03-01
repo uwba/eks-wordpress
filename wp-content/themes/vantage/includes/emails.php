@@ -35,19 +35,23 @@ function va_send_receipt( $order ) {
 
 	$recipient = get_user_by( 'id', $order->get_author() );
 
-	$items = '';
-
+	$item = '';
 	foreach ( $order->get_items() as $item ) {
-		$items .= html( 'li', html_link( get_permalink( $item['post']->ID ), $item['post']->post_title ) );
+		$item = html( 'p', html_link( get_permalink( $item['post']->ID ), $item['post']->post_title ) );
+		break;
 	}
-
+	
+	$table = new APP_Order_Summary_Table( $order );
+	ob_start();
+	$table->show();
+	$table_output = ob_get_clean();
+		
 	$content = '';
-
 	$content .= html( 'p', sprintf( __( 'Hello %s,', APP_TD ), $recipient->display_name ) );
-	$content .= html( 'p', __( 'This email confirms that you have purchased the following listings:', APP_TD ) );
-	$content .= html( 'ul', $items );
-
-	$content .= html( 'p', __( 'Total cost:', APP_TD ) . ' ' . $order->get_total() . ' ' . $va_options->currency_code );
+	$content .= html( 'p', __( 'This email confirms that you have purchased the following listing:', APP_TD ) );
+	$content .= $item;
+	$content .= html( 'p', __( 'Order Summary:', APP_TD ) );
+	$content .= $table_output;
 
 	$subject = sprintf( __( '[%s] Receipt for your order', APP_TD ), get_bloginfo( 'name' ) );
 

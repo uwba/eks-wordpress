@@ -79,7 +79,7 @@ function va_handle_addons( $order, $listing ){
 	foreach( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ){
 
 		$already_featured = (bool) get_post_meta( $listing->ID, $addon, true );
-		if( $already_featured == false && !empty( $_POST[$addon] ) ){
+		if( $already_featured == false && !empty( $_POST[$addon.'_'.intval($_POST['plan'])] ) ){
 
 			$price = APP_Item_Registry::get_meta( $addon, 'price' );
 			$order->add_item( $addon, $price, $listing->ID );
@@ -89,7 +89,30 @@ function va_handle_addons( $order, $listing ){
 
 }
 
-function _va_show_featured_addon( $addon, $listing_id ){
+function va_get_listing_available_plans($listing) {
+	$plans = new WP_Query( array(
+		'post_type' => APPTHEMES_PRICE_PLAN_PTYPE,
+		'nopaging' => 1,
+		'tax_query' => array(
+			array(
+				'taxonomy' => VA_LISTING_CATEGORY,
+				'field' => 'id',
+				'terms' => get_the_listing_category( $listing->ID )->term_id,
+				'include_children' => false
+			)
+		)
+	));
+
+	$plans_data = array();
+	foreach( $plans->posts as $key => $plan){
+		$plans_data[$key] = get_post_custom( $plan->ID );
+		$plans_data[$key]['post_data'] = $plan;
+	}
+
+	return $plans_data;
+}
+
+function _va_show_featured_addon( $addon, $listing_id, $plan_id ){
 	global $va_options;
 
 	$addon_title = APP_Item_Registry::get_title( $addon ); 
@@ -98,10 +121,14 @@ function _va_show_featured_addon( $addon, $listing_id ){
 
 	// If already on featured option, output disabled checkbox with expiration date
 	if( _va_already_featured( $addon, $listing_id ) ){
-		_va_show_featured_option( $addon, true );
+		_va_show_featured_option( $addon, true, $plan_id );
 
 		$expiration_date = va_get_featured_exipration_date( $addon, $listing_id );
-		printf( __( ' %s until %s', APP_TD ), $addon_title, $expiration_date );
+		if('Never' == $expiration_date) {
+			printf( __( ' %s for Unlimited days', APP_TD ), $addon_title);
+		} else {
+			printf( __( ' %s until %s', APP_TD ), $addon_title, $expiration_date );
+		}
 		return;
 	}
 
@@ -110,14 +137,39 @@ function _va_show_featured_addon( $addon, $listing_id ){
 		return;
 	}
 
-	_va_show_featured_option( $addon );
+	_va_show_featured_option( $addon, false, $plan_id );
 	if( $addon_duration == 0 ){
-		$string = __( ' %s for only %s more.', APP_TD );
+		$string = __( ' %s for Unlimited days for only %s more.', APP_TD );
 		printf( $string, $addon_title, $addon_price );
 	}else{
 		$string = __( ' %s for %d days for only %s more.', APP_TD );
 		printf( $string, $addon_title, $addon_duration, $addon_price );
 	}
+}
+
+function _va_no_featured_available( $plan ) {
+	if( empty($plan[VA_ITEM_FEATURED_HOME][0] ) && empty($plan[VA_ITEM_FEATURED_CAT][0] ) &&  empty($plan['disable_featured'][0]) ) {
+		if( _va_addon_disabled( VA_ITEM_FEATURED_HOME ) && _va_addon_disabled( VA_ITEM_FEATURED_CAT )) {
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
+function _va_no_featured_purchasable( $plan, $listing ) {
+	if( _va_no_featured_available( $plan ) ){
+		return true;
+	} 
+	
+	foreach ( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ) {
+		if( !_va_already_featured( $addon, $listing->ID ) && !_va_addon_disabled( $addon ) ) {
+			return false;
+		}		
+	}
+	return true;
 }
 
 function _va_already_featured( $addon, $listing_id ){
@@ -136,9 +188,9 @@ function _va_addon_disabled( $addon ){
 	return empty( $va_options->addons[ $addon ]['enabled'] );
 }
 
-function _va_show_featured_option( $addon, $enabled = false ){
+function _va_show_featured_option( $addon, $enabled = false, $plan_id){
 	echo html( 'input', array(
-		'name' => $addon,
+		'name' => $addon.'_'.$plan_id,
 		'type' => 'checkbox',
 		'disabled' => $enabled,
 		'checked' => $enabled

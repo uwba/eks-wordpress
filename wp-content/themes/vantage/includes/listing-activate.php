@@ -2,6 +2,7 @@
 
 add_action( 'appthemes_transaction_completed', 'va_handle_completed_transaction' );
 add_action( 'pending_to_publish', '_va_handle_moderated_transaction');
+add_action( 'pending-claimed_to_publish', '_va_handle_moderated_transaction');
 
 add_action( 'appthemes_transaction_activated', '_va_activate_plan');
 add_action( 'appthemes_transaction_activated', '_va_activate_addons');
@@ -13,15 +14,20 @@ function va_handle_completed_transaction( $order ){
 	
 	$listing_id = _va_get_order_listing_id( $order );
 	
+	if ( _va_is_claimed( $order ) && $va_options->moderate_claimed_listings ){
+		va_update_post_status( $listing_id, 'pending-claimed' );
+		va_js_redirect_to_claimed_listing( $listing_id );
+		return;
+
+	} else if ( _va_is_claimed( $order ) ) {
+		$order->activate();
+		va_js_redirect_to_listing( $listing_id );
+		return;
+	}
+		
 	if( _va_order_has_plan( $order ) && $va_options->moderate_listings ){
 		va_update_post_status( $listing_id, 'pending' );
 		va_js_redirect_to_listing( $listing_id );
-		return;
-
-	}
-	elseif ( _va_is_claimed( $order ) && $va_options->moderate_claimed_listings ){
-		va_update_post_status( $listing_id, 'pending-claimed' );
-		va_js_redirect_to_claimed_listing( $listing_id );
 		return;
 
 	}
@@ -107,7 +113,10 @@ function _va_get_last_plan_info( $listing_id ){
 		return false;
 
 	$plan_name = p2p_get_meta( $connected->posts[0]->p2p_id, 'type', true );
-	return get_post_custom( $plans_array[ $plan_name]->ID );
+	
+	$plan_info = get_post_custom( $plans_array[ $plan_name ]->ID );
+	$plan_info['ID'] = $plans_array[ $plan_name ]->ID;
+	return $plan_info;
 
 }
 

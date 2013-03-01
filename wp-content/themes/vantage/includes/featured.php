@@ -5,6 +5,22 @@ add_action( 'va_prune_expired_featured', 'va_prune_expired_featured' );
 add_filter( 'posts_clauses', 'va_expired_featured_sql', 10, 2 );
 add_filter( 'va_featured_listings_args', 'va_sort_featured_listings' );
 
+
+function va_is_listing_featured( $post_id, $addon = '' ) {
+
+	if(empty($addon)) {
+		foreach( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ){
+			$featured = get_post_meta( $post_id, $addon, true );
+			if(!empty($featured)) return true;
+		}
+	} else {
+		$featured = get_post_meta( $post_id, $addon, true );
+		if(!empty($featured)) return true;
+	}
+	
+	return false;
+}
+
 function va_add_featured( $post_id, $addon, $duration ){
 
 	update_post_meta( $post_id, $addon , true);
@@ -23,7 +39,7 @@ function va_remove_featured( $post_id, $addon ){
 
 function va_schedule_featured_prune() {
 	if ( !wp_next_scheduled( 'va_prune_expired_featured' ) )
-		wp_schedule_event( time(), 'daily', 'va_prune_expired_featured' );
+		wp_schedule_event( time(), 'hourly', 'va_prune_expired_featured' );
 }
 
 function va_prune_expired_featured() {
@@ -32,7 +48,8 @@ function va_prune_expired_featured() {
 
 		$expired_posts = new WP_Query( array(
 			'post_type' => VA_LISTING_PTYPE,
-			'expired' => $addon
+			'expired' => $addon,
+			'nopaging' => true,
 		) );
 	
 		foreach ( $expired_posts->posts as $post )
@@ -145,5 +162,18 @@ function va_get_featured_listings() {
 		return;
 
 	return $query;
+}
+
+function va_any_featured_addon_enabled(){
+
+	global $va_options;
+
+	$addons = array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT );
+	foreach( $addons as $addon ){
+		if( $va_options->addons[$addon]['enabled'] == 'yes' )
+			return true;
+	}
+
+	return false;
 }
 

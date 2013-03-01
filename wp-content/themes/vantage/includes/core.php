@@ -180,6 +180,13 @@ function va_add_scripts() {
 		true
 	);
 
+	wp_enqueue_script(
+		'va-selectnav',
+		get_template_directory_uri() . '/scripts/jquery.tinynav.js',
+		array( 'jquery' ),
+		1.1
+	);	
+
 	wp_localize_script( 'va-scripts', 'Vantage', array(
 		'ajaxurl' 			=> admin_url( 'admin-ajax.php' ),
 		'current_url'		=> scbUtil::get_current_url()
@@ -367,4 +374,70 @@ function va_after_admin_bar_login_form() {
 // Hook in social connect to admin bar login form
 if ( function_exists('sc_render_login_form_social_connect') ) {
 	add_action( 'va_after_admin_bar_login_form', 'sc_render_login_form_social_connect' );
+}
+
+add_action( 'appthemes_after_import_upload_form', 'va_disable_emails_on_import_option' );
+function va_disable_emails_on_import_option() {
+	?>
+	<p><label><?php _e('Disable sending "Pending Listing.." notification emails for this import?:', APP_TD) ?> <input type="checkbox" name="disable_import_emails" value="1" /></label></p>
+	<?php
+}
+
+add_action( 'appthemes_after_import_upload_form', 'va_geocode_listings_on_import_option' );
+function va_geocode_listings_on_import_option() {
+	?>
+	<p><label><?php _e( 'Geocode imported listings?:' , APP_TD ); ?> <input type="checkbox" name="geocode_imported" value="1" /></label>
+	<br />
+	<span class="description"><?php _e( '(Note: Maximum of 2500 geocode requests per day are allowed)' , APP_TD ); ?></span></p>
+	
+	<?php
+}
+
+add_filter( 'app_importer_import_row_after' , 'va_set_import_meta_defaults' );
+function va_set_import_meta_defaults( $listing ) {
+	return va_set_meta_defaults( $listing );
+}
+
+add_action( 'app_importer_import_row_after', 'va_geocode_listings_on_import', 10, 2 );
+function va_geocode_listings_on_import( $listing_id, $row ) {
+	if ( empty( $_POST['geocode_imported'] ) ) return;
+	if ( !empty( $row['lat'] ) && !empty( $row['lng'] ) ) return;
+	va_geocode_address($listing_id);
+}
+
+add_action( 'wp_mail', 'va_disable_emails_on_import', 1 );
+function va_disable_emails_on_import($args) {
+	
+	if ( !empty( $_POST['disable_import_emails'] ) ) {
+    	$args['to'] = 'example@example.com';
+	}
+    	
+	return $args;
+}
+
+function va_calc_radius_slider_controls($current_radius) {
+	$major_steps = array( 250 => 25, 100 => 10, 50 => 5, 25 => 5, 15 => 1, 10 => 1, 3 => .5, 1 => .1, .05 => .05);
+	$major_steps = apply_filters('va_calc_radius_slider_controls_steps', $major_steps);
+	
+	krsort($major_steps);
+			
+	$last_major_step = '';
+	foreach( $major_steps as $major_step => $step ) {
+		if($current_radius >= $major_step) {
+			$current_radius = va_round_to_nearest($current_radius, $step );
+			$min = $step;
+			$max = !empty($last_major_step) ? $last_major_step * 1.5 : ( $current_radius * 1.5 );
+			$max = va_round_to_nearest($max, $step );
+			break;
+		}
+		$last_major_step = $major_step;
+	}
+	return compact('current_radius', 'min', 'max', 'step');
+}
+
+add_filter('appthemes_geo_query', 'va_geo_query');
+function va_geo_query($geo_query) {
+	$radius_calc = va_calc_radius_slider_controls($geo_query['rad']);
+	$geo_query['rad'] = $radius_calc['current_radius'];
+	return $geo_query;
 }

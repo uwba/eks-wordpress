@@ -19,7 +19,7 @@
         <p><?php _e( 'If you are the owner to this business, you may proceed with claiming this listing by ', APP_TD ); ?><?php echo html_link( APP_Login::get_url( '', va_get_listing_purchase_url( get_queried_object_id() ) ), __( 'Logging in', APP_TD ) );
         	if ( get_option( 'users_can_register' ) ) {
 				_e( ' or ', APP_TD );
-				echo html_link( appthemes_get_registration_url( '', va_get_listing_purchase_url( get_queried_object_id() ) ), __( 'Registering for an account', APP_TD ) );
+				echo html_link( add_query_arg( 'redirect_to', urlencode( va_get_listing_purchase_url( get_queried_object_id() ) ), appthemes_get_registration_url() ), __( 'Registering for an account', APP_TD ) );
 			}
         ?><?php _e( ', to begin the claiming process.', APP_TD ); ?></p>
 		<?php } else { ?>

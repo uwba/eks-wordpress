@@ -4,7 +4,6 @@ class APP_Dashboard extends scbBoxesPage {
 
 	const NEWS_FEED = 'http://feeds2.feedburner.com/appthemes';
 	const TWITTER_FEED = 'http://twitter.com/statuses/user_timeline/appthemes.rss';
-	const FORUM_FEED = 'http://forums.appthemes.com/external.php?type=RSS2';
 
 	function __construct( $args ) {
 		$this->args = wp_parse_args( $args, array(
@@ -12,12 +11,13 @@ class APP_Dashboard extends scbBoxesPage {
 			'toplevel' => 'menu',
 			'position' => 3,
 			'screen_icon' => 'themes',
+			'theme-slug' => ''
 		) );
 
 		$this->boxes = array(
+			array( 'docs', $this->box_icon( 'newspaper.png' ) . __( 'Latest Tutorials', APP_TD ), 'normal' ),
 			array( 'news', $this->box_icon( 'newspaper.png' ) . __( 'Latest News', APP_TD ), 'normal' ),
 			array( 'twitter', $this->box_icon( 'twitter-bird.png' ) . __( 'Latest Tweets', APP_TD ), 'side' ),
-			array( 'forum', $this->box_icon( 'comments.png' ) . __( 'Support Forum', APP_TD ), 'side' ),
 		);
 
 		scbAdminPage::__construct();
@@ -25,7 +25,7 @@ class APP_Dashboard extends scbBoxesPage {
 
 	function news_box() {
 		echo '<div class="rss-widget">';
-		wp_widget_rss_output( self::NEWS_FEED, array( 'items' => 10, 'show_author' => 0, 'show_date' => 1, 'show_summary' => 1 ) );
+		wp_widget_rss_output( self::NEWS_FEED, array( 'items' => 5, 'show_author' => 0, 'show_date' => 1, 'show_summary' => 1 ) );
 		echo '</div>';
 	}
 
@@ -35,9 +35,19 @@ class APP_Dashboard extends scbBoxesPage {
 		echo '</div>';
 	}
 
-	function forum_box() {
+	function docs_box(){
+
+		if( empty( $this->args['theme-slug'] ) ){
+			$url = "http://docs.appthemes.com/feed/";
+		}else{
+			$theme = $this->args['theme-slug'];
+			$url = "http://docs.appthemes.com/{$theme}/feed/";
+		}
+
+		
+
 		echo '<div class="rss-widget">';
-		wp_widget_rss_output( self::FORUM_FEED, array( 'items' => 5, 'show_author' => 0, 'show_date' => 1, 'show_summary' => 1 ) );
+		wp_widget_rss_output( $url, array( 'items' => 10, 'show_author' => 0, 'show_date' => 1, 'show_summary' => 0 ) );
 		echo '</div>';
 	}
 

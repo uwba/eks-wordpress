@@ -14,7 +14,7 @@ class P2P_Query {
 	 * - WP_Error instance if the query is invalid
 	 * - P2P_Query instance on success
 	 */
-	public static function create_from_qv( $q, $object_type ) {
+	public static function create_from_qv( &$q, $object_type ) {
 		$shortcuts = array(
 			'connected' => 'any',
 			'connected_to' => 'to',
@@ -56,7 +56,7 @@ class P2P_Query {
 			if ( isset( $directions[$i] ) ) {
 				$directed = $ctype->set_direction( $directions[$i] );
 			} else {
-				$directed = self::find_direction( $ctype, $item, $object_type );
+				$directed = $ctype->find_direction( $item, true, $object_type );
 			}
 
 			if ( !$directed )
@@ -82,6 +82,10 @@ class P2P_Query {
 			$q = array_merge_recursive( $q, array(
 				'connected_meta' => $directed->data
 			) );
+
+			$q = $directed->get_final_qv( $q, 'opposite' );
+
+			$q = apply_filters( 'p2p_connected_args', $q, $directed, $item );
 		}
 
 		$p2p_q = new P2P_Query;
@@ -104,22 +108,9 @@ class P2P_Query {
 		return $this->$key;
 	}
 
-	/**
-	 * For high-level query modifications
-	 */
-	public function alter_qv( &$q ) {
-		$q = wp_parse_args( $q, array(
-			'p2p:context' => false
-		) );
+	private function do_other_query( $directed, $which ) {
+		$side = $directed->get( $which, 'side' );
 
-		$q = $this->ctypes[0]->get_opposite( 'side' )->get_base_qv( $q );
-
-		if ( 1 == count( $this->ctypes ) ) {
-			$q = apply_filters( 'p2p_connected_args', $q, $this->ctypes[0], $this->items );
-		}
-	}
-
-	private function do_other_query( $side ) {
 		$qv = array_merge( $this->query, array(
 			'fields' => 'ids',
 			'p2p:per_page' => -1
@@ -128,7 +119,9 @@ class P2P_Query {
 		if ( 'any' != $this->items )
 			$qv['p2p:include'] = _p2p_normalize( $this->items );
 
-		return $side->capture_query( $side->get_base_qv( $side->translate_qv( $qv ) ) );
+		$qv = $directed->get_final_qv( $qv, $which );
+
+		return $side->capture_query( $qv );
 	}
 
 	/**
@@ -159,7 +152,7 @@ class P2P_Query {
 			case 'to':
 				list( $from, $to ) = $fields;
 
-				$search = $this->do_other_query( $directed->get_current( 'side' ) );
+				$search = $this->do_other_query( $directed, 'current' );
 
 				$part .= " AND $main_id_column = $wpdb->p2p.$from";
 				$part .= " AND $wpdb->p2p.$to IN ($search)";
@@ -170,8 +163,8 @@ class P2P_Query {
 					($main_id_column = $wpdb->p2p.p2p_to AND $wpdb->p2p.p2p_from IN (%s)) OR
 					($main_id_column = $wpdb->p2p.p2p_from AND $wpdb->p2p.p2p_to IN (%s))
 				)",
-					$this->do_other_query( $directed->get_current( 'side' ) ),
-					$this->do_other_query( $directed->get_opposite( 'side' ) )
+					$this->do_other_query( $directed, 'current' ),
+					$this->do_other_query( $directed, 'opposite' )
 				);
 			}
 
@@ -210,31 +203,6 @@ class P2P_Query {
 		}
 
 		return $clauses;
-	}
-
-	private static function find_direction( $ctype, $arg, $object_type ) {
-		$opposite_side = self::choose_side( $object_type,
-			$ctype->object['from'],
-			$ctype->object['to']
-		);
-
-		if ( in_array( $opposite_side, array( 'from', 'to' ) ) )
-			return $ctype->set_direction( $opposite_side );
-
-		return $ctype->find_direction( $arg );
-	}
-
-	private static function choose_side( $current, $from, $to ) {
-		if ( $from == $to && $current == $from )
-			return 'any';
-
-		if ( $current == $from )
-			return 'to';
-
-		if ( $current == $to )
-			return 'from';
-
-		return false;
 	}
 }
 

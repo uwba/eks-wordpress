@@ -321,7 +321,7 @@ class APP_Importer extends scbAdminPage {
 		foreach ( $post_meta as $meta_key => $meta_value )
 			add_post_meta( $post_id, $meta_key, $meta_value, true );
 
-		if ( $this->geodata ) {
+		if ( $this->geodata && !empty( $row['lat'] ) && !empty( $row['lng'] ) ) {
 			appthemes_set_coordinates( $post_id, $row['lat'], $row['lng'] );
 		}
 		
@@ -347,6 +347,8 @@ class APP_Importer extends scbAdminPage {
 				}
 			}
 		}
+		
+		do_action('app_importer_import_row_after', $post_id, $row);
 		
 		return true;
 	}

@@ -115,26 +115,26 @@ function va_display_fave_button( $listing_id, $echo = TRUE ) {
 	if ( ! va_is_fave_listing( $listing_id ) || ! is_user_logged_in() ) {
 		$text = __( 'Add to Favorites', APP_TD );
 
-		$icon = html( 'div', array(
+		$icon = html( 'span', array(
 			'class' => 'fave-icon listing-fave',
-		), $text);		
+		), '');		
 			
 		$button = html( 'a', array(
 			'class' => 'fave-button listing-fave-link',
 			'href' => va_get_favorite_url( $listing_id ),
-		), $icon );
+		), $icon . ' ' . $text );
 		
 	} else {	
 		$text = __( 'Delete Favorite', APP_TD );
 		
-		$icon = html( 'div', array(
+		$icon = html( 'span', array(
 			'class' => 'fave-icon listing-unfave',
-		), $text);		
+		), '');		
 				
 		$button = html( 'a', array(
 			'class' => 'fave-button listing-unfave-link ',
 			'href' => va_get_favorite_url( $listing_id, 'delete' ),
-		), $icon );		
+		),  $icon . ' ' . $text );		
 		
 	}
 			

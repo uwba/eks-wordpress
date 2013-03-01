@@ -17,9 +17,9 @@
 		    	    				<?php echo $plan['description'][0]; ?>
 		    	    			</div>
 		    	    			<div class="featured-options">
-		    	    			<?php if( !empty($plan['disable_featured'][0])) { ?>
+		    	    			<?php if( _va_no_featured_available( $plan, $listing ) ) { ?>	    			
 		    	    				<div class="option-header">
-		    	    					<?php _e( 'Featured Listings are not available for this price option.', APP_TD ); ?>
+		    	    					<?php _e( 'Featured Listings are not available for this price plan.', APP_TD ); ?>
 		    	    				</div>		    	    				
 		    	    			<?php } else { ?>
 		    	    			
@@ -29,10 +29,14 @@
 		    	    				<?php foreach ( array( VA_ITEM_FEATURED_HOME, VA_ITEM_FEATURED_CAT ) as $addon ) : ?>
 										<div class="featured-option"><label>
 											<?php if( ! empty( $plan[ $addon ][0] ) ){ ?>
-												<?php _va_show_featured_option( $addon, true ); ?>
+												<?php _va_show_featured_option( $addon, true, $plan['post_data']->ID ); ?>
+												<?php if ( $plan[$addon.'_duration'][0] != 0 ) { ?>
 												<?php printf( _n( '%s is included in this plan for %d day.', '%s is included in this plan for %d days.', $plan[$addon.'_duration'][0], APP_TD ), APP_Item_Registry::get_title( $addon ), $plan[$addon.'_duration'][0] ); ?>
+												<?php } else { ?>
+												<?php printf( __( '%s is included in this plan for Unlimited days.'), APP_Item_Registry::get_title( $addon ) ); ?>												
+												<?php } ?>
 											<?php }else{ ?>
-												<?php _va_show_featured_addon( $addon, $listing->ID ); ?>
+												<?php _va_show_featured_addon( $addon, $listing->ID, $plan['post_data']->ID ); ?>
 											<?php } ?>
 										</label></div>
 									<?php endforeach; ?>
@@ -67,6 +71,7 @@
 		</fieldset>
 		<fieldset>
 			<?php do_action( 'va_after_purchase_listing_new_form', $listing ); ?>	 
+			<?php do_action( 'app_purchase_fields' ); ?>	 
 			<input type="hidden" name="action" value="purchase-listing">
 			<input type="hidden" name="ID" value="<?php echo $listing->ID; ?>">
 			<div classess="form-field">

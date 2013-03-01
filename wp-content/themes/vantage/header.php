@@ -3,23 +3,20 @@
 		<hgroup>
 			<?php va_display_logo(); ?>
 		</hgroup>
-		<div class="advert">
-			<?php dynamic_sidebar( 'header' ); ?>
-		</div>
+		<?php if ( is_active_sidebar( 'va-header' ) ) : ?>
+			<div class="advert">
+				<?php dynamic_sidebar( 'va-header' ); ?>
+			</div>
+		<?php endif; ?>
 	</div>
 </div>
 <div id="main-navigation" class="container">
 	<div class="row">
 		<div id="rounded-nav-box" class="rounded">
 			<div id="rounded-nav-box-overlay">
-				<?php wp_nav_menu( array(
-					'theme_location' => 'header',
-					'container_class' => 'menu rounded',
-					'items_wrap' => '<ul>%3$s</ul>',
-					'fallback_cb' => false
-				) ); ?>
+				<?php va_display_navigation_menu(); ?>
 				<?php if ( !is_page_template( 'create-listing.php' ) ) : ?>
-				<form method="get" action="<?php bloginfo( 'url' ); ?>">
+				<form method="get" action="<?php echo trailingslashit( get_bloginfo( 'url' ) ); ?>">
 					<div id="main-search">
 						<div class="search-for">
 							<label for="search-text">
@@ -48,21 +45,10 @@
 						</div>
 
 						<div class="search-button">
-							<!-- <input type="image" src="<?php echo get_bloginfo('template_directory'); ?>/images/search.png" value="<?php _e( 'Search', APP_TD ); ?>" /> -->
 							<button type="submit" id="search-submit" class="rounded-small"><?php _e( 'Search', APP_TD ); ?></button>
 						</div>
 					</div>
-					<?php if ( '' != $orderby = va_get_search_query_var( 'orderby' )){ ?>
-					<input type="hidden" name="orderby" value="<?php echo $orderby; ?>" />
-					<?php } ?>
-					<?php if ( '' != $radius = va_get_search_query_var( 'radius' )){ ?>
-					<input type="hidden" name="radius" value="<?php echo $radius; ?>" />
-					<?php } ?>
-					<?php if ( isset( $_GET['listing_cat'] ) ){ ?>
-						<?php foreach ( $_GET['listing_cat'] as $k=>$listing_cat ) { ?>
-							<input type="hidden" name="listing_cat[]" value="<?php echo $listing_cat; ?>" />
-						<?php } ?>
-					<?php } ?>
+					<?php the_search_refinements(); ?>
 				</form>
 				<?php endif; ?>
 			</div>
