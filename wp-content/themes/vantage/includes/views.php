@@ -156,6 +156,29 @@ class VA_Listing_Search extends APP_View {
 			if ( !is_user_logged_in() )
 				$search .= " AND ($wpdb->posts.post_password = '') ";
 		}
+                
+                // Start EKS hack - get additional filter fields      
+                if (!empty($_GET['county']))
+                    $search .= " AND tter.name = '".esc_sql($_GET['county'])."'";
+                
+                $subquery = array();
+                                
+                if (!empty($_GET['city']))
+                    $subquery[] = "meta_key = 'address' AND meta_value LIKE '%".esc_sql(like_escape($_GET['city']))."%'";
+                  
+                if (!empty($_GET['language']))  
+                    $subquery[] = "meta_key = 'app_additionallanguagesspoken' AND meta_value = '".esc_sql(like_escape($_GET['language']))."'";
+                
+                if (!empty($_GET['ada']))
+                    $subquery[] = "meta_key = 'app_adaaccessible' AND meta_value = '".esc_sql(like_escape($_GET['ada']))."'";
+
+                if (!empty($_GET['itin']))
+                    $subquery[] = "meta_key = 'app_certifyingacceptanceagent' AND meta_value = '".esc_sql(like_escape($_GET['language']))."'";
+                
+                if (count($subquery) > 0)
+                    $search .= " AND $wpdb->posts.id IN (SELECT post_id FROM $wpdb->postmeta WHERE ( ".implode(' OR ', $subquery)." ) ) ";
+                // End EKS hack
+                
 		// END COPY
 
 		return $search;

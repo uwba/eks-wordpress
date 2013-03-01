@@ -1231,3 +1231,8 @@ input[type="password"]
 {
     width: auto;
 }
+
+#main-search select
+{
+    width: 150px;
+}

@@ -1,3 +1,4 @@
+<?php wp_enqueue_style('yui', 'http://yui.yahooapis.com/3.8.1/build/cssgrids/grids-min.css'); ?>
 <div id="masthead" class="container">
         <div class="row">
             <div style="text-align:right">
@@ -34,21 +35,23 @@
 				) ); ?>
 				<?php if(is_post_type_archive('listing') || is_search()){ ?>
 				<form method="get" action="<?php bloginfo( 'url' ); ?>">
-					<div id="main-search">
-						<div class="search-for">
-							<label for="search-text">
-								<span class="search-title"><?php _e( 'Search For ', APP_TD ); ?></span><span class="search-help"><?php _e( '(e.g. Alameda, Contra Costa, San Francisco)', APP_TD ); ?></span>
-							</label>
-							<div class="input-cont h39">
-								<div class="left h39"></div>
-								<div class="mid h39">
-									<input type="text" name="ls" id="search-text" class="text" value="<?php va_show_search_query_var( 'ls' ); ?>" />
-								</div>
-								<div class="right h39"></div>
-							</div>
-						</div>
-
-						<div class="search-location">
+                                    <div style="padding:10px">
+					<div id="main-search" class="yui3-g">
+                                            
+                                            <div class="yui3-u-1-4">
+                                                <label for="search-text">
+                                                        <span class="search-title"><?php _e( 'Search For ', APP_TD ); ?></span><br/><span class="search-help"><?php _e( '(e.g. Alameda, Contra Costa, San Francisco)', APP_TD ); ?></span>
+                                                </label>
+                                                <div class="input-cont h39">
+                                                        <div class="left h39"></div>
+                                                        <div class="mid h39">
+                                                                <input type="text" name="ls" id="search-text" class="text" value="<?php va_show_search_query_var( 'ls' ); ?>" />
+                                                        </div>
+                                                        <div class="right h39"></div>
+                                                </div>
+                                            </div>
+                                            <div class="yui3-u-1-4">
+						<div class="search-location" style="padding-left:10px">
 							<label>
 								<span class="search-title">County</span>
 							</label>
@@ -65,7 +68,8 @@
                                                                 </select>
 							</div>
 						</div>
-                                            
+                                            </div>
+                                            <div class="yui3-u-1-4">                                           
                                             	<div class="search-location">
 							<label>
 								<span class="search-title">City</span>
@@ -74,16 +78,21 @@
 								<select name="city" id="select-city">
                                                                 </select>
 							</div>
-						</div>
-
-						<div class="search-button">
-							<!-- <input type="image" src="<?php echo get_bloginfo('template_directory'); ?>/images/search.png" value="<?php _e( 'Search', APP_TD ); ?>" /> -->
-							<button type="submit" id="search-submit" class="rounded-small"><?php _e( 'Search', APP_TD ); ?></button>
-						</div>
-<script>
+                                                    <script>
                 var firstrun = true;
         jQuery(document).ready(function($) {
             
+            <?php 
+            if (!empty($_GET['language'])) { ?>
+                    $('#select-language').val('<?php echo $_GET['language'] ?>');
+            <?php } 
+            if (!empty($_GET['ada'])) { ?>
+                    $('#select-ada').val('<?php echo $_GET['ada'] ?>');
+            <?php } 
+            if (!empty($_GET['itin'])) { ?>
+                    $('#select-itin').val('<?php echo $_GET['itin'] ?>');
+            <?php } ?>
+
             var cities = {
               'Alameda': [
                   'Alameda',
@@ -191,6 +200,66 @@
 
         });
 </script>
+						</div>
+                                            </div>
+                                            <div class="yui3-u-1-4">
+						<div class="search-button">
+							<!-- <input type="image" src="<?php echo get_bloginfo('template_directory'); ?>/images/search.png" value="<?php _e( 'Search', APP_TD ); ?>" /> -->
+							<button type="submit" id="search-submit" class="rounded-small"><?php _e( 'Search', APP_TD ); ?></button>
+						</div>
+                                            </div>
+ 
+                                            <div class="yui3-u-1-4">                                           
+                                            	<div class="search-location">
+							<label>
+								<span class="search-title">Language</span>
+							</label>
+							<div class="input-cont h39">
+								<select name="language" id="select-language">
+                                                                    <option></option>
+                                                                    <option>Spanish</option>
+                                                                    <option>Cantonese</option>
+                                                                    <option>Mandarin</option>
+                                                                    <option>Vietnamese</option>
+                                                                    <option>Khmer (Cambodian)</option>
+                                                                    <option>Farsi</option>
+                                                                    <option>American Sign Language</option>
+                                                                    <option>Russian</option>
+                                                                    <option>Tagalog</option>
+                                                                </select>
+							</div>
+						</div>
+                                            </div>
+                                            <div class="yui3-u-1-4"> 
+                                                <div class="search-location" style="padding-left:10px">
+                                                	<label>
+								<span class="search-title">ADA Accessible?</span>
+							</label>
+                                                	<div class="input-cont h39">
+								<select name="ada" id="select-ada">
+                                                                    <option></option>
+                                                                    <option>Yes</option>
+                                                                    <option>No</option>
+                                                                </select>
+							</div>
+                                                </div>
+                                            </div>
+                                            <div class="yui3-u-1-4">   
+                                                <div class="search-location">
+                                                	<label>
+								<span class="search-title">ITIN Applications Processed?</span>
+							</label>
+                                                	<div class="input-cont h39">
+								<select name="itin" id="select-itin">
+                                                                    <option></option>
+                                                                    <option>Yes</option>
+                                                                    <option>No</option>
+                                                                </select>
+							</div>
+                                                </div>
+                                            </div>
+                                         </div>
+
 					</div>
 					<?php if ( '' != $orderby = va_get_search_query_var( 'orderby' )){ ?>
 					<input type="hidden" name="orderby" value="<?php echo $orderby; ?>" />
@@ -203,7 +272,8 @@
 							<input type="hidden" name="listing_cat[]" value="<?php echo $listing_cat; ?>" />
 						<?php } ?>
 					<?php } ?>
-				</form>
+                                    </div>
+                                </form>
                 <?php } ?>
 			</div>
 		</div>
