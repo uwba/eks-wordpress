@@ -161,14 +161,6 @@ small {
 	position: relative;
 	overflow: hidden;
 }
-#site-title a {
-	width:268px;
-	height:84px;
-	margin:0 0 0 30px;
-	display:block;
-	background:url(images/logo.png) no-repeat 0 0;
-	text-indent:-9999px;
-}
 #site-description {
 	margin:0 0 0 30px;
 	color:#333;
