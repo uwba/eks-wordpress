@@ -1235,8 +1235,7 @@ input[type="password"]
 	font-style: normal;
 }
 
-/* Override */
-.form-field
+#create-listing select, #create-listing .form-field
 {
-    width:90%
+    width: auto;
 }
