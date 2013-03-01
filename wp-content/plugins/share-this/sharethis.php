@@ -22,7 +22,7 @@
  Plugin Name: ShareThis
  Plugin URI: http://sharethis.com
  Description: Let your visitors share a post/page with others. Supports e-mail and posting to social bookmarking sites. <a href="options-general.php?page=sharethis.php">Configuration options are here</a>. Questions on configuration, etc.? Make sure to read the README.
- Version: 5.4
+ Version: 5.4.1
  Author: ShareThis,next2manu, Manu Mukerji <manu@sharethis.com>
  Author URI: http://sharethis.com
  */
@@ -511,7 +511,7 @@ function st_options_form() {
 		$services="facebook,twitter,linkedin,email,sharethis";
 	}
 	if(empty($st_prompt)){
-		$services.=",fblike,plusone,pinterest";
+		$services.=",fblike,plusone,pinterest,instagram";
 		update_option('st_prompt', 'true');
 	}
 	if(empty($tags)){
@@ -596,6 +596,9 @@ function st_options_form() {
 								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 								<input type="checkbox" id="st_pinterest" name="st_pinterest" value="1" ></input>&nbsp;
 								<label id="pinterest_label">Add Pinterest</label>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="checkbox" id="st_instagram" name="st_instagram" value="1" ></input>&nbsp;
+								<label id="instagram_label">Add Instagram</label>
 							</div>
 							<br/>
 							<div class="version">
@@ -627,6 +630,16 @@ function st_options_form() {
 								</div>
 							</div>
 							<br/>
+							
+							<div class="instagrambadge">
+								<span class="heading" onclick="javascript:$(\'#instagrambadge_opts\').toggle(\'slow\');"><span class="headingimg">[+]</span>&nbsp;Click to configure the Instagram badge.</span><br/>
+								<div id="instagrambadge_opts">
+									To promote your Instagram account via the instagram badge on your site, please add the account name below. This will ensure that your Instagram account is displayed upon clicking on your badge.<br/>
+									<textarea name="st_instagram_account" id="st_instagram_account" style="height: 30px; width: 400px;"></textarea>
+								</div>
+							</div>
+							<br/>
+							
 							<div class="tags">
 								<span class="heading" onclick="javascript:$(\'#st_tags\').toggle(\'slow\');"><span class="headingimg">[+]</span>&nbsp;Click to view/modify the HTML tags.</span><br/>
 								<textarea name="st_tags" id="st_tags" style="height: 100px; width: 500px;">'.htmlspecialchars(preg_replace("/<\/span>/","</span>", $tags)).'</textarea>

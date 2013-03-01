@@ -84,6 +84,8 @@ jQuery(document).ready(function() {
 			$('#st_plusone').attr('checked','checked');
 		} else if (svc[i]=="pinterest"){
 			$('#st_pinterest').attr('checked','checked');
+		} else if (svc[i]=="instagram"){
+			$('#st_instagram').attr('checked','checked');
 		}
 	}
 	
@@ -111,10 +113,15 @@ jQuery(document).ready(function() {
 		$('#st_via').val(matches[1]);
 	} 
 	
-	var matches2=markup.match(/st_username='(\w*)'/); 
+	var matches2=markup.match(/st_username='(\w*)' class='(st_twitter\w*)'/); 
 	if (matches2!=null && typeof(matches2[1])!="undefined"){
 		$('#st_related').val(matches2[1]);
 	} 
+	
+	var matchInstagram = markup.match(/st_username='(\w*)' class='(st_instagram\w*)'/);
+	if(matchInstagram != null && typeof(matchInstagram[1]) != "undefined"){
+		$('#st_instagram_account').val(matchInstagram[1]);
+	}
 	
 	$('#st_fblike').bind('click', function(){
 		if ($('#st_fblike').attr('checked')) {
@@ -185,6 +192,26 @@ jQuery(document).ready(function() {
 		stpkeytimeout=setTimeout(function(){makeTags();},500);
 	})
 	
+	$('#st_instagram').bind('click', function(){
+		if ($('#st_instagram').attr('checked')) {
+			if ($('#st_services').val().indexOf("instagram")==-1) {
+				$('#st_services').val($('#st_services').val()+",instagram");
+			}
+		}
+		else {
+			var pos=$('#st_services').val().indexOf("instagram");
+			if (pos!=-1) {
+				var str=$('#st_services').val();
+				if (pos==0)
+					$('#st_services').val(str.substr(pos+10));
+				else
+					$('#st_services').val(str.substr(0,pos-1)+str.substr(pos+9));
+			}
+		}
+		clearTimeout(stpkeytimeout);
+		stpkeytimeout=setTimeout(function(){makeTags();},500);
+	})
+	
 	$('#st_hoverbar').bind('click', function(){
 		generateHoverbar("left");
 	});
@@ -202,6 +229,10 @@ jQuery(document).ready(function() {
 	})
 	
 	$('#st_related').bind('keyup', function(){
+		makeTags();
+	})
+	
+	$('#st_instagram_account').bind('keyup', function(){
 		makeTags();
 	})
 	
@@ -440,6 +471,7 @@ function makeTags(){
 		if(svc[i].length>2){
 			var via = "";
 			var related = "";
+			var instagram_account = "";
 			
 			if (svc[i]=="twitter") {
 				via=$('#st_via').val();
@@ -451,10 +483,18 @@ function makeTags(){
 					related=" st_username='"+related+"'";
 				}
 			}
+			
+			if(svc[i]=="instagram"){
+				instagram_account = $('#st_instagram_account').val();
+				if(instagram_account != ''){
+					instagram_account = " st_username='"+instagram_account+"'";
+				}
+			}
+			
 			if(type =="chicklet2")
-				tags+="<span"+via+""+related+" class='st_"+svc[i]+"' st_title='<?php the_title(); ?>' st_url='<?php the_permalink(); ?>'></span>";
+				tags+="<span"+via+""+related+""+instagram_account+" class='st_"+svc[i]+"' st_title='<?php the_title(); ?>' st_url='<?php the_permalink(); ?>'></span>";
 			else
-				tags+="<span"+via+""+related+" class='st_"+svc[i]+type+"' st_title='<?php the_title(); ?>' st_url='<?php the_permalink(); ?>' displayText='"+svc[i]+"'></span>";
+				tags+="<span"+via+""+related+""+instagram_account+" class='st_"+svc[i]+type+"' st_title='<?php the_title(); ?>' st_url='<?php the_permalink(); ?>' displayText='"+svc[i]+"'></span>";
 		}
 	}
 	$('#st_tags').val(tags);

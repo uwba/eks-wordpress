@@ -6,7 +6,7 @@ Requires at least: 1.5
 Tested up to: 3.4
 Stable tag: trunk
 
-Quick & easy sharing service that allows your users to share content to 120 social channels - features Open Graph Sharing, Hovering Bar and now CopyNShare!
+Quick & easy sharing service that allows your users to share content - features Open Graph Sharing, Hovering Bar and CopyNShare!
 
 == Description ==
 
@@ -22,7 +22,8 @@ With access to *120 social channels* (including Facebook, Twitter, Like, +1, Ema
 
 **[ShareNow](http://sharethis.com/publishers/get-sharenow)** is the new social tool that allows you to leverage *frictionless sharing* without having to create your own custom solution and puts your users in control over how they share content. Placed on the right or left side of your content, ShareNow makes it easier for your users to share, delete and re-share to their social network timeline. Increase sharing activity on your site and add ShareNow!
 
-Join the ShareThis Publisher Network of 1.6M sites and get access to your analytics:
+Join the ShareThis Publisher Network of over 2M sites and get access to your analytics:
+Check out the live demo (http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home)
 
 * Daily sharing activity per registered domain
 * Detailed reports on the top shared URLs (content) of your site(s)
@@ -44,6 +45,11 @@ More information about the [ShareNow plugin for WordPress] (http://support.share
 
 == Changelog ==
 
+5.4.1
+
+1. Get the Instagram badge and link to your profile!
+2. Bug Fixes.
+
 5.4
 
 1. Now you know how many users share by copying and pasting. Introducing CopyNShare. Enable it and check your Analytics Dashboard to see those numbers pop up.
@@ -63,6 +69,7 @@ More information about the [ShareNow plugin for WordPress] (http://support.share
 == Sharing Analytics ==
 
 Once you join the the ShareThis Publisher Network, you get access to ShareThis Analytics.  Create your account and register your domain to access your site’s sharing activity. 
+Check out the live demo (http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home)
 
 Reports include:
 1. Daily sharing activity per registered domain
@@ -78,7 +85,7 @@ What are you waiting for? Download the ShareThis plugin today and get access to 
 
 ShareThis’ mission is to make the world more connected, trusted and valuable through sharing. Our goal is to provide websites with solutions to improve and drive value from the social engagement of their site. 
 
-With the ShareThis Publisher Network of 1.4M websites, 120 social channels and a reach of 80% of the web (US), ShareThis is the largest ecosystem for sharing and engagement across the web. 
+With the ShareThis Publisher Network of 2M websites, 120 social channels and a reach of 80% of the web (US), ShareThis is the largest ecosystem for sharing and engagement across the web. 
 
 Learn More at http://www.sharethis.com
 

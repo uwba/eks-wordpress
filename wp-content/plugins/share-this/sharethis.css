@@ -157,3 +157,7 @@ font-size: 14px;
     padding: 0 20px 20px 40px !important;
     width: 470px !important;
 }
+
+#instagrambadge_opts{
+	display : none;
+}
