@@ -15,7 +15,9 @@ function TBW_twitterformat(twitters, maxtwits) {
 		var tag = t.replace("#","%23");
 		return t.link("http://search.twitter.com/search?q="+tag);
 	});
-    statusHTML.push('<li><span class="TBW_Tweets">'+status+'</span> <span class="TBW_Time"><a href="http://twitter.com/'+username+'/statuses/'+twitters[i].id+'"><abbr class="datetime" title="'+twitters[i].created_at+'">'+Loc_relative_time(twitters[i].created_at)+'</abbr></span></a></li>');
+        // Start EKS hack to display the profile_image_url to the left of the tweet
+    statusHTML.push('<li style="background-image:url(' + twitters[i].user.profile_image_url + ')"><span class="TBW_Tweets">'+status+'</span> <span class="TBW_Time"><a href="http://twitter.com/'+username+'/statuses/'+twitters[i].id+'"><abbr class="datetime" title="'+twitters[i].created_at+'">'+Loc_relative_time(twitters[i].created_at)+'</abbr></span></a></li>');
+        // End EKS hack
   }
   return (statusHTML.join(''));
   }

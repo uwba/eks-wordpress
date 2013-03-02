@@ -879,7 +879,8 @@ font-weight: bold;*/
 #center-content-area #rightcontent .TBW_Narrow .TBW_Status ul li {
 	margin: 0 0 2.8em -3px;
 	padding-left:70px;
-	background: #fff url('images/orange-square.jpg') 0% 4% no-repeat !important;
+        background-position: 0% 4%;
+        background-repeat: no-repeat;
 }
 #center-content-area #rightcontent .TBW_Narrow .TBW_Status ul li:last-child {
 	margin-bottom:1.8em;
