@@ -19,10 +19,12 @@ wp_enqueue_script('jquery-ui-datepicker');
         <?php
         // Workaround a major bug in Vantage - default values for radio groups are not honored, and it's not setting a default hidden value (as a result?).  
         // So hardcode a hidden field with of the valid values configured on the Form Builder admin screen.
+        // Also add a hidden field for tax_input since this now seems to be required in the latest Vantage theme version.
         ?>
         <input type="hidden" name="app_adaaccessible" value="No" />
         <input type="hidden" name="app_certifyingacceptanceagent" value="No" />
         <input type="hidden" name="app_closestbartstation" value="" />
+        <input name="tax_input[<?php echo VA_LISTING_TAG; ?>]" type="hidden" value="<?php the_listing_tags_to_edit( $listing->ID ); ?>" />
 
         <fieldset id="essential-fields">
 
@@ -63,7 +65,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                         'taxonomy' => VA_LISTING_CATEGORY,
                         'hide_empty' => false,
                         'hierarchical' => true,
-                        'name' => VA_LISTING_CATEGORY,
+                        'name' => '_' . VA_LISTING_CATEGORY,
                         'selected' => $listing->category,
                         'show_option_none' => __('Select Category', APP_TD),
                         'class' => 'required',
