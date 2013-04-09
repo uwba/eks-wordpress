@@ -183,11 +183,11 @@ while ( have_posts() ) {
 
 	<?php if ( is_search() ) : ?>
 	<article class="listing">
-		<h2><?php printf( __( 'Sorry, no Tax Sites were found.', APP_TD )); ?></h2>
+		<h2>We're sorry, there are no tax sites found with that search criteria.</h2>
 	</article>
 	<?php elseif ( is_archive() ) : ?>	
 	<article class="listing">
-		<h2><?php printf( __( 'Sorry there are no Tax Sites for %s "%s"', APP_TD ), ( is_tax( VA_LISTING_CATEGORY ) ? __( 'category', APP_TD ) : __( 'tag', APP_TD ) ), single_term_title( '', false ) ); ?></h2>
+		<h2>We're sorry, there are no tax sites found with that search criteria.</h2>
 	</article>
 	<?php endif; ?>
 

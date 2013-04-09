@@ -133,23 +133,24 @@ class VA_Listing_Search extends APP_View {
 		$q = $wp_query->query_vars;
 		$search = '';
 
-		if ( empty( $q['search_terms'] ) ) return $sql;
+		if ( !empty( $q['search_terms'] ) )
+                {
+                    // BEGIN COPY FROM WP_Query
+                    $n = !empty($q['exact']) ? '' : '%';
+                    $searchand = '';
+                    foreach( (array) $q['search_terms'] as $term ) {
+                            $term = esc_sql( like_escape( $term ) );
 
-		// BEGIN COPY FROM WP_Query
-		$n = !empty($q['exact']) ? '' : '%';
-		$searchand = '';
-		foreach( (array) $q['search_terms'] as $term ) {
-			$term = esc_sql( like_escape( $term ) );
+                            // ADDED tter.name
+                            $search .= "{$searchand}(
+                                    ($wpdb->posts.post_title LIKE '{$n}{$term}{$n}') OR
+                                    ($wpdb->posts.post_content LIKE '{$n}{$term}{$n}') OR
+                                    (tter.name LIKE '{$n}{$term}{$n}')
+                            )";
 
-			// ADDED tter.name
-			$search .= "{$searchand}(
-				($wpdb->posts.post_title LIKE '{$n}{$term}{$n}') OR
-				($wpdb->posts.post_content LIKE '{$n}{$term}{$n}') OR
-				(tter.name LIKE '{$n}{$term}{$n}')
-			)";
-
-			$searchand = ' AND ';
-		}
+                            $searchand = ' AND ';
+                    }
+                }
 
 		if ( !empty($search) ) {
 			$search = " AND ({$search}) ";
