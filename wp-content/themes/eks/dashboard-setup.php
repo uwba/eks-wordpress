@@ -12,11 +12,18 @@ $args = array(
 	'is_own_dashboard'=> va_is_own_dashboard()
 );
 
-if (is_volunteer())
-{
-    appthemes_load_template( "page-my-tax-sites.php", $args );
-} else {
+
+if (is_volunteer()) { ?>
+<div id="main">
+	<div class="section-head">
+		<h1><?php _e('Volunteer Dashboard', APP_TD); ?></h1>
+	</div>
+        <div class="categories-list">
+            <p>This is the volunteer dashboard landing page.</p>
+        </div>     
+</div>
+<?php } else {   
     appthemes_load_template( "dashboard-$dashboard_type.php", $args );
-    ?><div id="sidebar"><?php appthemes_load_template( 'sidebar.php', $args ); ?></div>
-    <?php
-}
+} ?>
+
+<div id="sidebar"><?php appthemes_load_template( 'sidebar.php', $args ); ?></div>

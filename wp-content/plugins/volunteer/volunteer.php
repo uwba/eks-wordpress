@@ -1,4 +1,4 @@
-<?
+<?php
 /*
   Plugin Name: Volunteer
   Description: Volunteer registration and management plugin for EKS, heavily reworked by Rolf Kaiser.
@@ -13,16 +13,19 @@ add_action('admin_menu', 'eks_update_menu_items');
 
 function eks_update_menu_items() {
 
-    // Remove the old "Add New" submenus under Listings and Volunteers for clarity
+    // Remove the old "Add New" submenus under Listings, Volunteers and Training for clarity
     remove_submenu_page('edit.php?post_type=listing', 'post-new.php?post_type=listing');
     remove_submenu_page('edit.php?post_type=volunteer', 'post-new.php?post_type=volunteer');
-    
+    remove_submenu_page('edit.php?post_type=training', 'post-new.php?post_type=training');
+
     add_submenu_page('edit.php?post_type=listing', 'Add New Tax Site', 'Add New Tax Site', 'export', '../coordinators/create-listing');
     add_submenu_page('edit.php?post_type=listing', 'Export All Tax Sites', 'Export All Tax Sites', 'export', '../export-sites');
 
     add_submenu_page('edit.php?post_type=volunteer', 'Export All Volunteers', 'Export All Volunteers', 'export', '../export-volunteers');
     add_submenu_page('edit.php?post_type=volunteer', 'Email All Volunteers', 'Email All Volunteers', 'administrator', '../email-all');
     add_submenu_page('edit.php?post_type=volunteer', 'Update Volunteer Registration Email', 'Update Volunteer Registration Email', 'administrator', __FILE__, 'eks_settings_page');
+
+    add_submenu_page('edit.php?post_type=training', 'Add New Training', 'Add New Training', 'administrator', '../edit');
 
     //call register settings function
     add_action('admin_init', 'eks_register_mysettings');
@@ -42,7 +45,7 @@ if (!function_exists('wp_new_user_notification')) {
         $message = sprintf(__('New user registration on %s:'), get_option('blogname')) . "<br>";
         $message .= sprintf(__('Username: %s'), $user_login) . "<br>";
         $message .= sprintf(__('E-mail: %s'), $user_email) . "<br>";
-        
+
         eks_mail(get_option('admin_email'), get_option('admin_email'), sprintf(__('[%s] New User Registration'), get_option('blogname')), $message);
 
         if (empty($plaintext_pass))
@@ -144,7 +147,7 @@ function myajax_submit() {
             add_post_meta($post_id, "name", wp_strip_all_tags($_SESSION['volunteer']['name']));
             add_post_meta($post_id, "phone", wp_strip_all_tags($_SESSION['volunteer']['phone']));
             add_post_meta($post_id, "email", wp_strip_all_tags($_SESSION['volunteer']['email']));
-            add_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer']));
+            add_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer'])); // preparer|new
 
             foreach ($_SESSION['volunteer']['position'] as $position) {
                 add_post_meta($post_id, $position, $_POST['tax_sites']);
@@ -152,30 +155,176 @@ function myajax_submit() {
 
             $valid = count($errors) == 0;
             if ($valid) {
+                $_SESSION['volunteer']['tax_site'] = $_POST['tax_sites'];
                 $_SESSION['volunteer']['steps'][4] = 4;
+                
+                /* Look up the list of appropriate trainings:
+                 * 1) If the volunteer is a new preparer, find the "new preparer" training for the given tax site.
+                 * 2) If the volunteer is a returning preparer, find the "returning preparer" training for the given tax site.
+                 * 3) Otherwise show the Link and Learn selection.
+                 */
+                
+                $html = '';
+                //print_r();
+                $is_preparer = in_array('preparer', array_values($_SESSION['volunteer']['position']));
+                if ($is_preparer)
+                {
+                    $html = '';
+                    $tax_site = get_post($_POST['tax_sites']);
+//                    var_dump($tax_site);
+//                    die();
+                    //setup_postdata($tax_site);
+                    $training_type_to_check = $_SESSION['volunteer']['preparer'] == 'preparer' ? 'returning' : 'new';
+                    $training_type = get_post_meta($tax_site->ID, 'app_' . $training_type_to_check . 'taxpreparertrainingrequired', true);
 
-                // Email the coordinator of the selected tax site.
-                $tax_site = get_post($_POST['tax_sites']);
+                    if ($training_type == 'Onsite Training')
+                    {
+                        
+                    
+                    //var_dump($meta);
+                    //die(get_the_ID() . $training_type_to_check);
+                    //$coordinator = get_userdata($tax_site->post_author);
+                    
+                    // Cloned from page-coordinator-trainings
+			$myposts = get_posts(array('numberposts' => -1, 'post_type' => 'training', 'author' => $tax_site->post_author));
+			//var_dump($myposts);
+                    //die();
+                    
+			foreach ($myposts as $post) {
+				setup_postdata($post);
+                                $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+			}
+                    }
+                    elseif ($training_type == 'County Public Training')
+                    {
+                        $tax_site_county = get_the_listing_category( $tax_site->ID );
+                        
+                        $query = new WP_Query(array(
+                            'post_type' => 'training',
+                            'posts_per_page' => -1,
+                            'orderby' => 'title',
+                            'order' => 'ASC'
+                        ));
+                        
+                        // This is really inefficient
+			foreach ($query->posts as $post) {
+                                $training_county = get_post_meta($post->ID, 'cat', true);
+                                if ($tax_site_county->term_id == $training_county)
+                                {                                   
+                                    $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+                                }
+			}
+                    }
+                    else
+                    {
+                        // Link and Learn - should just be one of these
+                        $query = new WP_Query(array(
+                            'post_type' => 'training',
+                            's' => 'Link and Learn',
+                            'posts_per_page' => -1,
+                            'orderby' => 'title',
+                            'order' => 'ASC'
+                        ));
 
-                $coordinator = get_user_by('id', $tax_site->post_author);
-
-                $to = $coordinator->data->user_email;
-                $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
-                $subject = "New Volunteer Registration";
-                $message = sprintf("<p>Hello.  The following person has registered to volunteer at your Tax Site:</p>
-                    <pre>
-                    %s
-                    %s
-                    %s
-                    </pre>", $_SESSION['volunteer']['name'], $_SESSION['volunteer']['phone'], $_SESSION['volunteer']['email']);
-                $from = "\"EarnItKeepItSaveIt!\"<{$noreply_email}>";
-                eks_mail($to, $from, $subject, $message);
+                         foreach ($query->posts as $post) {
+				setup_postdata($post);
+                                $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+			}
+                    }
+                }
+                else
+                {
+                    $html = '<div>No selection needed; your site coordinator will be in contact with you regarding your training.</div>';
+                }
             }
+
             $response = json_encode(array(
                 'success' => $valid,
                 'errors' => $errors,
-                'step' => $valid ? 0 : 4,
+                'step' => $valid ? 4 : 3,
                 'data' => $_SESSION['volunteer'],
+                'html' => empty($html) ? '' : $html
+            ));
+            break;
+
+        case 4: // Selected desired Training
+            $_SESSION['volunteer']['training'] = $_POST['training'];
+            if (empty($_SESSION['volunteer']['training']))
+                $html = '<div>Your site coordinator will be in contact with you regarding your training.</div>';
+            else      
+            {
+                $training = get_post($_POST['training']);
+                //var_dump($_SESSION['volunteer']['training']);
+                //var_dump($training);die();
+                $html = $training->post_title;
+            }
+            $response = json_encode(array(
+                'success' => true,
+                'errors' => array(),
+                'step' => 5,
+                'data' => $_SESSION['volunteer'],
+                'html' => $html
+            ));
+            break;
+        
+        case 5:
+            // Training confirmed, so save it and email the coordinator of the selected tax site.
+            if (!empty($_SESSION['volunteer']['training']))
+            {
+                $volunteer = get_volunteer($_SESSION['volunteer']['user_ID']);
+                add_post_meta($volunteer->ID, 'training', $_SESSION['volunteer']['training']);
+            }
+            //var_dump($volunteer->ID);
+            //var_dump($_SESSION['volunteer']['training']);die();
+            
+            $tax_site = get_post($_SESSION['volunteer']['tax_site']);
+            $tax_site_meta = get_post_meta($tax_site->ID);
+            $training = get_post($_SESSION['volunteer']['training']);
+            $training_meta = get_post_meta($training->ID);
+
+            $coordinator = get_user_by('id', $tax_site->post_author);
+            $cc = $coordinator->data->user_email;
+
+            $to = $_SESSION['volunteer']['email'];
+            $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
+            $subject = "New Volunteer Registration";
+            $login_url = 'http://' . $_SERVER['SERVER_NAME'] . '/volunteer';
+            $message = "<p>Dear {$_SESSION['volunteer']['name']},</p>
+                <p>Thank you for signing up to volunteer with Earn It! Keep It! Save It!  Always feel free to log back in
+                at <a href=\"$login_url\">$login_url</a> to access your information.  Here it all is, just in case:</p>
+
+<p>
+<strong>My Details</strong><br>
+Email: <a href=\"mailto:{$_SESSION['volunteer']['email']}\">{$_SESSION['volunteer']['email']}</a><br/>
+Phone: {$_SESSION['volunteer']['phone']}<br/>
+</p>
+
+<p>
+<strong>My Tax Site</strong><br>
+{$tax_site->post_title}<br/>
+Coordinator: {$coordinator->data->user_nicename} (<a href=\"mailto:{$coordinator->data->user_email}\">{$coordinator->data->user_email}</a><br/>
+Address: {$tax_site_meta['address'][0]}<br/>
+Phone: {$tax_site_meta['phone'][0]}<br/>
+</p>
+
+<p>
+<strong>My Training</strong><br>
+{$training->post_title}<br/>
+{$training->post_content}<br/>
+Address: {$training_meta['address'][0]}<br/>
+Date: {$training_meta['date'][0]}<br/>
+Times: {$training_meta['times'][0]}<br/>
+Special Instructions: {$training_meta['special_instructions'][0]}<br/>
+</p>";
+
+            $from = "\"EarnItKeepItSaveIt!\"<{$noreply_email}>";
+            $success = eks_mail($to, $from, $subject, $message, $cc);
+
+            $response = json_encode(array(
+                'success' => true,
+                'errors' => null,
+                'step' => 6,
+                'data' => $_SESSION['volunteer']
             ));
             break;
         default:
@@ -519,7 +668,7 @@ function tax_search() {
     global $wpdb;
     global $table_prefix;
 
-    $conditions_string = '';   
+    $conditions_string = '';
     if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
         $terms = split(' ', $_GET['search_terms']);
         $conditions = array();
@@ -532,9 +681,9 @@ function tax_search() {
                 OR t.name LIKE '%$term%' 
                 OR a.meta_value LIKE '%$term%' ) ";
         }
-        $conditions_string = 'AND ('. implode(' OR ', $conditions) . ')';
+        $conditions_string = 'AND (' . implode(' OR ', $conditions) . ')';
     };
-    
+
     $query = "SELECT p.*, 
             bart.meta_value AS bartstations, 
             t.name AS county,
@@ -561,7 +710,7 @@ function tax_search() {
             if (setup_postdata($post)) {
                 //the_post();
                 ?>
-                <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();  ?>><?php
+                <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();   ?>><?php
                     //get_template_part('content-listing');
                     // TODO: USE select + join instead get_post_meta
 
@@ -654,4 +803,3 @@ function tax_search() {
     // IMPORTANT: don't forget to "exit"
     exit;
 }
-

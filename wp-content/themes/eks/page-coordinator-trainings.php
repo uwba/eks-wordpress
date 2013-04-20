@@ -23,7 +23,7 @@
 				?></article><?php
 			}
 			if (!count($myposts)) {
-			?><p>No Training exist</p><?php
+			?><p>No Trainings have been set up.</p><?php
 			} ?>
 	</div>
 

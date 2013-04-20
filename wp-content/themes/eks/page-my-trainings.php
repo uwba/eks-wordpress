@@ -3,7 +3,7 @@
 ?>
 <div id="main">
 	<div class="section-head">
-		<h1><?php _e('My Trainings', APP_TD); ?></h1>
+		<h1><?php _e('My Training', APP_TD); ?></h1>
 	</div>
 
 	<div class="categories-list">

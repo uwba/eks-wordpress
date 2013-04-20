@@ -62,26 +62,64 @@ jQuery(document).ready(function($) {
                 $('#volunteer_dialog').dialog("option", "title", "Step Three: Choose a Tax Site");
             }
         });
-
+        
+        // Tax site selection submitted
         $('#step32').ajaxForm({
             data: Volunteer,
             dataType: 'json',
             beforeSubmit: function(arr, $form, options) {
-                return confirm("Are you sure you want to select this Tax Site?  Click OK to finish creating your account and log in.");
+            },
+            success: function(response, statusText, xhr, $form) {
+                if (response.success) {
+                    $('#step4 .results').html(toHTML(response.html));
+                    // Select the first one in the list by default
+                    $('#step4 input:first').attr('checked', 'checked');
+                    gotoStep(4);
+                } else {
+                    $('#step32 .error').html(implode('<br/>', response.errors));
+                }
+            }
+        });
+        
+        // Training selection submitted
+        $('#step4 form').ajaxForm({
+            data: Volunteer,
+            dataType: 'json',
+            beforeSubmit: function(arr, $form, options) {
+            },
+            success: function(response, statusText, xhr, $form) {
+       // debugger;
+                if (response.success)
+                {
+                    $('#step5 .results').html(toHTML(response.html));
+                    gotoStep(5);
+                }
+            }
+        });
+        
+        $('#step5 form').ajaxForm({
+            data: Volunteer,
+            dataType: 'json',
+            beforeSubmit: function(arr, $form, options) {
+                //return confirm("Are you sure you want to volunteer at this Tax Site?  By clicking OK you are committing to volunteer at this location and the Coordinator for this site will be notified.");
             },
             success: function(response, statusText, xhr, $form) {
                 if (response.success) {             
                     $('#login_username').val(response.data.username);
                     $('#login_password').val(response.data.password);
-                    $('#login').click();
+                    gotoStep(6);
                 }
                 else
                 {
                     // Shouldn't ever happen!
-                    alert('There was a problem creating your account.  Please try again later.');
-                    document.location.href = '/';
+                    alert('There was a problem setting up your account.  Please try again later.');
+                    //document.location.href = '/';
                 }
             }
+        });
+        
+        $('#step6 input').click(function() {
+            $('#login').click();
         });
     });
 
@@ -95,7 +133,10 @@ jQuery(document).ready(function($) {
         var titles = {
             1: "Step 1: Create an Account",
             2: "Step 2: Choose a Position",
-            3: "Step 3: Choose a Tax Site"
+            3: "Step 3: Choose a Tax Site",
+            4: "Step 4: Choose a Training",
+            5: "Step 5: Confirm Your Information",
+            6: "Step 6: Registration Complete"
         };
         $('#volunteer_dialog').dialog("option", "title", titles[step]);
     }

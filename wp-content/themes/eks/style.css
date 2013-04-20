@@ -1167,10 +1167,6 @@ article.training {
     /*border:*/	
 }
 
-#edit_training_form textarea{
-    width: 570px;
-}
-
 #create-listing label {
 	display: block;
 }

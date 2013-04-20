@@ -72,8 +72,7 @@ Last year’s tax return
 			case 'volunteer':
 					?>
 						<li><a href="<?php echo site_url('my-tax-sites'); ?>"><?php echo __('My Tax Sites', APP_TD); ?></a></li>
-						<!--<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
-						<li><a href="<?php echo site_url('my-calendar'); ?>"><?php echo __('My Schedule', APP_TD); ?></a></li>-->
+						<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Documents', APP_TD); ?></a></li>
 						<?php
 				break;
@@ -91,7 +90,7 @@ Last year’s tax return
                                                 <li><a href="<?php echo site_url('export-sites'); ?>"><?php echo __('Export Tax Sites', APP_TD); ?></a></li>
                                             </ul>
                                         </li>
-					<!--<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>-->
+					<li><a href="<?php echo site_url('coordinator-trainings'); ?>"><?php echo __('View Trainings', APP_TD); ?></a></li>
 					<li><a href="<?php echo site_url('coordinator-volunteers'); ?>"><?php echo __('My Volunteers', APP_TD); ?></a>
                                             <ul>
 						<li><a href="<?php echo site_url('email-all'); ?>"><?php echo __('Email Volunteers', APP_TD); ?></a></li>
@@ -115,13 +114,13 @@ Last year’s tax return
 		<div id="sidebar" class="threecol last">
                         <h3>Login</h3>
                     	<?php if (is_page_template('page-my-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'volunteer')) { ?>
-                            <p>Volunteers, if you already have an account, please login below to review or make changes.</p>
+                            <p>Volunteers, if you already have an account, please login below.</p>
 
                             <?php if (strstr($_SERVER["REQUEST_URI"], "volunteer-registration") == null) { ?>
                             <p>Otherwise, <a href="/volunteer-registration/">create an account now</a>.</p>
 
                             <?php } ?>
-                            <p>Tax Site Coordinators, <a href="/coordinators">click here</a>.</p>
+                            
                         <?php } ?>
                                 
                         <?php if (is_page_template('form-registration.php') || strpos('-'.$_SERVER["REQUEST_URI"], 'coordinator')) { ?>

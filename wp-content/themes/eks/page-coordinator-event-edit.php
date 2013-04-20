@@ -10,11 +10,7 @@ if (!is_user_logged_in()) {
     get_currentuserinfo();
     $update = isset($_REQUEST['postid']) && !empty($_REQUEST['postid']);
 
-    function training_process()
-    {
-
-
-    } // END THE IF STATEMENT THAT STARTED THE WHOLE FORM
+// END THE IF STATEMENT THAT STARTED THE WHOLE FORM
 
 //function mywp_upload($key, $value, $post_parent) {
 //	     // look only for uploded files
@@ -218,7 +214,7 @@ if (!is_user_logged_in()) {
 
         <!-- EDIT COUPON FORM -->
         <article class="training">
-            <form id="edit_training_form" name="edit_training" method="POST" action="" accept-charset="utf-8"
+            <form id="create-listing" name="edit_training" method="POST" action="" accept-charset="utf-8"
                   enctype="multipart/form-data">
 
                 <!-- post name -->
