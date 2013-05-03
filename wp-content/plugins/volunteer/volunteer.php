@@ -302,7 +302,7 @@ Phone: {$_SESSION['volunteer']['phone']}<br/>
 <p>
 <strong>My Tax Site</strong><br>
 {$tax_site->post_title}<br/>
-Coordinator: {$coordinator->data->user_nicename} (<a href=\"mailto:{$coordinator->data->user_email}\">{$coordinator->data->user_email}</a><br/>
+Coordinator: {$coordinator->data->user_nicename} (<a href=\"mailto:{$coordinator->data->user_email}\">{$coordinator->data->user_email})</a><br/>
 Address: {$tax_site_meta['address'][0]}<br/>
 Phone: {$tax_site_meta['phone'][0]}<br/>
 </p>
