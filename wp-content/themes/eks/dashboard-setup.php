@@ -19,7 +19,9 @@ if (is_volunteer()) { ?>
 		<h1><?php _e('Volunteer Dashboard', APP_TD); ?></h1>
 	</div>
         <div class="categories-list">
-            <p>This is the volunteer dashboard landing page.</p>
+            <?php // TODO - Linda, here is where you would update the copy for this page ?>
+            <p>This is the volunteer dashboard.</p>
+            <p><a href="/volunteer-registration">Update my registration</a>.</p>
         </div>     
 </div>
 <?php } else {   

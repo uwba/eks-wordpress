@@ -18,14 +18,10 @@ $_SESSION['role'] = "volunteer";
     </div>
 
     <div style="margin-left:30px">
-        <?php if (is_volunteer()) { ?>
-            You are registered already!!
-            <?php
-        } else {
+        <?php 
             $step = 1;
-            if (is_user_logged_in()) {
+            if (is_user_logged_in())
                 $step = 2;
-            }
 
             // embed the javascript file that makes the AJAX request
             wp_enqueue_script('volunteer-registration', plugins_url() . '/volunteer/js/registration.js', array('jquery', 'jquery-ui-dialog'));
@@ -42,14 +38,14 @@ $_SESSION['role'] = "volunteer";
             // http://site.local/wp-admin/admin-ajax.php?action=myajax-submit&postID=1
             wp_localize_script('volunteer-registration', 'Volunteer', array('ajaxurl' => admin_url('admin-ajax.php'), 'step' => $step, 'action' => 'myajax-submit', 'success_url' => '/my-tax-sites'));
             wp_localize_script('volunteer-registration', 'TaxSearch', array('ajaxurl' => admin_url('admin-ajax.php'), 'action' => 'tax_search'));
-            ?>
+            if (!is_volunteer()) { ?>
             <p>Thank you for your interest in volunteering with Earn It! Keep It! Save It! Please click on the sign up link below to complete your registration.</p>
             <p>
                 <strong>Please Note:</strong><br/>
                 By signing up to volunteer below, you are confirming your commitment to volunteer for the upcoming tax season. If you are interested but only want more information at this time, <a href="/county-coordinators">click here to find out more</a>.
             </p>
-
-            <p><a id="volunteer_register" href="<?php echo site_url('wp-admin/admin-ajax.php?action=myajax-submit'); ?>">Sign Up to Volunteer Now</a></p>
+            <?php } ?>
+            <p><a id="volunteer_register" href="<?php echo site_url('wp-admin/admin-ajax.php?action=myajax-submit'); ?>"><?php echo !(is_volunteer()) ? 'Sign Up to Volunteer Now' : 'Update My Registration' ?></a></p>
 
             <div id="volunteer_dialog">
                 <form id="step1" class="step" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
@@ -154,28 +150,6 @@ $_SESSION['role'] = "volunteer";
                         <input type="submit" value="Continue"/>                    
                 </div>
             </div>
-
-            <!--p>
-            <a id="facebook_register" href="<?php echo site_url('wp-admin/admin-ajax.php?action=myajax-submit'); ?>">Social Login</a>
-            </p>
-            <div id="facebook_dialog">
-                    <form id="facebook_form" class="step" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
-            <?
-            //Login_Radius_Connect_button(); 
-            //			Login_Radius_widget_Connect_button();
-            ?>
-
-                    </form>
-
-
-                    <div id="step5" class="step">
-                            <h2>Thank you</h2>
-                            <a href="" id="volunteer_close">Close</a>
-                    </div>
-            </div-->
-
-        <?php } ?>
-
     </div>
 </div>
 <?php get_sidebar(); ?>

@@ -119,7 +119,12 @@ jQuery(document).ready(function($) {
         });
         
         $('#step6 input').click(function() {
-            $('#login').click();
+            // If you cannot submit the login form, simply close the modal dialog
+            if ($('#login').length)
+                $('#login').click();
+            else
+                $('#volunteer_dialog').dialog('close');
+                
         });
     });
 
