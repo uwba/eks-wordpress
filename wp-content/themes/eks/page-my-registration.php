@@ -44,6 +44,8 @@ $_SESSION['role'] = "volunteer";
                 <strong>Please Note:</strong><br/>
                 By signing up to volunteer below, you are confirming your commitment to volunteer for the upcoming tax season. If you are interested but only want more information at this time, <a href="/county-coordinators">click here to find out more</a>.
             </p>
+            <?php } else { ?>
+            <!-- TODO: Copy for logged-in volunteers goes here -->
             <?php } ?>
             <p><a id="volunteer_register" href="<?php echo site_url('wp-admin/admin-ajax.php?action=myajax-submit'); ?>"><?php echo !(is_volunteer()) ? 'Sign Up to Volunteer Now' : 'Update My Registration' ?></a></p>
 

@@ -171,25 +171,14 @@ function myajax_submit() {
                 {
                     $html = '';
                     $tax_site = get_post($_POST['tax_sites']);
-//                    var_dump($tax_site);
-//                    die();
-                    //setup_postdata($tax_site);
                     $training_type_to_check = $_SESSION['volunteer']['preparer'] == 'preparer' ? 'returning' : 'new';
                     $training_type = get_post_meta($tax_site->ID, 'app_' . $training_type_to_check . 'taxpreparertrainingrequired', true);
 
                     if ($training_type == 'Onsite Training')
                     {
-                        
-                    
-                    //var_dump($meta);
-                    //die(get_the_ID() . $training_type_to_check);
-                    //$coordinator = get_userdata($tax_site->post_author);
-                    
                     // Cloned from page-coordinator-trainings
 			$myposts = get_posts(array('numberposts' => -1, 'post_type' => 'training', 'author' => $tax_site->post_author));
-			//var_dump($myposts);
-                    //die();
-                    
+
 			foreach ($myposts as $post) {
 				setup_postdata($post);
                                 $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
@@ -206,7 +195,7 @@ function myajax_submit() {
                             'order' => 'ASC'
                         ));
                         
-                        // This is really inefficient
+                        // This is really inefficient but works
 			foreach ($query->posts as $post) {
                                 $training_county = get_post_meta($post->ID, 'cat', true);
                                 if ($tax_site_county->term_id == $training_county)
@@ -247,16 +236,22 @@ function myajax_submit() {
             ));
             break;
 
-        case 4: // Selected desired Training
+        case 4: // Selected desired Training, so show the details so the volunteer can confirm
             $_SESSION['volunteer']['training'] = $_POST['training'];
             if (empty($_SESSION['volunteer']['training']))
                 $html = '<div>Your site coordinator will be in contact with you regarding your training.</div>';
             else      
             {
                 $training = get_post($_POST['training']);
-                //var_dump($_SESSION['volunteer']['training']);
-                //var_dump($training);die();
-                $html = $training->post_title;
+                $training_meta = get_post_meta($training->ID);
+                $html = "<p style='font-weight:bold'>{$training->post_title}</p>"
+                . "<p>{$training->post_content}</p>
+                    <p>
+                    Address: {$training_meta['address'][0]}<br/>
+                    Date: {$training_meta['date'][0]}<br/>
+                    Times: {$training_meta['times'][0]}<br/>
+                    Special Instructions: {$training_meta['special_instructions'][0]}<br/>
+                    </p>";
             }
             $response = json_encode(array(
                 'success' => true,

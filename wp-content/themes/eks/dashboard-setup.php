@@ -16,12 +16,13 @@ $args = array(
 if (is_volunteer()) { ?>
 <div id="main">
 	<div class="section-head">
-		<h1><?php _e('Volunteer Dashboard', APP_TD); ?></h1>
+		<h1>My EKS Dashboard</h1>
 	</div>
         <div class="categories-list">
-            <?php // TODO - Linda, here is where you would update the copy for this page ?>
-            <p>This is the volunteer dashboard.</p>
-            <p><a href="/volunteer-registration">Update my registration</a>.</p>
+            <p>Thanks for joining the Earn It! Keep It! Save It! (EKS) coalition! You are part of a team of volunteers around the Bay Area helping to prepare thousands of tax returns for low income taxpayers in your community.</p>  
+            <p>Your dashboard is meant to be a helpful resource for you. From here you can use the links to the right to access your tax site and training information, email your site coordinator, upload documents to share and make changes to your account.</p>
+            <p>If you have any questions, you may contact your Site Coordinator or your <a href="/volunteer-registration">County Volunteer Maestro</a>.</p>
+            <p><a href="/volunteer-registration">General volunteer information</a></p>
         </div>     
 </div>
 <?php } else {   
