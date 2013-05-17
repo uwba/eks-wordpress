@@ -165,13 +165,12 @@ function myajax_submit() {
                  */
                 
                 $html = '';
-                //print_r();
                 $is_preparer = in_array('preparer', array_values($_SESSION['volunteer']['position']));
                 if ($is_preparer)
                 {
                     $html = '';
                     $tax_site = get_post($_POST['tax_sites']);
-                    $training_type_to_check = $_SESSION['volunteer']['preparer'] == 'preparer' ? 'returning' : 'new';
+                    $training_type_to_check = $_SESSION['volunteer']['preparer']; // new or returning
                     $training_type = get_post_meta($tax_site->ID, 'app_' . $training_type_to_check . 'taxpreparertrainingrequired', true);
 
                     if ($training_type == 'Onsite Training')
@@ -248,8 +247,8 @@ function myajax_submit() {
                 . "<p>{$training->post_content}</p>
                     <p>
                     Address: {$training_meta['address'][0]}<br/>
-                    Date: {$training_meta['date'][0]}<br/>
-                    Times: {$training_meta['times'][0]}<br/>
+                    Date(s): {$training_meta['date'][0]}<br/>
+                    Times(s): {$training_meta['times'][0]}<br/>
                     Special Instructions: {$training_meta['special_instructions'][0]}<br/>
                     </p>";
             }
@@ -698,12 +697,24 @@ function tax_search() {
         GROUP BY ID";
 
     $data = $wpdb->get_results($query, 'OBJECT');
+    $volunteer_position = $_SESSION['volunteer']['position'][0];
+    
     global $post;
     if (count($data)) {
         foreach ($data as $post) {
-            //	var_dump($item);
             if (setup_postdata($post)) {
-                //the_post();
+                
+                // Screeners are always eligible; other positions may not be.
+                $tax_site_available = true;
+                if ($volunteer_position == 'preparer')
+                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberoftaxpreparersneeded', true) > 0;
+                if ($volunteer_position == 'greeter')
+                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofgreetersneeded', true) > 0;
+                if ($volunteer_position == 'interpreter')
+                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) > 0;
+                
+                if ($tax_site_available)
+                {
                 ?>
                 <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();   ?>><?php
                     //get_template_part('content-listing');
@@ -784,6 +795,7 @@ function tax_search() {
                         </p>
                     </div>
                     <?php ?></article><?php
+                }
             } else {
                 //echo 'error';
             }

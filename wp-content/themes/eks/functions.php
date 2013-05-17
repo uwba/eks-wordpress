@@ -103,10 +103,10 @@ function eks_handle_download_document() {
             $user = get_user_by('id', $el->post_author);
             if ($user !== false) {
                 $row = array(
-                    $user->data->user_nicename,
                     $el->post_date
                 );
 
+                $name = '';
                 $tax_site = '';
                 $tax_site_id = null;
                 $training_type = '';
@@ -147,6 +147,8 @@ function eks_handle_download_document() {
                         $training_type_post = get_post($meta_values['training'][0]);
                         $training_type = $training_type_post->post_title;
                     }
+                    elseif ($k == 'name')
+                        $name = $meta_values[$k][0];
                     else
                         $row[] = $meta_values[$k][0];
                 }
@@ -160,17 +162,19 @@ function eks_handle_download_document() {
                 $newrow = array();
                 for ($i = 0; $i < count($row); $i++) {
                     $newrow[] = $row[$i];
+                    if ($i == 0)
+                        array_push($newrow, $name);
                     if ($i == 1)
                         array_push($newrow, $tax_site, $training_type, $contacted ? 'Yes' : 'No', $training ? 'Yes' : 'No', $confirmed ? 'Yes' : 'No', $ethics ? 'Yes' : 'No', $basic ? 'Yes' : 'No', $intermediate ? 'Yes' : 'No', $specialized ? 'Yes' : 'No', $volunteered ? 'Yes' : 'No', $another_site ? 'Yes' : 'No'
                         );
                 }
-
                 $arr[] = $newrow;
             }
         }
         $header = array(
-            'Name',
             'Date Registered',
+            'Name',
+            'Phone',
             'Tax Site',
             'Training',
             'Contacted Date',
@@ -182,8 +186,6 @@ function eks_handle_download_document() {
             'Certified Specialized',
             'Volunteered',
             'Volunteers at Another VITA Site',
-            'Username',
-            'Phone',
             'Email',
             'Status',
             'Positions'

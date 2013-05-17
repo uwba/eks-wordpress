@@ -157,12 +157,12 @@ if (!is_user_logged_in()) {
                                id="address" name="address"/>
                     </fieldset>
                     <fieldset class="date">
-                        <label for="date">Date:</label>
+                        <label for="date">Date(s):</label>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'date', true); ?>"
                                id="date" name="date"/>
                     </fieldset>
                     <fieldset class="times">
-                        <label for="times">Times:</label>
+                        <label for="times">Time(s):</label>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'times', true); ?>"
                                id="times" name="times"/>
                     </fieldset>

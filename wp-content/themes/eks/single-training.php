@@ -36,8 +36,8 @@
                 ?>
                 <p><strong>Type:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'type', true)); ?></p>
                 <p><strong>Address:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'address', true)); ?></p>
-                <p><strong>Date:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'date', true)); ?></p>
-                <p><strong>Times:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'times', true)); ?></p>
+                <p><strong>Date(s):</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'date', true)); ?></p>
+                <p><strong>Time(s):</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'times', true)); ?></p>
                 <p><strong>Special Instructions:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'special_instructions', true)); ?></p>
 
                 <?php appthemes_after_blog_post_content(); ?>
