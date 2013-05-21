@@ -123,7 +123,11 @@ Bart stations: <?php echo esc_html( get_post_meta( get_the_ID(), 'app_closestbar
 $term = va_get_search_query_var( 'ls' );
 $county = empty($_GET['county']) ? '' : $_GET['county'];
 $city = empty($_GET['city']) ? '' : $_GET['city'];
-if (!empty($term) || !empty($county) || !empty($city))
+$language = empty($_GET['language']) ? '' : $_GET['language'];
+$ada = empty($_GET['ada']) ? '' : $_GET['ada'];
+$itin = empty($_GET['itin']) ? '' : $_GET['itin'];
+
+if ($term.$county.$city.$language.$ada.$itin != '')
 {
 if ( $featured = va_get_featured_listings() ) :
 	while ( $featured->have_posts() ) : $featured->the_post();
