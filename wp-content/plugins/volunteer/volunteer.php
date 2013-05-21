@@ -247,9 +247,9 @@ function myajax_submit() {
                 . "<p>{$training->post_content}</p>
                     <p>
                     Address: {$training_meta['address'][0]}<br/>
-                    Date(s): {$training_meta['date'][0]}<br/>
-                    Times(s): {$training_meta['times'][0]}<br/>
-                    Special Instructions: {$training_meta['special_instructions'][0]}<br/>
+                    ". (empty($training_meta['date'][0]) ? '' : "Date(s): {$training_meta['date'][0]}<br/>") . "
+                    ". (empty($training_meta['times'][0]) ? '' : "Times(s): {$training_meta['times'][0]}<br/>") . "
+                    ". (empty($training_meta['special_instructions'][0]) ? '' : "Special Instructions: {$training_meta['special_instructions'][0]}<br/>") . "
                     </p>";
             }
             $response = json_encode(array(
@@ -306,9 +306,9 @@ Phone: {$tax_site_meta['phone'][0]}<br/>
 {$training->post_title}<br/>
 {$training->post_content}<br/>
 Address: {$training_meta['address'][0]}<br/>
-Date: {$training_meta['date'][0]}<br/>
-Times: {$training_meta['times'][0]}<br/>
-Special Instructions: {$training_meta['special_instructions'][0]}<br/>
+". (empty($training_meta['date'][0]) ? '' : "Date: {$training_meta['date'][0]}<br/>"). "
+". (empty($training_meta['times'][0]) ? '' : "Times: {$training_meta['times'][0]}<br/>"). "
+". (empty($training_meta['times'][0]) ? '' : "Special Instructions: {$training_meta['special_instructions'][0]}<br/>"). "
 </p>";
 
             $from = "\"EarnItKeepItSaveIt!\"<{$noreply_email}>";

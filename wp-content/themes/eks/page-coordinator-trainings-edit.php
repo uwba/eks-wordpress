@@ -100,7 +100,7 @@ if (!is_user_logged_in()) {
 
                     <!-- post Content -->
                     <fieldset class="content">
-                        <label for="description">Description:</label>
+                        <label for="description">Description (type of training, topics covered, material presented, etc.):</label>
                         <textarea id="description" tabindex="15"
                                   name="description"><?php echo empty($post_to_edit->post_content) ? '' : $post_to_edit->post_content; ?></textarea>
                         <!-- TEXT AREA OF CONTENT. NOTHING TO CHANGE -->
@@ -151,24 +151,24 @@ if (!is_user_logged_in()) {
                     <?php } ?>
 
                     <fieldset class="contact">
-                        <label for="address">Address:</label>
+                        <label for="address">Address (Street, City, State, Zip code):</label>
     <?php //$value = $update ? get_post_meta($post_to_edit->ID, 'contact', true) : null;   ?>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'address', true); ?>"
                                id="address" name="address"/>
                     </fieldset>
                     <fieldset class="date">
-                        <label for="date">Date(s):</label>
+                        <label for="date">Date(s) (MM/DD/YY):</label>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'date', true); ?>"
                                id="date" name="date"/>
                     </fieldset>
                     <fieldset class="times">
-                        <label for="times">Time(s):</label>
+                        <label for="times">Time(s) (9:00am- 4:30pm):</label>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'times', true); ?>"
                                id="times" name="times"/>
                     </fieldset>
 
                     <fieldset class="special_instructions">
-                        <label for="special_instructions">Special Instructions:</label>
+                        <label for="special_instructions">Special Instructions (miscellaneous information, ex: bring lunch, a notepad, and highlighter):</label>
                         <textarea id="special_instructions" tabindex="20" name="special_instructions"><?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'special_instructions', true); ?></textarea>
                     </fieldset>
 

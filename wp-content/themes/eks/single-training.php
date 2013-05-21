@@ -33,12 +33,21 @@
                         <?php
                     }
                 }
+                
+                function display_meta($label, $name)
+                {
+                   $m = get_post_meta(get_the_ID(), $name, true);
+                    if (!empty($m)) { ?>
+                <p><strong><?php echo $label ?>:</strong><br/> <?php echo $m; ?></p>
+                <?php } 
+                }
+                
+                display_meta('Type', 'type');
+                display_meta('Address', 'address');
+                display_meta('Date(s)', 'date');
+                display_meta('Time(s)', 'times');
+                display_meta('Special Instructions', 'special_instructions');
                 ?>
-                <p><strong>Type:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'type', true)); ?></p>
-                <p><strong>Address:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'address', true)); ?></p>
-                <p><strong>Date(s):</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'date', true)); ?></p>
-                <p><strong>Time(s):</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'times', true)); ?></p>
-                <p><strong>Special Instructions:</strong><br/> <?php echo esc_html(get_post_meta(get_the_ID(), 'special_instructions', true)); ?></p>
 
                 <?php appthemes_after_blog_post_content(); ?>
             </section>
