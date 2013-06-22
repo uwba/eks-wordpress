@@ -107,9 +107,13 @@ function eks_handle_download_document() {
                 );
 
                 $name = '';
+                $phone = '';
+                $email = '';
                 $tax_site = '';
                 $tax_site_id = null;
                 $training_type = '';
+                $positions = array();
+                $experience = '';
 
                 $contacted = '';
                 $training = false;
@@ -120,10 +124,12 @@ function eks_handle_download_document() {
                 $specialized = false;
                 $volunteered = false;
                 $another_site = false;
+                
+                //var_dump($meta_values);die();
 
                 foreach (array_keys($meta_values) as $k) {
                     if (in_array($k, array('interpreter', 'greeter', 'preparer', 'screener'))) {
-                        $row[] = $k;
+                        $positions[] = $k;
                         $tax_site_id = $meta_values[$k][0];
                     } elseif ($k == 'notes_contacted')
                         $contacted = $meta_values[$k][0];
@@ -149,8 +155,12 @@ function eks_handle_download_document() {
                     }
                     elseif ($k == 'name')
                         $name = $meta_values[$k][0];
-                    else
-                        $row[] = $meta_values[$k][0];
+                    elseif ($k == 'phone')
+                        $phone = $meta_values[$k][0];
+                    elseif ($k == 'email')
+                        $email = $meta_values[$k][0];
+                    elseif ($k == 'experience')
+                        $experience = $meta_values[$k][0];
                 }
 
                 if (!empty($tax_site_id)) {
@@ -158,17 +168,26 @@ function eks_handle_download_document() {
                     $tax_site = $tax_site_post->post_title;
                 }
 
-                // Now construct a new row, with the tax site and notes inserted after the 2nd element
-                $newrow = array();
-                for ($i = 0; $i < count($row); $i++) {
-                    $newrow[] = $row[$i];
-                    if ($i == 0)
-                        array_push($newrow, $name);
-                    if ($i == 1)
-                        array_push($newrow, $tax_site, $training_type, $contacted ? 'Yes' : 'No', $training ? 'Yes' : 'No', $confirmed ? 'Yes' : 'No', $ethics ? 'Yes' : 'No', $basic ? 'Yes' : 'No', $intermediate ? 'Yes' : 'No', $specialized ? 'Yes' : 'No', $volunteered ? 'Yes' : 'No', $another_site ? 'Yes' : 'No'
-                        );
-                }
-                $arr[] = $newrow;
+                $arr[] = array(
+                    $row[0],
+                    $name,
+                    $phone,
+                    $tax_site, 
+                    $training_type, 
+                    $contacted ? 'Yes' : 'No', 
+                    $training ? 'Yes' : 'No', 
+                    $confirmed ? 'Yes' : 'No', 
+                    $ethics ? 'Yes' : 'No', 
+                    $basic ? 'Yes' : 'No', 
+                    $intermediate ? 'Yes' : 'No', 
+                    $specialized ? 'Yes' : 'No', 
+                    $volunteered ? 'Yes' : 'No', 
+                    $another_site ? 'Yes' : 'No',
+                    $email,
+                    // Experience is only relevant is "preparer" has been selected
+                    in_array('preparer', $positions) ? $experience : '',
+                    implode(', ', $positions)                   
+                );
             }
         }
         $header = array(
@@ -187,7 +206,7 @@ function eks_handle_download_document() {
             'Volunteered',
             'Volunteers at Another VITA Site',
             'Email',
-            'Status',
+            'Experience',
             'Positions'
         );
         $e = new EksExcel();
@@ -905,8 +924,8 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
      * @param string $to
      * @param string $from
      * @param string $subject
-     * @param string $body,
-     * @param string $cc           Optional email to CC
+     * @param string $body          HTML body
+     * @param string $cc            Optional email to CC
      * @return bool $success
      */
     function eks_mail($to, $from, $subject, $body, $cc = null) {

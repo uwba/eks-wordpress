@@ -12,7 +12,7 @@ function eks_settings_page() {
 <h2>Volunteer Notification Email</h2>
 
 <form method="post" action="options.php">
-    <p>Here you can edit the content of the HTML email that new volunteers will receive upon registration.  The special tokens <code>[USERNAME]</code> and <code>[PASSWORD]</code> will be replaced with the user's details when the email is sent.</p>
+    <p>Here you can edit the content of the email that new volunteers and coordinators will receive upon registration.  For best results, only use plain text.  The special tokens <code>[USERNAME]</code> and <code>[PASSWORD]</code> will be replaced with the user's details when the email is sent.</p>
     <?php settings_fields( 'eks-settings-group' ); ?>
 
     <div style="font-weight:bold;padding-top:20px">Email Subject</div>

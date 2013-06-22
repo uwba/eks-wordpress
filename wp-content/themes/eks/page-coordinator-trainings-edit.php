@@ -29,6 +29,7 @@ if (!is_user_logged_in()) {
         $date = $_POST['date'];
         $times = $_POST['times'];
         $special_instructions = $_POST['special_instructions'];
+        $closed_to_new_volunteers = $_POST['closed_to_new_volunteers'];
 
         /* this code will save the title and description into the post_to_edit array */
 
@@ -52,7 +53,7 @@ if (!is_user_logged_in()) {
             $messages['error'] .= '  Please enter a title.';
         }
 
-        if ($pid) {           
+        if ($pid) {
             update_post_meta($pid, 'type', $type);
             if (!empty($cat))
                 update_post_meta($pid, 'cat', $cat);
@@ -60,6 +61,7 @@ if (!is_user_logged_in()) {
             update_post_meta($pid, 'date', $date);
             update_post_meta($pid, 'times', $times);
             update_post_meta($pid, 'special_instructions', $special_instructions);
+            update_post_meta($pid, 'closed_to_new_volunteers', $closed_to_new_volunteers);
 
             //REDIRECT USER WHERE EVER YOU WANT AFTER DONE EDITING
             $messages['success'] = 'The training was saved. <a href="' . get_permalink($pid) . '">View Training</a>';
@@ -121,14 +123,15 @@ if (!is_user_logged_in()) {
                         ?>
                     </fieldset>
 
-                    <?php 
-                    // Cat (county) is only needed for admins to set up County Public Trainings 
-                    if (eks_is_admin()) { ?>
+                    <?php
+                    // Cat (county), and "closed_to_new_volunteers" are needed for admins to set up County Public Trainings 
+                    if (eks_is_admin()) {
+                        ?>
                         <fieldset id="category">
                             <label for="cat">County:</label>
                             <?php
                             $selected_cat = '';
-                            if (!empty($post_to_edit->ID)) 
+                            if (!empty($post_to_edit->ID))
                                 $selected_cat = get_post_meta($post_to_edit->ID, 'cat', true);
                             wp_dropdown_categories(array(
                                 'selected' => $selected_cat,
@@ -138,21 +141,28 @@ if (!is_user_logged_in()) {
                                 'hide_empty' => false));
                             ?>
                         </fieldset>
-                    <script type="text/javascript">
-                         jQuery(document).ready(function($) {            
-                            $('#type').change(function() {
-                                if ($('#type option:selected').text() == 'County Public Training')
-                                    $('#category').show();
-                                else
-                                    $('#category').hide();
-                            }).change();
-                        });
-                    </script>
-                    <?php } ?>
+
+                        <fieldset id="closed_to_new_volunteers">
+                            <label for="closed_to_new_volunteers">Closed to New Volunteers:</label>
+                            <input type="hidden" name="closed_to_new_volunteers" value="0" />
+                            <input type="checkbox" name="closed_to_new_volunteers" value="1" <?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'closed_to_new_volunteers', true) == 0 ? '' : 'checked'; ?>>
+                        </fieldset>
+
+                        <script type="text/javascript">
+                            jQuery(document).ready(function($) {
+                                $('#type').change(function() {
+                                    if ($('#type option:selected').text() == 'County Public Training')
+                                        $('#category,#closed_to_new_volunteers').show();
+                                    else
+                                        $('#category,#closed_to_new_volunteers').hide();
+                                }).change();
+                            });
+                        </script>
+    <?php } ?>
 
                     <fieldset class="contact">
                         <label for="address">Address (Street, City, State, Zip code):</label>
-    <?php //$value = $update ? get_post_meta($post_to_edit->ID, 'contact', true) : null;   ?>
+    <?php //$value = $update ? get_post_meta($post_to_edit->ID, 'contact', true) : null;    ?>
                         <input type="text" value="<?php if (!empty($post_to_edit->ID)) echo get_post_meta($post_to_edit->ID, 'address', true); ?>"
                                id="address" name="address"/>
                     </fieldset>
@@ -180,7 +190,7 @@ if (!is_user_logged_in()) {
                     <input type="hidden" name="action" value="edit_post"/> <!-- DONT REMOVE OR CHANGE -->
                     <!--<input type="hidden" name="change_cat" value="" />								 DONT REMOVE OR CHANGE -->
                     <!--<input type="hidden" name="change_image" value="" />							 DONT REMOVE OR CHANGE -->
-    <?php // wp_nonce_field( 'new-post' );   ?>
+    <?php // wp_nonce_field( 'new-post' );    ?>
                 </form>
             </article>
             <!-- END OF FORM -->

@@ -126,7 +126,7 @@ $_SESSION['role'] = "volunteer";
                 
                 <div id="step4" class="step">
                     <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="POST" class="mti_font_element">
-                        <h3>Please select the training you would like to view.</h3>
+                        <h3>Please select the <span></span> training you would like to view.</h3>
                         <!-- Training Results -->
                         <div class="results" style="height:300px;overflow-y:scroll;border:1px solid #ccc;margin:10px 0;padding:10px"></div>
                         <p style="padding-bottom:20px">For all other volunteer positions, your Site Coordinator will be in contact with you regarding your training.</p>

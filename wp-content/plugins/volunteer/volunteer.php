@@ -36,28 +36,42 @@ require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'options.php';
 // Redefine user notification function, as per http://wordpress.stackexchange.com/questions/15304/how-to-change-the-default-registration-email-plugin-and-or-non-plugin
 if (!function_exists('wp_new_user_notification')) {
 
+    /**
+     * Send a notification email to the Wordpress site admin, and a welcome email to the user with their username and password.
+     * 
+     * @param int $user_id
+     * @param string $plaintext_pass
+     */
     function wp_new_user_notification($user_id, $plaintext_pass = '') {
-        $user = new WP_User($user_id);
+        $user = get_userdata($user_id);
+
+        // This should really be a "no-reply" alias.
+        $sender = "\"EarnItKeepItSaveIt!\"<".get_option('admin_email').">";
 
         $user_login = stripslashes($user->user_login);
         $user_email = stripslashes($user->user_email);
+        $group = $user->roles[0];
+        
+        $body = "<p>There has been a new user registration on ".get_option('blogname')."
+            <ul>
+                <li><strong>Name:</strong> {$user->user_nicename} ($user_login)</li>
+                <li><strong>Email:</strong> $user_email</li>
+                <li><strong>Group:</strong> $group</li>
+            </ul>
+            </p>";
 
-        $message = sprintf(__('New user registration on %s:'), get_option('blogname')) . "<br>";
-        $message .= sprintf(__('Username: %s'), $user_login) . "<br>";
-        $message .= sprintf(__('E-mail: %s'), $user_email) . "<br>";
-
-        eks_mail(get_option('admin_email'), get_option('admin_email'), sprintf(__('[%s] New User Registration'), get_option('blogname')), $message);
+        eks_mail(get_option('admin_email'), $sender, sprintf(__('[%s] New User Registration'), get_option('blogname')), $body);
 
         if (empty($plaintext_pass))
             return;
 
-        $message = get_option('volunteer_email_body');
+        $message = nl2br(get_option('volunteer_email_body'));
 
         // Replace the tokens
         $message = str_replace('[USERNAME]', $user_login, $message);
         $message = str_replace('[PASSWORD]', $plaintext_pass, $message);
 
-        eks_mail($user_email, "\"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>", get_option('volunteer_email_subject'), $message);
+        eks_mail($user_email, $sender, get_option('volunteer_email_subject'), $message);
     }
 
 }
@@ -180,7 +194,7 @@ function myajax_submit() {
 
 			foreach ($myposts as $post) {
 				setup_postdata($post);
-                                $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+                                $html .= eks_training_html($post);
 			}
                     }
                     elseif ($training_type == 'County Public Training')
@@ -193,13 +207,15 @@ function myajax_submit() {
                             'orderby' => 'title',
                             'order' => 'ASC'
                         ));
-                        
+
                         // This is really inefficient but works
 			foreach ($query->posts as $post) {
                                 $training_county = get_post_meta($post->ID, 'cat', true);
-                                if ($tax_site_county->term_id == $training_county)
-                                {                                   
-                                    $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+                                $closed_to_new_volunteers = get_post_meta($post->ID, 'closed_to_new_volunteers', true);
+                                if ($tax_site_county->term_id == $training_county && !$closed_to_new_volunteers)
+                                {  
+                                    setup_postdata($post);
+                                    $html .= eks_training_html($post);
                                 }
 			}
                     }
@@ -216,9 +232,11 @@ function myajax_submit() {
 
                          foreach ($query->posts as $post) {
 				setup_postdata($post);
-                                $html .= '<div><input type="radio" name="training" value="'.$post->ID.'"> ' . $post->post_title . '</div>';
+                                $html .= eks_training_html($post, true);
 			}
                     }
+                    if (empty($html))
+                        $html = '<div>No training could be found.  Please contact EarnIt!KeepIt!SaveIt! for assistance.</div>';
                 }
                 else
                 {
@@ -243,14 +261,15 @@ function myajax_submit() {
             {
                 $training = get_post($_POST['training']);
                 $training_meta = get_post_meta($training->ID);
-                $html = "<p style='font-weight:bold'>{$training->post_title}</p>"
-                . "<p>{$training->post_content}</p>
-                    <p>
+                
+                $details = empty($training_meta['address'][0]) ? '' : "<p>
                     Address: {$training_meta['address'][0]}<br/>
                     ". (empty($training_meta['date'][0]) ? '' : "Date(s): {$training_meta['date'][0]}<br/>") . "
                     ". (empty($training_meta['times'][0]) ? '' : "Times(s): {$training_meta['times'][0]}<br/>") . "
                     ". (empty($training_meta['special_instructions'][0]) ? '' : "Special Instructions: {$training_meta['special_instructions'][0]}<br/>") . "
                     </p>";
+                    
+                $html = "<p style='font-weight:bold'>{$training->post_title}</p><p>{$training->post_content}</p> $details";
             }
             $response = json_encode(array(
                 'success' => true,
@@ -329,6 +348,24 @@ Address: {$training_meta['address'][0]}<br/>
 
     // IMPORTANT: don't forget to "exit"
     exit;
+}
+
+/**
+ * Helper function to render a training as a radio group item.
+ * 
+ * @param type $training_post
+ * @param bool $is_link_and_learn       Optional, default false
+ * @return string $html
+ */
+function eks_training_html($training_post, $is_link_and_learn){
+    $details = '';
+    if (!$is_link_and_learn)
+    {
+        $meta = get_post_meta($training_post->ID);
+        $details = ' - '.$meta['address'][0].', ' . $meta['date'][0] . ', ' . $meta['times'][0];
+    }
+    return '<div style="padding: 0 0 10px 30px;text-indent:-30px">
+        <input style="width:30px;padding:0;margin:0" type="radio" name="training" value="' . $training_post->ID . '"><strong>' . $training_post->post_title . '</strong>  ' . $details . '</div>';
 }
 
 add_action('init', 'volunteer_init');
@@ -607,13 +644,13 @@ function volunteer_register_new_user($user_login, $user_email) {
 
     update_user_option($user_id, 'default_password_nag', true, true); //Set up the Password change nag.
 
-    wp_new_user_notification($user_id, $user_pass);
-
     $userdata = array(
         'ID' => $user_id,
         'user_nicename' => $_SESSION['volunteer']['name']
     );
     wp_update_user($userdata);
+    
+    wp_new_user_notification($user_id, $user_pass);
 
     $user = get_userdata($user_id);
     $login_data['user_login'] = $user->name;

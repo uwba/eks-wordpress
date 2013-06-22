@@ -63,7 +63,7 @@ Last year’s tax return
                                                 
                                                 ?>
                                         <br/>
-                                        <small>My Coordinator: <?php echo $coordinator->data->user_nicename ?> (<a href="mailto:<?php echo $coordinator->data->user_email ?>"><?php echo $coordinator->data->user_email ?></a>)</small>
+                                        <small>My Coordinator: <?php echo $coordinator->data->display_name ?> (<a href="mailto:<?php echo $coordinator->data->user_email ?>"><?php echo $coordinator->data->user_email ?></a>)</small>
                                         <?php } ?>
 				</div>
 				<ul class="links" style="padding-top:1em">
@@ -71,7 +71,7 @@ Last year’s tax return
 		switch ($role) {
 			case 'volunteer':
 					?>
-						<li><a href="<?php echo site_url('my-tax-sites'); ?>"><?php echo __('My Tax Sites', APP_TD); ?></a></li>
+						<li><a href="<?php echo site_url('my-tax-sites'); ?>"><?php echo __('My Tax Site', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-trainings'); ?>"><?php echo __('My Training', APP_TD); ?></a></li>
 						<li><a href="<?php echo site_url('my-documents'); ?>"><?php echo __('Documents', APP_TD); ?></a></li>
 						<?php

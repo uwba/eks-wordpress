@@ -3,10 +3,13 @@
 ?>
 <div id="main">
 	<div class="section-head">
-		<h1><?php _e('My Tax Sites', APP_TD); ?></h1>
+		<h1><?php _e('My Tax Site', APP_TD); ?></h1>
 	</div>
+    
 
+    
 	<div class="categories-list">
+            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration">click here</a>.
 		<?php
 		//echo va_cat_menu_drop_down( 'dir' );
 		$tax_sites = get_volunteer_tax_sites();

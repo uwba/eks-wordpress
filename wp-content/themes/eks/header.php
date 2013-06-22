@@ -40,7 +40,7 @@
                                             
                                             <div class="yui3-u-1-4">
                                                 <label for="search-text">
-                                                        <span class="search-title"><?php _e( 'Search For ', APP_TD ); ?></span><br/><span class="search-help"><?php _e( '(e.g. Alameda, Contra Costa, San Francisco)', APP_TD ); ?></span>
+                                                        <span class="search-title"><?php _e( 'Search For ', APP_TD ); ?></span><br/><span class="search-help"><?php _e( '(e.g. address, city)', APP_TD ); ?></span>
                                                 </label>
                                                 <div class="input-cont h39">
                                                         <div class="left h39"></div>
@@ -186,7 +186,7 @@
                     {
                         options += '<option>' + cities[county][i] + '</option>';
                     }
-                    jQuery('#select-city').html(options);
+                    jQuery('#select-city').html(options).closest('.search-location').show();
                     if (firstrun)
                     {
                         jQuery('#select-city').val('<?php echo empty($_GET['city']) ? '' : $_GET['city']; ?>');
@@ -194,7 +194,7 @@
                     }
                 }
                 else
-                    jQuery('#select-city').html('');
+                    jQuery('#select-city').html('').closest('.search-location').hide();
 
             }).val('<?php echo empty($_GET['county']) ? '' : $_GET['county']; ?>').change();
 

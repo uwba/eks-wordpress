@@ -74,6 +74,11 @@ jQuery(document).ready(function($) {
                     $('#step4 .results').html(toHTML(response.html));
                     // Select the first one in the list by default
                     $('#step4 input:first').attr('checked', 'checked');
+                    
+                    // Adjust the dialog header
+                    var position = response.data.position[0];
+                    $('#step4 h3 span').text(position);
+                    
                     gotoStep(4);
                 } else {
                     $('#step32 .error').html(implode('<br/>', response.errors));

@@ -7,6 +7,7 @@
 	</div>
 
 	<div class="categories-list">
+            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration">click here</a>.
 		<?php
 		//echo va_cat_menu_drop_down( 'dir' );
 		$volunteer = get_volunteer();
