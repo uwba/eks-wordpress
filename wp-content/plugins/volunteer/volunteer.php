@@ -357,7 +357,7 @@ Address: {$training_meta['address'][0]}<br/>
  * @param bool $is_link_and_learn       Optional, default false
  * @return string $html
  */
-function eks_training_html($training_post, $is_link_and_learn){
+function eks_training_html($training_post, $is_link_and_learn = false){
     $details = '';
     if (!$is_link_and_learn)
     {
