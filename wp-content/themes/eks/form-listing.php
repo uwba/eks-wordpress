@@ -191,16 +191,24 @@ wp_enqueue_script('jquery-ui-datepicker');
                 }
                 $('#scheduler').html(html);
                 
-                // Parse the schedule string
-                var obj = $.parseJSON($('#app_hoursofoperation').val());
-                if (obj)
+                // Attempt to parse the schedule string
+                try
                 {
-                    for (var i=0; i<days.length; i++) {
-                        $('#Schedule' + days[i] + 'Start1').val(obj[days[i]]['Start1']);
-                        $('#Schedule' + days[i] + 'End1').val(obj[days[i]]['End1']);
-                        $('#Schedule' + days[i] + 'Start2').val(obj[days[i]]['Start2']);
-                        $('#Schedule' + days[i] + 'End2').val(obj[days[i]]['End2']);
+                    var obj = $.parseJSON($('#app_hoursofoperation').val());
+                    if (obj)
+                    {
+                        for (var i=0; i<days.length; i++) {
+                            $('#Schedule' + days[i] + 'Start1').val(obj[days[i]]['Start1']);
+                            $('#Schedule' + days[i] + 'End1').val(obj[days[i]]['End1']);
+                            $('#Schedule' + days[i] + 'Start2').val(obj[days[i]]['Start2']);
+                            $('#Schedule' + days[i] + 'End2').val(obj[days[i]]['End2']);
+                        }
                     }
+                }
+                catch(ex)
+                {
+                    // Parsing failed this time, so log it and proceed.  This should only happen with legacy data
+                    console.log('Error parsing schedule data: "' + $('#app_hoursofoperation').val() + '"');
                 }
                 
                 $('#scheduler select').change(function(){             
