@@ -937,7 +937,7 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
         // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
         remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
         if (!$success)
-            error_log("Could not email $to: $subject");
+            error_log("Could not email to:$to\n from:$from\n subject:$subject\n, cc:$cc");
         return $success;
     }
 

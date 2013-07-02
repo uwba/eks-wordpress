@@ -124,11 +124,11 @@ jQuery(document).ready(function($) {
         });
         
         $('#step6 input').click(function() {
-            // If you cannot submit the login form, simply close the modal dialog
+            // If you cannot submit the login form (i.e., an update), navigate to the dashboard
             if ($('#login').length)
                 $('#login').click();
             else
-                $('#volunteer_dialog').dialog('close');
+                document.location.href = '/dashboard';
                 
         });
     });

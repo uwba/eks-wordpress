@@ -98,6 +98,8 @@ function myajax_submit() {
     $valid = FALSE;
     $errors = array();
     global $wpdb;
+    
+    
 
     switch ($step) {
         case 1: // Submit name, username, password, and email
@@ -129,6 +131,7 @@ function myajax_submit() {
             break;
 
         case 2: // Select volunteer position(s) desired
+            
             $_SESSION['volunteer']['preparer'] = $wpdb->escape(!empty($_POST['preparer']) ? $_POST['preparer'] : '');
             $_SESSION['volunteer']['position'] = !empty($_POST['position']) ? $_POST['position'] : '';
 
@@ -146,25 +149,49 @@ function myajax_submit() {
             break;
 
         case 3: // Select desired Tax Site
-            // Create post object for the Volunteer/Tax Site association
-            $my_post = array(
-                'post_title' => wp_strip_all_tags($_SESSION['volunteer']['name']),
-                'post_type' => 'volunteer',
-                // 'post_content' => $_POST['post_content'],
-                'post_status' => 'publish',
-                'comment_status' => 'closed',
-                'post_author' => $_SESSION['volunteer']['user_ID'],
-            );
+            global $current_user;
+            get_currentuserinfo();
+            
+            // If the session doesn't have the ID, add it and get the existing Volunteer post
+            if (is_user_logged_in() && empty($_SESSION['volunteer']['user_ID']))
+            {
+                $meta = get_user_meta($current_user->ID);
+                $_SESSION['volunteer']['user_ID'] =  $current_user->data->ID;
+                $_SESSION['volunteer']['name'] = $current_user->data->user_nicename;
+                $_SESSION['volunteer']['email'] = $current_user->data->user_email;
+                $_SESSION['volunteer']['phone'] = $meta['phone'][0];
+            }    
+            // Get any existing post object if you can, for the Volunteer/Tax Site association
+            $my_posts = get_posts( array(
+                'author' => $current_user->data->ID,
+                'post_type' => 'volunteer'
+                    ));
 
-            // Insert the post into the database
-            $post_id = wp_insert_post($my_post);
-            add_post_meta($post_id, "name", wp_strip_all_tags($_SESSION['volunteer']['name']));
-            add_post_meta($post_id, "phone", wp_strip_all_tags($_SESSION['volunteer']['phone']));
-            add_post_meta($post_id, "email", wp_strip_all_tags($_SESSION['volunteer']['email']));
-            add_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer'])); // preparer|new
+            if (count($my_posts) > 0)
+                $post_id = $my_posts[0]->ID;
+            else
+            {
+                // None found, so create post object for the Volunteer/Tax Site association
+                $my_post = array(
+                    'post_title' => wp_strip_all_tags($_SESSION['volunteer']['name']),
+                    'post_type' => 'volunteer',
+                    // 'post_content' => $_POST['post_content'],
+                    'post_status' => 'publish',
+                    'comment_status' => 'closed',
+                    'post_author' => $_SESSION['volunteer']['user_ID'],
+                );
+                //error_log('creating new post object for the Volunteer/Tax Site association');
 
+                // Insert the post into the database
+                $post_id = wp_insert_post($my_post);
+                update_post_meta($post_id, "name", wp_strip_all_tags($_SESSION['volunteer']['name']));
+                update_post_meta($post_id, "phone", wp_strip_all_tags($_SESSION['volunteer']['phone']));
+                update_post_meta($post_id, "email", wp_strip_all_tags($_SESSION['volunteer']['email']));
+            }          
+
+            update_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer'])); // preparer|new
             foreach ($_SESSION['volunteer']['position'] as $position) {
-                add_post_meta($post_id, $position, $_POST['tax_sites']);
+                update_post_meta($post_id, $position, $_POST['tax_sites']);
             }
 
             $valid = count($errors) == 0;
@@ -285,9 +312,9 @@ function myajax_submit() {
             if (!empty($_SESSION['volunteer']['training']))
             {
                 $volunteer = get_volunteer($_SESSION['volunteer']['user_ID']);
-                add_post_meta($volunteer->ID, 'training', $_SESSION['volunteer']['training']);
+                update_post_meta($volunteer->ID, 'training', $_SESSION['volunteer']['training']);
             }
-            //var_dump($volunteer->ID);
+            //var_dump($_SESSION);die();
             //var_dump($_SESSION['volunteer']['training']);die();
             
             $tax_site = get_post($_SESSION['volunteer']['tax_site']);
@@ -787,9 +814,7 @@ function tax_search() {
                         </script>
 
                         <button class="tax_sites" name="tax_sites" value="<?php the_ID(); ?>">SELECT THIS SITE</button>
-                        <h2><a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h2>
-
-                        <p class="listing-cat"><?php the_listing_category(); ?></p>
+                        <h2><?php the_title(); ?></h2>
 
                         <p class="listing-phone">
                             Phone: <?php echo esc_html(get_post_meta(get_the_ID(), 'phone', true)); ?></p>

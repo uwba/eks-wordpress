@@ -17,3 +17,5 @@ if (!empty($listing_id)) {
 <p class="listing-phone"><?php echo esc_html(get_post_meta(get_the_ID(), 'phone', true)); ?></p>
 <p class="listing-address"><?php the_listing_address(); ?></p>
 <p class="listing-description"><strong><?php _e('Description:', APP_TD); ?></strong> <?php the_content(); ?> </p>
+
+<p><a href="<?php the_permalink(); ?>" rel="bookmark">Read More...</a></p>
