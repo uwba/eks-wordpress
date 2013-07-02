@@ -98,12 +98,11 @@ function myajax_submit() {
     $valid = FALSE;
     $errors = array();
     global $wpdb;
-    
-    
 
     switch ($step) {
         case 1: // Submit name, username, password, and email
 
+            $_SESSION['volunteer'] = array();
             $_SESSION['volunteer']['name'] = $wpdb->escape($_POST['name']);
             $_SESSION['volunteer']['phone'] = $wpdb->escape($_POST['phone']);
             $_SESSION['volunteer']['email'] = $wpdb->escape($_POST['email']);
@@ -155,20 +154,36 @@ function myajax_submit() {
             // If the session doesn't have the ID, add it and get the existing Volunteer post
             if (is_user_logged_in() && empty($_SESSION['volunteer']['user_ID']))
             {
-                $meta = get_user_meta($current_user->ID);
+                $meta = get_user_meta($current_user->data->ID);
                 $_SESSION['volunteer']['user_ID'] =  $current_user->data->ID;
                 $_SESSION['volunteer']['name'] = $current_user->data->user_nicename;
                 $_SESSION['volunteer']['email'] = $current_user->data->user_email;
                 $_SESSION['volunteer']['phone'] = $meta['phone'][0];
+                error_log(print_r($meta, true));
             }    
             // Get any existing post object if you can, for the Volunteer/Tax Site association
+            //error_log($current_user);
+//            $query = new WP_Query( array(
+//                'author' => $current_user->data->ID,
+//                'post_type' => 'volunteer'
+//                    ) );
+            
+            error_log('user id=' . print_r($current_user->data->ID, true));
+            //die();
+            //die();
+            
+            
             $my_posts = get_posts( array(
                 'author' => $current_user->data->ID,
                 'post_type' => 'volunteer'
                     ));
+            //die();
 
             if (count($my_posts) > 0)
+            {
                 $post_id = $my_posts[0]->ID;
+                error_log('adding to existing post object for the Volunteer/Tax Site association: ' . $post_id);
+            }
             else
             {
                 // None found, so create post object for the Volunteer/Tax Site association
@@ -180,10 +195,10 @@ function myajax_submit() {
                     'comment_status' => 'closed',
                     'post_author' => $_SESSION['volunteer']['user_ID'],
                 );
-                //error_log('creating new post object for the Volunteer/Tax Site association');
 
                 // Insert the post into the database
                 $post_id = wp_insert_post($my_post);
+                error_log('creating new post object for the Volunteer/Tax Site association: ' . $post_id);
                 update_post_meta($post_id, "name", wp_strip_all_tags($_SESSION['volunteer']['name']));
                 update_post_meta($post_id, "phone", wp_strip_all_tags($_SESSION['volunteer']['phone']));
                 update_post_meta($post_id, "email", wp_strip_all_tags($_SESSION['volunteer']['email']));

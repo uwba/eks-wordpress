@@ -77,6 +77,8 @@ jQuery(document).ready(function($) {
                     
                     // Adjust the dialog header
                     var position = response.data.position[0];
+                    if (position == 'preparer')
+                        position = 'tax ' + position;
                     $('#step4 h3 span').text(position);
                     
                     gotoStep(4);
