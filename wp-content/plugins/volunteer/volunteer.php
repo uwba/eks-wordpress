@@ -168,13 +168,14 @@ function myajax_submit() {
 //                'post_type' => 'volunteer'
 //                    ) );
             
+			//error_log('user='.print_r($current_user->data, true));
             error_log('user id=' . print_r($current_user->data->ID, true));
             //die();
             //die();
             
             
             $my_posts = get_posts( array(
-                'author' => $current_user->data->ID,
+                'author' => $_SESSION['volunteer']['user_ID'],
                 'post_type' => 'volunteer'
                     ));
             //die();
