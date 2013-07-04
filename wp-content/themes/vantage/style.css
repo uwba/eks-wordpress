@@ -49,7 +49,7 @@ body {
 	height:100%;
 	color: #333;
 	font: normal normal normal 0.75em/normal Arial, Helvetica, sans-serif;
-	background: #E4E4E4 url('images/header-bg.png') repeat-x 0 0;
+	/*background: #E4E4E4 url('images/header-bg.png') repeat-x 0 0;*/
 	border-top:2px solid #DDD;
 }
 
@@ -259,13 +259,13 @@ small {
 	margin-top: -5px;
 	padding-top: 5px;
 }
-
+#masthead {padding-bottom:24px; overflow:visible;}
 #masthead .advert {
 	width: 468px;
-	height: 60px;
+	height: 90px;
 	position: absolute;
 	top: 0;
-	right: 0;
+	right: 20px;
 }
 
 #masthead .advert a img {
