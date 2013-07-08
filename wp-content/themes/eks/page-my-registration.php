@@ -92,9 +92,18 @@ $_SESSION['role'] = "volunteer";
                     <label><input type="checkbox" name="position[]" value="interpreter" id="interpreter" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'interpreter') echo 'selected="selected" ' ?>/> Interpreter<br/><span>Interpreters aid taxpayers by working alongside them and their tax preparers. Spanish-speaking volunteers are always needed. Training is provided by each tax site.</span></label><br/>
                     <input type="submit" value="Next"/>
                 </form>
-
+                
                 <div id="step3" class="step">
-                    <form id="step31" action="<?php echo admin_url('admin-ajax.php'); ?>" method="get" class="mti_font_element">
+                    <h3>Please read the Terms of Use below and click Next to confirm your agreement.</h3>
+                    <form method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
+                        <div style="height:300px;overflow-y:scroll;border:1px solid #ccc;margin:10px 0;padding:10px"></div>
+                        <input type="button" class="back" value="Back"/>
+                        <input type="submit" value="Next"/>
+                    </form>     
+                </div>
+
+                <div id="step4" class="step">
+                    <form id="step41" action="<?php echo admin_url('admin-ajax.php'); ?>" method="get" class="mti_font_element">
                         <h3>Please select a tax site you are interested in volunteering at by using the search box below.</h3>
                         <div class="yui3-g">
                             <div class="yui3-u-3-4">
@@ -116,7 +125,7 @@ $_SESSION['role'] = "volunteer";
                             </div>
                         </div>
                     </form>
-                    <form id="step32" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
+                    <form id="step42" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
                         <!-- Tax Site Results -->
                         <div id="results" style="height:300px;overflow-y:scroll;border:1px solid #ccc;margin:10px 0;padding:10px"></div>
                         <input type="button" class="back" value="Back"/>
@@ -124,7 +133,7 @@ $_SESSION['role'] = "volunteer";
 
                 </div>
                 
-                <div id="step4" class="step">
+                <div id="step5" class="step">
                     <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="POST" class="mti_font_element">
                         <h3>Please select the <span></span> training you would like to view.</h3>
                         <!-- Training Results -->
@@ -135,7 +144,7 @@ $_SESSION['role'] = "volunteer";
                     </form>                         
                 </div>
                 
-                <div id="step5" class="step">
+                <div id="step6" class="step">
                     <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="POST" class="mti_font_element">
                         <h3>Please confirm the training you would like to sign up for, or press the back button to view another training.</h3>
                         <div class="results"></div>
@@ -145,7 +154,7 @@ $_SESSION['role'] = "volunteer";
                         
                     </form>                         
                 </div>
-                <div id="step6" class="step">
+                <div id="step7" class="step">
                         <h3>Your registration is complete!</h3>
                         <p>You will receive two emails: one with your EarnItKeepItSaveIt! account information, and one with your tax site and training details.</p>
                         <p>Log back in here to view your account at anytime!</p>

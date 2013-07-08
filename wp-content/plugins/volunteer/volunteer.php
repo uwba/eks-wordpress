@@ -23,7 +23,7 @@ function eks_update_menu_items() {
 
     add_submenu_page('edit.php?post_type=volunteer', 'Export All Volunteers', 'Export All Volunteers', 'export', '../export-volunteers');
     add_submenu_page('edit.php?post_type=volunteer', 'Email All Volunteers', 'Email All Volunteers', 'administrator', '../email-all');
-    add_submenu_page('edit.php?post_type=volunteer', 'Update Volunteer Registration Email', 'Update Volunteer Registration Email', 'administrator', __FILE__, 'eks_settings_page');
+    add_submenu_page('edit.php?post_type=volunteer', 'Update Site Settings', 'Update Site Settings', 'administrator', __FILE__, 'eks_settings_page');
 
     add_submenu_page('edit.php?post_type=training', 'Add New Training', 'Add New Training', 'administrator', '../edit');
 
@@ -129,7 +129,7 @@ function myajax_submit() {
             ));
             break;
 
-        case 2: // Select volunteer position(s) desired
+        case 2: // Select volunteer position(s) desired and get the terms of use for the first one
             
             $_SESSION['volunteer']['preparer'] = $wpdb->escape(!empty($_POST['preparer']) ? $_POST['preparer'] : '');
             $_SESSION['volunteer']['position'] = !empty($_POST['position']) ? $_POST['position'] : '';
@@ -137,8 +137,12 @@ function myajax_submit() {
             if (empty($_SESSION['volunteer']['position'][0])) {
                 $errors[] = '<strong>ERROR</strong>: Please select a position.';
             }
+            else
+                $_SESSION['volunteer']['terms'] = nl2br(get_option('terms_' . $_SESSION['volunteer']['position'][0]));
+            
             $valid = !count($errors);
             $_SESSION['volunteer']['steps'][2] = 2;
+                        
             $response = json_encode(array(
                 'success' => $valid,
                 'errors' => $errors,
@@ -146,8 +150,18 @@ function myajax_submit() {
                 'data' => $_SESSION['volunteer']
             ));
             break;
+            
+        case 3: // Terms have been confirmed, no action
+            $_SESSION['volunteer']['steps'][3] = 3;
+            $response = json_encode(array(
+                'success' => true,
+                'errors' => array(),
+                'step' => 4,
+                'data' => $_SESSION['volunteer']
+            ));
+            break;
 
-        case 3: // Select desired Tax Site
+        case 4: // Select desired Tax Site
             global $current_user;
             get_currentuserinfo();
             
@@ -290,13 +304,13 @@ function myajax_submit() {
             $response = json_encode(array(
                 'success' => $valid,
                 'errors' => $errors,
-                'step' => $valid ? 4 : 3,
+                'step' => $valid ? 5 : 4,
                 'data' => $_SESSION['volunteer'],
                 'html' => empty($html) ? '' : $html
             ));
             break;
 
-        case 4: // Selected desired Training, so show the details so the volunteer can confirm
+        case 5: // Selected desired Training, so show the details so the volunteer can confirm
             $_SESSION['volunteer']['training'] = $_POST['training'];
             if (empty($_SESSION['volunteer']['training']))
                 $html = '<div>Your site coordinator will be in contact with you regarding your training.</div>';
@@ -317,13 +331,13 @@ function myajax_submit() {
             $response = json_encode(array(
                 'success' => true,
                 'errors' => array(),
-                'step' => 5,
+                'step' => 6,
                 'data' => $_SESSION['volunteer'],
                 'html' => $html
             ));
             break;
         
-        case 5:
+        case 6:
             // Training confirmed, so save it and email the coordinator of the selected tax site.
             if (!empty($_SESSION['volunteer']['training']))
             {
@@ -379,7 +393,7 @@ Address: {$training_meta['address'][0]}<br/>
             $response = json_encode(array(
                 'success' => true,
                 'errors' => null,
-                'step' => 6,
+                'step' => 7,
                 'data' => $_SESSION['volunteer']
             ));
             break;

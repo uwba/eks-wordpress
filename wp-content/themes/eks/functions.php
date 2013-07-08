@@ -124,7 +124,7 @@ function eks_handle_download_document() {
                 $specialized = false;
                 $volunteered = false;
                 $another_site = false;
-                
+
                 //var_dump($meta_values);die();
 
                 foreach (array_keys($meta_values) as $k) {
@@ -152,8 +152,7 @@ function eks_handle_download_document() {
                     elseif ($k == 'training') {
                         $training_type_post = get_post($meta_values['training'][0]);
                         $training_type = $training_type_post->post_title;
-                    }
-                    elseif ($k == 'name')
+                    } elseif ($k == 'name')
                         $name = $meta_values[$k][0];
                     elseif ($k == 'phone')
                         $phone = $meta_values[$k][0];
@@ -172,21 +171,21 @@ function eks_handle_download_document() {
                     $row[0],
                     $name,
                     $phone,
-                    $tax_site, 
-                    $training_type, 
-                    $contacted ? 'Yes' : 'No', 
-                    $training ? 'Yes' : 'No', 
-                    $confirmed ? 'Yes' : 'No', 
-                    $ethics ? 'Yes' : 'No', 
-                    $basic ? 'Yes' : 'No', 
-                    $intermediate ? 'Yes' : 'No', 
-                    $specialized ? 'Yes' : 'No', 
-                    $volunteered ? 'Yes' : 'No', 
+                    $tax_site,
+                    $training_type,
+                    $contacted ? 'Yes' : 'No',
+                    $training ? 'Yes' : 'No',
+                    $confirmed ? 'Yes' : 'No',
+                    $ethics ? 'Yes' : 'No',
+                    $basic ? 'Yes' : 'No',
+                    $intermediate ? 'Yes' : 'No',
+                    $specialized ? 'Yes' : 'No',
+                    $volunteered ? 'Yes' : 'No',
                     $another_site ? 'Yes' : 'No',
                     $email,
                     // Experience is only relevant is "preparer" has been selected
                     in_array('preparer', $positions) ? $experience : '',
-                    implode(', ', $positions)                   
+                    implode(', ', $positions)
                 );
             }
         }
@@ -211,8 +210,7 @@ function eks_handle_download_document() {
         );
         $e = new EksExcel();
         $e->downloadExcel('EKS Volunteer Export.xlsx', $arr, $header);
-    }
-    elseif (strstr($_SERVER["REQUEST_URI"], 'export-sites') != null) {
+    } elseif (strstr($_SERVER["REQUEST_URI"], 'export-sites') != null) {
 
         $u = wp_get_current_user();
         $arr = array();
@@ -550,79 +548,79 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
         <table class="table">
             <thead>
                 <tr>
-        <?php
-        if ($header) {
-            foreach ($header as $title) {
-                echo "<th>$title</th>";
-            }
-        } else {
-            $item = current($items);
-            foreach ($item as $title => $entry) {
-                echo "<th>" . ucwords(str_replace('_', ' ', $title)) . "</th>";
-            }
-        }
-        ?>
+                    <?php
+                    if ($header) {
+                        foreach ($header as $title) {
+                            echo "<th>$title</th>";
+                        }
+                    } else {
+                        $item = current($items);
+                        foreach ($item as $title => $entry) {
+                            echo "<th>" . ucwords(str_replace('_', ' ', $title)) . "</th>";
+                        }
+                    }
+                    ?>
                 </tr>
             </thead>
 
-                    <?
-                    //$i=1;
-                    foreach ($items as $row):
-                        ?>
+            <?
+            //$i=1;
+            foreach ($items as $row):
+                ?>
                 <tr>
-                        <?
-                        foreach ($row as $entry) {
-                            echo "<td>$entry</td>";
-                        }
-                        ?>
+                    <?
+                    foreach ($row as $entry) {
+                        echo "<td>$entry</td>";
+                    }
+                    ?>
                 </tr>
-                    <? endforeach ?>
+            <? endforeach ?>
         </table>
 
 
-        <?php else: ?>
+    <?php else: ?>
         <div id="about"><div class="not_found"><?php echo $no_message ?></div></div>
-        <?php endif; ?>
+    <?php endif; ?>
 
 
-            <?
-            $output = ob_get_clean();
-            return $output;
-        }
+    <?
+    $output = ob_get_clean();
+    return $output;
+}
 
-        /**
-         * 
-         * @param array $options associative array value => label
-         * @param string/array $selected 
-         * @param array $attributes
-         * @param bool $none none option
-         * @return string
-         */
-        function html_options($options = array(), $selected = NULL, $attributes = array(), $none = false) {
-            if (!is_array($selected)) {
-                $selected = array($selected);
-            }
-            $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-            foreach ($options as $value => $label) {
-                $is_selected = in_array($value, $selected) ? ' selected' : '';
-                $output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
-            }
-            $output .= '</select>';
-            return $output;
-        }
+/**
+ * 
+ * @param array $options associative array value => label
+ * @param string/array $selected 
+ * @param array $attributes
+ * @param bool $none none option
+ * @return string
+ */
+function html_options($options = array(), $selected = NULL, $attributes = array(), $none = false) {
+    if (!is_array($selected)) {
+        $selected = array($selected);
+    }
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($options as $value => $label) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$label}</option>";
+    }
+    $output .= '</select>';
+    return $output;
+}
 
-        function html_options_val($values = array(), $selected = NULL, $attributes = array(), $none = false) {
-            if (!is_array($selected)) {
-                $selected = array($selected);
-            }
-            $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
-            foreach ($values as $value) {
-                $is_selected = in_array($value, $selected) ? ' selected' : '';
-                $output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
-            }
-            $output .= '</select>';
-            return $output;
-        }
+function html_options_val($values = array(), $selected = NULL, $attributes = array(), $none = false) {
+    if (!is_array($selected)) {
+        $selected = array($selected);
+    }
+    $output = "<select name='{$attributes['name']}' id='{$attributes['name']}'>";
+    foreach ($values as $value) {
+        $is_selected = in_array($value, $selected) ? ' selected' : '';
+        $output .= "<option value='{$value}'{$is_selected}>{$value}</option>";
+    }
+    $output .= '</select>';
+    return $output;
+}
 
 //add_filter( 'site_url', 'custom_site_url', 10, 4 );
 //function custom_site_url( $url, $path, $scheme, $blog_id ) {
@@ -635,68 +633,68 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
 //}
 
 
-        add_filter('site_url', 'custom_site_url', 10, 4);
+add_filter('site_url', 'custom_site_url', 10, 4);
 
-        function custom_site_url($url, $path, $scheme, $blog_id) {
+function custom_site_url($url, $path, $scheme, $blog_id) {
 //	echo $path;
 //    if ( strpos($path, '/volunteer') !== FALSE  && strpos($path, 'action=edit') !== FALSE) {
 //		$url = str_replace ('/wp-admin/post.php?post=', 'edit?postid=', $url);
 //		$url = str_replace ('&action=edit', '', $url);
 //        //	$url = '/register'; // Or do this dynamically
 //    }
-            return $url;
-        }
+    return $url;
+}
 
-        function insert_attachment($file_handler, $post_id, $setthumb = 'false') {
-            // check to make sure its a successful upload
-            if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK)
-                __return_false();
+function insert_attachment($file_handler, $post_id, $setthumb = 'false') {
+    // check to make sure its a successful upload
+    if ($_FILES[$file_handler]['error'] !== UPLOAD_ERR_OK)
+        __return_false();
 
-            require_once(ABSPATH . "wp-admin" . '/includes/image.php');
-            require_once(ABSPATH . "wp-admin" . '/includes/file.php');
-            require_once(ABSPATH . "wp-admin" . '/includes/media.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
 
-            $attach_id = media_handle_upload($file_handler, $post_id);
+    $attach_id = media_handle_upload($file_handler, $post_id);
 
-            if ($setthumb)
-                update_post_meta($post_id, '_thumbnail_id', $attach_id);
-            return $attach_id;
-        }
+    if ($setthumb)
+        update_post_meta($post_id, '_thumbnail_id', $attach_id);
+    return $attach_id;
+}
 
 //http://www.tomauger.com/2011/web-development/wordpress/wordpress-hiding-menu-items-from-users-based-on-their-roles-using-a-custom-walker
-        /* Custom Walker to prevent password-protected pages from appearing in the list */
-        class ZG_Nav_Walker extends Walker_Nav_Menu {
+/* Custom Walker to prevent password-protected pages from appearing in the list */
+class ZG_Nav_Walker extends Walker_Nav_Menu {
 
-            protected $page_is_visible = true;
+    protected $page_is_visible = true;
 
-            function start_el(&$output, $item, $depth, $args) {
+    function start_el(&$output, $item, $depth, $args) {
 
-                $this->page_is_visible = true;
+        $this->page_is_visible = true;
 
-                if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
-                    // Since the "Volunteer" main menu only has a single option under it, we cannot hide it or the CSS breaks on IE.  
-                    // So just rename it and leave it visible
-                    if (is_user_logged_in()) {
-                        $item->url = site_url("/dashboard");
-                        $item->title = __("Volunteer Dashboard");
-                    }
-                }
-
-                if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
-                    if (!is_volunteer()) {
-                        $item->url = site_url("/dashboard");
-                        $item->title = __("Coordinator Dashboard");
-                    }
-                    else
-                        $this->page_is_visible = false;
-                }
-
-                // If it's not visible, skip the menu item
-                if ($this->page_is_visible)
-                    parent::start_el($output, $item, $depth, $args);
+        if ($item->post_name == 'volunteer-sign-up') { // This is the menu item for the volunteer-registration page link
+            // Since the "Volunteer" main menu only has a single option under it, we cannot hide it or the CSS breaks on IE.  
+            // So just rename it and leave it visible
+            if (is_user_logged_in()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Volunteer Dashboard");
             }
-
         }
+
+        if ($item->post_name == 'co-ordinator-registration') { // This is the menu item for the Coordinators link
+            if (!is_volunteer()) {
+                $item->url = site_url("/dashboard");
+                $item->title = __("Coordinator Dashboard");
+            }
+            else
+                $this->page_is_visible = false;
+        }
+
+        // If it's not visible, skip the menu item
+        if ($this->page_is_visible)
+            parent::start_el($output, $item, $depth, $args);
+    }
+
+}
 
 //function registration_redirect($location, $status) {
 //	echo 'rrrrrrrrrrrrrr';
@@ -708,241 +706,270 @@ function OutputArrayToTable($items, $header = null, $i = 1, $no_message = 'No It
 //}
 //add_filter('wp_redirect', 'registration_redirect', 10, 2);
 
-        function recent_searches() {
-            // Save search at Recent Searches
+function recent_searches() {
+    // Save search at Recent Searches
 
-            $current_search = $_SERVER["REQUEST_URI"];
+    $current_search = $_SERVER["REQUEST_URI"];
 
-            // Read
-            if (is_user_logged_in()) {
-                global $user_ID;
-                get_currentuserinfo();
-                $recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
-            } else {
-                $recent_searches = $_SESSION['recent_searches'];
-            }
+    // Read
+    if (is_user_logged_in()) {
+        global $user_ID;
+        get_currentuserinfo();
+        $recent_searches = get_user_meta($user_ID, 'recent_searches', TRUE);
+    } else {
+        $recent_searches = $_SESSION['recent_searches'];
+    }
 //	var_dump($recent_searches);
-            // View Recent Searches
-            $html = '<h3>Recent Searches</h3><ul class="links">';
-            for ($i = 0; $i < count($recent_searches);) {
-                $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
-            }
-            $html .= '</ul>';
+    // View Recent Searches
+    $html = '<h3>Recent Searches</h3><ul class="links">';
+    for ($i = 0; $i < count($recent_searches);) {
+        $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
+    }
+    $html .= '</ul>';
 
-            // Modify
-            if ($current_search !== '/find-free-tax-help/') {
-                if (is_array($recent_searches)) {
-                    if (in_array($current_search, $recent_searches)) {
-                        $recent_searches = array_diff($recent_searches, array($current_search));
-                    }
-                    array_unshift($recent_searches, $current_search);
-                } else {
-                    $recent_searches = array($current_search);
-                }
-                $recent_searches = array_slice($recent_searches, 0, 10);
+    // Modify
+    if ($current_search !== '/find-free-tax-help/') {
+        if (is_array($recent_searches)) {
+            if (in_array($current_search, $recent_searches)) {
+                $recent_searches = array_diff($recent_searches, array($current_search));
             }
+            array_unshift($recent_searches, $current_search);
+        } else {
+            $recent_searches = array($current_search);
+        }
+        $recent_searches = array_slice($recent_searches, 0, 10);
+    }
 //	var_dump($recent_searches);
-            // Save
-            if (is_user_logged_in()) {
-                update_user_meta($user_ID, 'recent_searches', $recent_searches);
-            } else {
-                $_SESSION['recent_searches'] = $recent_searches;
-            }
+    // Save
+    if (is_user_logged_in()) {
+        update_user_meta($user_ID, 'recent_searches', $recent_searches);
+    } else {
+        $_SESSION['recent_searches'] = $recent_searches;
+    }
 
 
-            return $html;
-        }
+    return $html;
+}
 
-        /**
-         * Return whether or not the current user is an admin.
-         * 
-         * @global int $user_ID
-         * @return boolean
-         */
-        function eks_is_admin() {
-            $ret = false;
-            global $user_ID;
+/**
+ * Return whether or not the current user is an admin.
+ * 
+ * @global int $user_ID
+ * @return boolean
+ */
+function eks_is_admin() {
+    $ret = false;
+    global $user_ID;
 
-            if ($user_ID) {
-                if (current_user_can('level_10'))
-                    $ret = true;
-            }
-            return $ret;
-        }
+    if ($user_ID) {
+        if (current_user_can('level_10'))
+            $ret = true;
+    }
+    return $ret;
+}
 
-        /**
-         * Form builder helper
-         *
-         * @param string $label         Field label
-         * @param array $myposts        Optional array of tax sites display in poplist
-         * @return none
-         */
-        function fileupload($label, $myposts = array()) {
-            ?>
-    <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';  ?>" accept-charset="utf-8" >
+/**
+ * Form builder helper
+ *
+ * @param string $label         Field label
+ * @param array $myposts        Optional array of tax sites display in poplist
+ * @return none
+ */
+function fileupload($label, $myposts = array()) {
+    ?>
+    <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';    ?>" accept-charset="utf-8" >
 
-    <?php if (count($myposts) > 0) { ?>
+        <?php if (count($myposts) > 0) { ?>
 
             <label>Tax Site: <select name="tax_site">
-        <?php foreach ($myposts as $post) {
-            ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
-        <?php } ?>
+                    <?php foreach ($myposts as $post) {
+                        ?><option value="<?php echo $post->ID ?>"><?php echo $post->post_title ?></option>
+                    <?php } ?>
                 </select>
             </label>
             <p>Uploaded documents will be displayed to volunteers assigned to this Tax Site.</p>
             <br/>
-    <?php } ?>
+        <?php } ?>
 
         <label><?php echo $label; ?><input type="file" name="uploadfiles[]" id="uploadfiles" size="35" class="uploadfiles" /></label>
         <input class="button-primary" type="submit" name="uploadfile" id="uploadfile_btn" value="Upload"  />
     </form>
-        <?php
-    }
+    <?php
+}
 
-    /**
-     * Handle file uploads
-     *
-     * @todo check nonces
-     * @todo check file size
-     *
-     * @return none
-     */
-    function fileupload_process() {
-        $uploadfiles = isset($_FILES['uploadfiles']) ? $_FILES['uploadfiles'] : null;
+/**
+ * Handle file uploads
+ *
+ * @todo check nonces
+ * @todo check file size
+ *
+ * @return none
+ */
+function fileupload_process() {
+    $uploadfiles = isset($_FILES['uploadfiles']) ? $_FILES['uploadfiles'] : null;
 
-        $response = '';
+    $response = '';
 
-        if (is_array($uploadfiles)) {
+    if (is_array($uploadfiles)) {
 
-            try {
+        try {
 
-                foreach ($uploadfiles['name'] as $key => $value) {
+            foreach ($uploadfiles['name'] as $key => $value) {
 
-                    // look only for uploaded files
-                    if ($uploadfiles['error'][$key] == 0) {
+                // look only for uploaded files
+                if ($uploadfiles['error'][$key] == 0) {
 
-                        $filetmp = $uploadfiles['tmp_name'][$key];
+                    $filetmp = $uploadfiles['tmp_name'][$key];
 
-                        //clean filename and extract extension
-                        $filename = $uploadfiles['name'][$key];
+                    //clean filename and extract extension
+                    $filename = $uploadfiles['name'][$key];
 
-                        // get file info
-                        // @fixme: wp checks the file extension....
-                        $filetype = wp_check_filetype(basename($filename), null);
-                        $filetitle = preg_replace('/\.[^.]+$/', '', basename($filename));
-                        $filename = $filetitle . '.' . $filetype['ext'];
+                    // get file info
+                    // @fixme: wp checks the file extension....
+                    $filetype = wp_check_filetype(basename($filename), null);
+                    $filetitle = preg_replace('/\.[^.]+$/', '', basename($filename));
+                    $filename = $filetitle . '.' . $filetype['ext'];
 
-                        $upload_dir = wp_upload_dir();
+                    $upload_dir = wp_upload_dir();
 
-                        if (!empty($upload_dir['error']))
-                            throw new exception($upload_dir['error']);
+                    if (!empty($upload_dir['error']))
+                        throw new exception($upload_dir['error']);
 
-                        /**
-                         * Check if the filename already exist in the directory and rename the
-                         * file if necessary
-                         */
-                        $i = 0;
-                        while (file_exists($upload_dir['path'] . '/' . $filename)) {
-                            $filename = $filetitle . '_' . $i . '.' . $filetype['ext'];
-                            $i++;
-                        }
-                        $filedest = $upload_dir['path'] . '/' . $filename;
-
-                        /**
-                         * Check write permissions
-                         */
-                        if (!is_writeable($upload_dir['path'])) {
-                            //$this->msg_e('Unable to write to directory %s. Is this directory writable by the server?');
-                            throw new exception($upload_dir['path'] . ' is not writable.');
-                        }
-
-                        /**
-                         * Save temporary file to uploads dir
-                         */
-                        if (!@move_uploaded_file($filetmp, $filedest)) {
-                            throw new exception($filedest . ' could not be saved.');
-                        }
-
-                        $attachment = array(
-                            'post_mime_type' => $filetype['type'],
-                            'post_title' => $filetitle,
-                            'post_content' => '',
-                            'post_status' => 'inherit'
-                        );
-                        if (!empty($_REQUEST['tax_site']))
-                            $attachment['post_parent'] = $_REQUEST['tax_site'];
-
-                        $attach_id = wp_insert_attachment($attachment, $filedest);
-                        require_once( ABSPATH . "wp-admin" . '/includes/image.php' );
-                        $attach_data = wp_generate_attachment_metadata($attach_id, $filedest);
-                        wp_update_attachment_metadata($attach_id, $attach_data);
-                        $response .= '<div class="notice success"><span>' . $filename . ' was uploaded successfully.</span></div>';
+                    /**
+                     * Check if the filename already exist in the directory and rename the
+                     * file if necessary
+                     */
+                    $i = 0;
+                    while (file_exists($upload_dir['path'] . '/' . $filename)) {
+                        $filename = $filetitle . '_' . $i . '.' . $filetype['ext'];
+                        $i++;
                     }
+                    $filedest = $upload_dir['path'] . '/' . $filename;
+
+                    /**
+                     * Check write permissions
+                     */
+                    if (!is_writeable($upload_dir['path'])) {
+                        //$this->msg_e('Unable to write to directory %s. Is this directory writable by the server?');
+                        throw new exception($upload_dir['path'] . ' is not writable.');
+                    }
+
+                    /**
+                     * Save temporary file to uploads dir
+                     */
+                    if (!@move_uploaded_file($filetmp, $filedest)) {
+                        throw new exception($filedest . ' could not be saved.');
+                    }
+
+                    $attachment = array(
+                        'post_mime_type' => $filetype['type'],
+                        'post_title' => $filetitle,
+                        'post_content' => '',
+                        'post_status' => 'inherit'
+                    );
+                    if (!empty($_REQUEST['tax_site']))
+                        $attachment['post_parent'] = $_REQUEST['tax_site'];
+
+                    $attach_id = wp_insert_attachment($attachment, $filedest);
+                    require_once( ABSPATH . "wp-admin" . '/includes/image.php' );
+                    $attach_data = wp_generate_attachment_metadata($attach_id, $filedest);
+                    wp_update_attachment_metadata($attach_id, $attach_data);
+                    $response .= '<div class="notice success"><span>' . $filename . ' was uploaded successfully.</span></div>';
                 }
-            } catch (exception $ex) {
-                $response .= '<div class="notice error"><span>' . $ex->getMessage() . '</span></div>';
             }
+        } catch (exception $ex) {
+            $response .= '<div class="notice error"><span>' . $ex->getMessage() . '</span></div>';
         }
-        return $response;
     }
+    return $response;
+}
 
-    /**
-     * Return the "hours of operation" JSON object as a readable string.
-     * 
-     * @param string $json       JSON string representing the object
-     * @param string $separator
-     * @return string $str           
-     */
-    function get_formatted_hours_of_operation($json, $separator = "<br/>") {
-        $arr = array();
-        $obj = json_decode($json, true);
-        if (!empty($obj)) {
-            foreach (array_keys($obj) as $day) {
-                $row = '';
-                $slot1 = '';
-                $slot2 = '';
+/**
+ * Return the "hours of operation" JSON object as a readable string.
+ * 
+ * @param string $json       JSON string representing the object
+ * @param string $separator
+ * @return string $str           
+ */
+function get_formatted_hours_of_operation($json, $separator = "<br/>") {
+    $arr = array();
+    $obj = json_decode($json, true);
+    if (!empty($obj)) {
+        foreach (array_keys($obj) as $day) {
+            $row = '';
+            $slot1 = '';
+            $slot2 = '';
 
-                if (!empty($obj[$day]['Start1']) && !empty($obj[$day]['End1']))
-                    $slot1 = $obj[$day]['Start1'] . ' - ' . $obj[$day]['End1'];
-                if (!empty($obj[$day]['Start2']) && !empty($obj[$day]['End2']))
-                    $slot2 = $obj[$day]['Start2'] . ' - ' . $obj[$day]['End2'];
+            if (!empty($obj[$day]['Start1']) && !empty($obj[$day]['End1']))
+                $slot1 = $obj[$day]['Start1'] . ' - ' . $obj[$day]['End1'];
+            if (!empty($obj[$day]['Start2']) && !empty($obj[$day]['End2']))
+                $slot2 = $obj[$day]['Start2'] . ' - ' . $obj[$day]['End2'];
 
-                if (!empty($slot1) && !empty($slot2))
-                    $row = "$day: $slot1 and $slot2";
-                elseif (!empty($slot1) || !empty($slot2))
-                    $row = "$day: $slot1$slot2";
-                if (!empty($row))
-                    $arr[] = $row;
-            }
+            if (!empty($slot1) && !empty($slot2))
+                $row = "$day: $slot1 and $slot2";
+            elseif (!empty($slot1) || !empty($slot2))
+                $row = "$day: $slot1$slot2";
+            if (!empty($row))
+                $arr[] = $row;
         }
-        return implode($separator, $arr);
     }
+    return implode($separator, $arr);
+}
 
-    /**
-     * Send an HTML email to the specified recipient.  Upon failure, the error is written to the log.
-     * 
-     * @param string $to
-     * @param string $from
-     * @param string $subject
-     * @param string $body          HTML body
-     * @param string $cc            Optional email to CC
-     * @return bool $success
-     */
-    function eks_mail($to, $from, $subject, $body, $cc = null) {
-        $headers = 'From: ' . $from . "\r\n";
-        if (!empty($cc))
-            $headers .= 'Cc: ' . $cc . "\r\n";
-        add_filter('wp_mail_content_type', 'eks_set_html_content_type');
-        $success = wp_mail($to, $subject, $body, $headers);
-        // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
-        remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
-        if (!$success)
-            error_log("Could not email to:$to\n from:$from\n subject:$subject\n, cc:$cc");
-        return $success;
-    }
+/**
+ * Send an HTML email to the specified recipient.  Upon failure, the error is written to the log.
+ * 
+ * @param string $to
+ * @param string $from
+ * @param string $subject
+ * @param string $body          HTML body
+ * @param string $cc            Optional email to CC
+ * @return bool $success
+ */
+function eks_mail($to, $from, $subject, $body, $cc = null) {
+    $headers = 'From: ' . $from . "\r\n";
+    if (!empty($cc))
+        $headers .= 'Cc: ' . $cc . "\r\n";
+    add_filter('wp_mail_content_type', 'eks_set_html_content_type');
+    $success = wp_mail($to, $subject, $body, $headers);
+    // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
+    remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
+    if (!$success)
+        error_log("Could not email to:$to\n from:$from\n subject:$subject\n, cc:$cc");
+    return $success;
+}
 
-    function eks_set_html_content_type() {
-        return 'text/html';
-    }
+function eks_set_html_content_type() {
+    return 'text/html';
+}
 
+/**
+ * Add action to notify specified email addresses, when a Listing is saved in their county.
+ */
+add_action('va_handle_update_listing', 'eks_notify_site_updated');
+
+function eks_notify_site_updated($listing) {
+
+    // Logic from listing-form.php:va_handle_update_listing()
+    $action = !(bool) get_post($_POST['ID']) ? 'added' : 'updated';
+
+    $post_title = get_the_title($listing->ID);
+    $post_url = get_permalink($listing->ID);
+    $subject = "[" . get_option('blogname') . "] Tax site {$action}";
+
+    $body = "<p>The following tax site has been $action: <a href='" . $post_url . "'>" . $post_title . "</a></p>";
+
+    // This should really be a "no-reply" alias.
+    $sender = "\"EarnItKeepItSaveIt!\"<" . get_option('admin_email') . ">";
     
+    $county = get_the_listing_category($listing->ID);
+    $to_emails = get_option('email_notifications_' . $county->term_id);
+    
+    if (!empty($to_emails))
+    {
+        if (!eks_mail($to_emails, $sender, $subject, $body)) {
+            // Mailing failed, too bad but continue on
+        }
+    }
+}
+
