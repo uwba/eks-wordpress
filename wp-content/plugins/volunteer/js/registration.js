@@ -44,6 +44,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response, statusText, xhr, $form) {
                 if (response.success) {
+                    $('#step3 form div').html(response.data.terms);
                     gotoStep(3);
                 } else {
                     $('#step2 .error').html(implode('<br/>', response.errors));
@@ -51,8 +52,23 @@ jQuery(document).ready(function($) {
 
             }
         });
+        
+        $('#step3 form').ajaxForm({
+            data: Volunteer,
+            dataType: 'json',
+            beforeSubmit: function() {
+            },
+            success: function(response, statusText, xhr, $form) {
+                if (response.success) {
+                    gotoStep(4);
+                } else {
+                    $('#step3 .error').html(implode('<br/>', response.errors));
+                }
 
-        $('#step31').ajaxForm({
+            }
+        });
+
+        $('#step41').ajaxForm({
             data: TaxSearch,
             dataType: 'html',
             beforeSubmit: function(arr, $form, options) {
@@ -64,32 +80,32 @@ jQuery(document).ready(function($) {
         });
         
         // Tax site selection submitted
-        $('#step32').ajaxForm({
+        $('#step42').ajaxForm({
             data: Volunteer,
             dataType: 'json',
             beforeSubmit: function(arr, $form, options) {
             },
             success: function(response, statusText, xhr, $form) {
                 if (response.success) {
-                    $('#step4 .results').html(toHTML(response.html));
+                    $('#step5 .results').html(toHTML(response.html));
                     // Select the first one in the list by default
-                    $('#step4 input:first').attr('checked', 'checked');
+                    $('#step5 input:first').attr('checked', 'checked');
                     
                     // Adjust the dialog header
                     var position = response.data.position[0];
                     if (position == 'preparer')
                         position = 'tax ' + position;
-                    $('#step4 h3 span').text(position);
+                    $('#step5 h3 span').text(position);
                     
-                    gotoStep(4);
+                    gotoStep(5);
                 } else {
-                    $('#step32 .error').html(implode('<br/>', response.errors));
+                    $('#step42 .error').html(implode('<br/>', response.errors));
                 }
             }
         });
         
         // Training selection submitted
-        $('#step4 form').ajaxForm({
+        $('#step5 form').ajaxForm({
             data: Volunteer,
             dataType: 'json',
             beforeSubmit: function(arr, $form, options) {
@@ -98,13 +114,13 @@ jQuery(document).ready(function($) {
        // debugger;
                 if (response.success)
                 {
-                    $('#step5 .results').html(toHTML(response.html));
-                    gotoStep(5);
+                    $('#step6 .results').html(toHTML(response.html));
+                    gotoStep(6);
                 }
             }
         });
         
-        $('#step5 form').ajaxForm({
+        $('#step6 form').ajaxForm({
             data: Volunteer,
             dataType: 'json',
             beforeSubmit: function(arr, $form, options) {
@@ -114,7 +130,7 @@ jQuery(document).ready(function($) {
                 if (response.success) {             
                     $('#login_username').val(response.data.username);
                     $('#login_password').val(response.data.password);
-                    gotoStep(6);
+                    gotoStep(7);
                 }
                 else
                 {
@@ -125,7 +141,7 @@ jQuery(document).ready(function($) {
             }
         });
         
-        $('#step6 input').click(function() {
+        $('#step7 input').click(function() {
             // If you cannot submit the login form (i.e., an update), navigate to the dashboard
             if ($('#login').length)
                 $('#login').click();
@@ -145,10 +161,11 @@ jQuery(document).ready(function($) {
         var titles = {
             1: "Step 1: Create an Account",
             2: "Step 2: Choose a Position",
-            3: "Step 3: Choose a Tax Site",
-            4: "Step 4: Choose a Training",
-            5: "Step 5: Confirm Your Information",
-            6: "Step 6: Registration Complete"
+            3: "Step 3: Confirm the Terms of Use",
+            4: "Step 4: Choose a Tax Site",
+            5: "Step 5: Choose a Training",
+            6: "Step 6: Confirm Your Information",
+            7: "Step 7: Registration Complete"
         };
         $('#volunteer_dialog').dialog("option", "title", titles[step]);
     }

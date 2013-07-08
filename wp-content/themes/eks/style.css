@@ -1233,3 +1233,14 @@ input[type="password"]
 {
     width: 150px;
 }
+
+/* Terms of Use on Registration Wizard */
+#step3 form div
+{
+    font-size: smaller;
+}
+
+#step3 form div b
+{
+    font-weight: bold;
+}
