@@ -74,7 +74,7 @@ jQuery(document).ready(function($) {
             beforeSubmit: function(arr, $form, options) {
             },
             success: function(response, statusText, xhr, $form) {
-                $('#step32 #results').html(toHTML(response));
+                $('#step42 #results').html(toHTML(response));
                 $('#volunteer_dialog').dialog("option", "title", "Step Three: Choose a Tax Site");
             }
         });
