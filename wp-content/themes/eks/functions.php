@@ -944,9 +944,9 @@ function eks_set_html_content_type() {
 }
 
 /**
- * Add action to notify specified email addresses, when a Listing is saved in their county.
+ * Add filter to notify specified email addresses, when a Listing is saved in their county.
  */
-add_action('va_handle_update_listing', 'eks_notify_site_updated');
+add_filter('va_handle_update_listing', 'eks_notify_site_updated', 100);
 
 function eks_notify_site_updated($listing) {
 
@@ -971,5 +971,6 @@ function eks_notify_site_updated($listing) {
             // Mailing failed, too bad but continue on
         }
     }
+    return $listing;
 }
 
