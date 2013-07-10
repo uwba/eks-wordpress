@@ -3,9 +3,11 @@ eks-wordpress
 
 EarnItKeepItSaveIt site, based on Wordpress 3.5.
 
+### Debugging
 
+To aid in debugging, you can do optionally do the following:
 
-To aid in debugging, you can optionally modify wp_debug_backtrace_summary() in wp-includes/functions.php as follows:
+* Modify wp_debug_backtrace_summary() in wp-includes/functions.php as follows:
 
 ```php
 function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pretty = true ) {
@@ -46,4 +48,17 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 	else
 		return $caller;
 }
+```
+
+* For SQL logging, modify query() in wp-includes/wp-db.php as follows:
+
+```php
+[...]
+$this->result = @mysql_query( $query, $this->dbh );
+                
+// Log the query to a file
+error_log("$query\n", 3, dirname(ini_get('error_log')) . '/' . 'sql.log');
+
+$this->num_queries++;
+[...]
 ```
