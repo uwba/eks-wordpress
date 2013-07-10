@@ -25,7 +25,14 @@ if ( $listings->post_count > 0 ) {
 } else {
 ?>
 	<?php if( $is_own_dashboard ) { ?>
-	<h3 class="dashboard-none"><?php echo __( 'You have no Tax Sites yet. ', APP_TD) . html_link( va_get_listing_create_url(), __( 'Add one now.', APP_TD ) ); ?></h3>
+	<h3 class="dashboard-none"><?php 
+        global $current_user;
+        get_currentuserinfo();   
+        if ($current_user->roles[0] == 'volunteer') 
+            echo 'You have not chosen a Tax Site yet.';
+        else
+            echo __( 'You have no Tax Sites yet. ', APP_TD) . html_link( va_get_listing_create_url(), __( 'Add one now.', APP_TD ) ); ?>
+        </h3>
 	<?php } else { ?>
 	<h3 class="dashboard-none"><?php printf(  __( '%s has no Tax Sites.', APP_TD ), $dashboard_user->display_name ); // !TODO - Style this text ?></h3>
 <?php

@@ -9,7 +9,6 @@
 
     
 	<div class="categories-list">
-            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration">click here</a>.
 		<?php
 		//echo va_cat_menu_drop_down( 'dir' );
 		$tax_sites = get_volunteer_tax_sites();
@@ -25,8 +24,11 @@
 				?>
 			<p class="listing-description"><strong>Position: </strong><?php echo implode(', ', $tax_sites[get_the_ID()]);?></p></article><?php
 			}
+                        ?>
+            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration/#complete">click here</a>.
+            <?php
 		} else {
-			?><p>No Tax Sites selected. Please <a href="<?php echo site_url('volunteer-registration'); ?>">register</a></p><?php
+			?><p>No tax site has been chosen yet.  <p><a href="/volunteer-registration/#complete">Click here</a> to sign up for a tax site now.</p></p><?php
 		}
 		?>
 	</div>

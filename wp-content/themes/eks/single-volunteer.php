@@ -161,7 +161,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                         render_checkbox($volunteer, 'confirmed_as_my_volunteer', 'Confirmed as My Volunteer');
                         render_checkbox($volunteer, 'certified_in_ethics', 'Certified in Ethics');
                         render_checkbox($volunteer, 'certified_in_basic_level', 'Certified in Basic Level Tax Return Preparation');
-                        render_checkbox($volunteer, 'certified_in_intermediate_level', 'Certified in Intermediate Level Tax Return Preparation');
+                        render_checkbox($volunteer, 'certified_in_intermediate_level', 'Certified in Advanced Level Tax Return Preparation');
                         render_checkbox($volunteer, 'certified_specialized', 'Certified Specialized Tax Return Preparation');
                         render_checkbox($volunteer, 'volunteered_at_my_site', 'Volunteered at My Site');
                         render_checkbox($volunteer, 'also_volunteers_at_another_vita_site', 'Also Volunteers at Another VITA Site');

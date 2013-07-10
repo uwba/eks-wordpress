@@ -244,6 +244,9 @@ jQuery(document).ready(function($) {
     if ($('input.position:checked', '#step2').val() != 'preparer') {
         $('#preparer-sub').hide();
     }
+    
+    if (document.location.hash == '#complete')
+        $('#volunteer_register').trigger('click');
 });
 
 
