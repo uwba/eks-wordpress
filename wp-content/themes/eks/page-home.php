@@ -49,13 +49,13 @@
 		<?php endif ?>
 	</div>
 </div>
-<div class="clear">
+<!--<div class="clear">
 	<div id="aftercontent">
-		<?php if ( ! dynamic_sidebar( 'After Content Area' ) ) : ?>
+		<?php //if ( ! dynamic_sidebar( 'After Content Area' ) ) : ?>-->
 		  <!--Widgetized 'After Content Area' for the home page-->
-		<?php endif ?>
+		<!-- <?php //endif ?>
 	</div>
-</div><!-- /#top content area -->
+</div>--><!-- /#top content area -->
 <div class="clear">
 	<div id="beforefooter">
 		<?php if ( ! dynamic_sidebar( 'Before Footer Area' ) ) : ?>
