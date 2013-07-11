@@ -644,7 +644,6 @@ function volunteer_install() {
 
 
 function volunteer_register_new_user($user_login, $user_email) {
-    die('rolf');
     $errors = new WP_Error();
 
     $sanitized_user_login = sanitize_user($user_login);
@@ -803,7 +802,9 @@ function tax_search() {
     $volunteer_position = $_SESSION['volunteer']['position'][0];
 
     global $post;
-    if (count($data)) {
+    
+  $total_available = 0;
+
         foreach ($data as $post) {
             if (setup_postdata($post)) {
 
@@ -817,6 +818,7 @@ function tax_search() {
                     $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) > 0;
 
                 if ($tax_site_available) {
+                    $total_available++;
                     ?>
                     <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();   ?>><?php
                     //get_template_part('content-listing');
@@ -900,13 +902,12 @@ function tax_search() {
                 //echo 'error';
             }
         }
-    } else {
+    if ($total_available == 0) {
         ?>
         <article class="listing">
-            <h2><?php printf(__('Sorry, no Tax Sites were found.', APP_TD)); ?></h2>
+            <h2>We're sorry, there are no tax sites found with that search criteria.</h2>
         </article><?php
     }
-
     // IMPORTANT: don't forget to "exit"
     exit;
 }
