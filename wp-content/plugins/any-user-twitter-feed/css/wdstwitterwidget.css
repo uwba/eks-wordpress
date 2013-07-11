@@ -1,8 +1,10 @@
 #wds-container {
 	background-color: #fff;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-	font-size: 12px;
+	border: none;
+	border-radius: 0px;
+	font-size: 14px;
+	line-height:1.4em;
+	color:#666666;
 }
 
 #wds a {
@@ -20,13 +22,13 @@
 }
 
 .wds-copyright a {
-	color: #999;
+	color:#333;
 	font-size: 9px;
 	text-decoration: none;
 }
 
 #wds-header {
-	border-bottom: 1px #ccc solid;
+	border-bottom: none;
 	padding: 5px;
 }
 
@@ -49,12 +51,12 @@ a:hover .wds-display-name {
 }
 
 a .wds-screen-name {
-	color: #999;
+	color:#333;
 	text-decoration: none;
 }
 
 a:hover .wds-screen-name {
-	color: #666;
+	color:#333;
 }
 
 .wds-avatar {
@@ -69,7 +71,7 @@ a:hover .wds-screen-name {
 }
 
 .wds-tweet-container {
-	border-bottom: 1px #ccc solid;
+	border-bottom:none;
 	padding: 8px;
 }
 
@@ -78,7 +80,7 @@ a:hover .wds-screen-name {
 }
 
 .wds-tweet-data {
-	font-size: 10px;
+	font-size: 12px;
 	text-align: center;	
 }
 
