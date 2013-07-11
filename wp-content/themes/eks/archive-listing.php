@@ -205,7 +205,7 @@ while ( have_posts() ) {
 
 <?php } else { // First time you hit the page, prior to submitting a search query ?>
     
-    <article class="listing"><p>Search for a Tax Site above.</p></article>
+    <article class="listing"><p>Search for a Tax Site above. Your results will appear here. </p></article><img class="taxsite-pic" src="/wp-content/uploads/2013/07/tax-site.jpg"  width="600" height="563" class="alignnone" />
     
 <?php } ?>
 </div>

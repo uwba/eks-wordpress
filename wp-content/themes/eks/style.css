@@ -506,6 +506,7 @@ div#masthead.container div.row {
 	color:#666;
 	font-size:18px;
 	text-shadow:none;
+	font-style:normal;
 }
 #main-search .search-help {
 	font-size: 11px;
@@ -544,7 +545,6 @@ div#masthead.container div.row {
 	height:95px;
 	margin:0 2% 0 1%;
 	position:relative;
-	float:left;
 }
 #search-submit {
 	width: 100%;
@@ -1248,3 +1248,7 @@ input[type="password"]
 {
     font-weight: bold;
 }
+
+.taxsite-pic {padding:10px 0 10px 28px; border:none;}
+
+.yui3-u-1-4 {margin-right:20px;}
