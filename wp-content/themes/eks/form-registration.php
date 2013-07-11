@@ -37,6 +37,13 @@ if (is_user_logged_in()) {
 			<p><?php _e('Complete the fields below to register.', APP_TD ) ?></p>
 			
 			<fieldset>
+                            	<div class="form-field">
+					<label>
+						<?php _e('Full Name:', APP_TD ) ?>
+						<input tabindex="1" type="text" class="text required" name="user_name" id="user_login" value="<?php if (isset($_POST['user_name'])) echo esc_attr(stripslashes($_POST['user_name'])); ?>" />
+					</label>
+				</div>
+                            
 				<div class="form-field">
 					<label>
 						<?php _e('Username:', APP_TD ) ?>

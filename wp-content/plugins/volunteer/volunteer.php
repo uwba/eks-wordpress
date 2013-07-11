@@ -38,6 +38,7 @@ if (!function_exists('wp_new_user_notification')) {
 
     /**
      * Send a notification email to the Wordpress site admin, and a welcome email to the user with their username and password.
+     * Additionally, if the user is a Coordinator, update their name.
      * 
      * @param int $user_id
      * @param string $plaintext_pass
@@ -51,6 +52,20 @@ if (!function_exists('wp_new_user_notification')) {
         $user_login = stripslashes($user->user_login);
         $user_email = stripslashes($user->user_email);
         $group = $user->roles[0];
+        
+        if ($group == 'coordinator')
+        {
+            // Update the name
+            $userdata = array(
+                'ID' => $user_id,
+                'user_nicename' => $_POST['user_name'],
+                'display_name' => $_POST['user_name']
+            );
+            wp_update_user($userdata);
+            $user->user_nicename = $_POST['user_name'];
+        }
+        
+        //throw new exception($group);
 
         $body = "<p>There has been a new user registration on " . get_option('blogname') . "
             <ul>
@@ -629,6 +644,7 @@ function volunteer_install() {
 
 
 function volunteer_register_new_user($user_login, $user_email) {
+    die('rolf');
     $errors = new WP_Error();
 
     $sanitized_user_login = sanitize_user($user_login);
