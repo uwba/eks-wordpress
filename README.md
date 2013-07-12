@@ -54,11 +54,16 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 
 ```php
 [...]
-$this->result = @mysql_query( $query, $this->dbh );
-                
-// Log the query to a file
-error_log("$query\n", 3, dirname(ini_get('error_log')) . '/' . 'sql.log');
+		$this->num_queries++;
 
-$this->num_queries++;
+		if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES )
+                {
+                    // EKS hack
+                    $is_statement = preg_match( '/^\s*(insert|delete|update|replace)\s/i', $query );
+                    $row_count = $is_statement ? mysql_affected_rows() : mysql_num_rows ( $this->result );
+                    $this->queries[] = array( $query, $this->timer_stop(), $this->get_caller(),  $row_count);
+                    error_log("$query ($row_count)\n", 3, dirname(ini_get('error_log')) . '/' . 'sql.log');
+                    // End EKS hack
+                }
 [...]
 ```
