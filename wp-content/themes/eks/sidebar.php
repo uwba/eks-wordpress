@@ -190,7 +190,7 @@
         <div id="sidebar" class="threecol last">
             <!--<h3>Welcome, Guest</h3>-->
 
-            <p>If you don't have an account, you can create one as a <a href="/volunteer-registration">volunteer</a> or <a href="/coordinators">coordinator</a>.</p>
+            <p>If you don't have an account, you can create one as a <a href="/volunteer-registration">volunteer</a> or <a href="/register/?role=coordinator">coordinator</a>.</p>
         </div>
         <?php
         } elseif (is_page_template('page-search.php')) {
