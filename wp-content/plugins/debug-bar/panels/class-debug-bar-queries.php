@@ -31,7 +31,7 @@ class Debug_Bar_Queries extends Debug_Bar_Panel {
 			$counter = 0;
 
 			foreach ( $wpdb->queries as $q ) {
-				list($query, $elapsed, $debug) = $q;
+				list($query, $elapsed, $debug, $row_count) = $q;
 
 				$total_time += $elapsed;
 
@@ -43,7 +43,7 @@ class Debug_Bar_Queries extends Debug_Bar_Panel {
 				$debug = implode( '<br/> ', $debug );
 				$debug = str_replace( array( 'do_action, call_user_func_array' ), array( 'do_action' ), $debug );
 				$query = nl2br(esc_html($query));
-				$out .= "<li>$query<br/><div class='qdebug'>$debug <span>#{$counter} (" . number_format(sprintf('%0.1f', $elapsed * 1000), 1, '.', ',') . "ms)</span></div></li>\n";
+				$out .= "<li style=\"border-bottom:1px solid black\">$query<br/><div class='qdebug'>$debug <span>#{$counter} ($row_count rows, " . number_format(sprintf('%0.1f', $elapsed * 1000), 1, '.', ',') . "ms)</span></div></li>\n";
 			
                                //error_log($query, 0, dirname(__FILE__));
                                 }
