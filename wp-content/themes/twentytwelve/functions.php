@@ -190,7 +190,8 @@ add_filter( 'wp_title', 'twentytwelve_wp_title', 10, 2 );
  * @since Twenty Twelve 1.0
  */
 function twentytwelve_page_menu_args( $args ) {
-	$args['show_home'] = true;
+	if ( ! isset( $args['show_home'] ) )
+		$args['show_home'] = true;
 	return $args;
 }
 add_filter( 'wp_page_menu_args', 'twentytwelve_page_menu_args' );
@@ -239,15 +240,17 @@ if ( ! function_exists( 'twentytwelve_content_nav' ) ) :
  *
  * @since Twenty Twelve 1.0
  */
-function twentytwelve_content_nav( $nav_id ) {
+function twentytwelve_content_nav( $html_id ) {
 	global $wp_query;
 
+	$html_id = esc_attr( $html_id );
+
 	if ( $wp_query->max_num_pages > 1 ) : ?>
-		<nav id="<?php echo $nav_id; ?>" class="navigation" role="navigation">
+		<nav id="<?php echo $html_id; ?>" class="navigation" role="navigation">
 			<h3 class="assistive-text"><?php _e( 'Post navigation', 'twentytwelve' ); ?></h3>
 			<div class="nav-previous alignleft"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'twentytwelve' ) ); ?></div>
 			<div class="nav-next alignright"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'twentytwelve' ) ); ?></div>
-		</nav><!-- #<?php echo $nav_id; ?> .navigation -->
+		</nav><!-- #<?php echo $html_id; ?> .navigation -->
 	<?php endif;
 }
 endif;
@@ -307,7 +310,7 @@ function twentytwelve_comment( $comment, $args, $depth ) {
 			</section><!-- .comment-content -->
 
 			<div class="reply">
-				<?php comment_reply_link( array_merge( $args, array( 'reply_text' => __( 'Reply <span>&darr;</span>', 'twentytwelve' ), 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?>
+				<?php comment_reply_link( array_merge( $args, array( 'reply_text' => __( 'Reply', 'twentytwelve' ), 'after' => ' <span>&darr;</span>', 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?>
 			</div><!-- .reply -->
 		</article><!-- #comment-## -->
 	<?php
