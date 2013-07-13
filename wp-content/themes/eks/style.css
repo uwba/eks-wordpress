@@ -190,6 +190,7 @@ div#masthead.container div.row {
 
 	/*background: transparent url('images/nav-box-overlay.png') no-repeat 0 5px;
 	*/	
+	background:#fff;
 	margin-top: -5px;
 	padding-top: 5px;
 	padding:0;
@@ -271,14 +272,14 @@ div#masthead.container div.row {
 	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	position:relative;
-	border: 1px solid #999;
+	border: 1px solid #0E8EA5;
 }
 #main-navigation .menu li {
 	float: left;
 	height: 38px;
 	position: relative;
 	top: 0;
-	border-right: 1px solid #999;
+	border-right: 1px solid #0E8EA5;
 	border-left: none;
 }
 #main-navigation .menu li a {
@@ -291,9 +292,9 @@ div#masthead.container div.row {
 	height: 27px;
 	top: 0;
 	display: block;
-	border-right: 1px solid #999;
+	border-right: 1px solid #0E8EA5;
 	text-align: left;
-	text-shadow: 0 1px 1px #000;
+	text-shadow: 0 1px 1px #0E8EA5;
 	text-transform:uppercase;
 }
 #main-navigation .menu li.first {
@@ -311,7 +312,7 @@ div#masthead.container div.row {
 	position: absolute;
 	z-index: 99;
 	/*background: -moz-linear-gradient(center top, #EEEEEE 52%, #CDCDCD 100%) repeat scroll 0 0 transparent;*/
-	background: transparent url('images/nav-texture.png') repeat 0 0;
+	background: #0E8EA5 url('images/nav-texture.png') repeat 0 0;
 	-khtml-border-radius: 0 0 5px 5px;
 	-moz-border-radius: 0 0 5px 5px;
 	-webkit-border-radius: 0 0 5px 5px;
@@ -336,7 +337,7 @@ div#masthead.container div.row {
 	float:left;
 	border: 0 none;
 	width: 100%;
-	border-bottom: 1px solid #666;
+	border-bottom: 1px solid #0E8EA5;
 }
 #main-navigation ul.sub-menu li a {
 	font-family: 'HelveticaNeueW01-55Roma', Arial, Helvetica, sans-serif;
@@ -344,6 +345,7 @@ div#masthead.container div.row {
 	width: auto;
 	border: 0 none;
 	text-transform:none;
+	text-decoration: none;
 }
 #main-navigation .menu ul li ul.sub-menu li ul.sub-menu {
 	display: none;
@@ -360,7 +362,7 @@ div#masthead.container div.row {
 	display: block;
 	text-decoration: none;
 	text-shadow: none;
-	background: transparent url('images/nav-dark.png') repeat 0 0;
+	background: #0E8EA5 url('images/nav-dark.png') repeat 0 0;
 }
 #main-navigation .menu ul li:first-child ul.sub-menu {
 	border-top: medium none !important;
