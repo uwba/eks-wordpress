@@ -179,19 +179,25 @@ div#masthead.container div.row {
 
 
 #rounded-nav-box {
-	position:relative;
+	
 	-moz-box-shadow: 0 1px 3px #666;
 	-webkit-box-shadow: 0 1px 3px #666;
 	box-shadow: 0 1px 3px #666;
 	position:relative;
+	
 }
 #rounded-nav-box-overlay {
+
 	background: transparent url('images/nav-box-overlay.png') no-repeat 0 5px;
-	overflow: visible;
+		
 	margin-top: -5px;
 	padding-top: 5px;
-	padding-bottom: 5px;
 	padding:0;
+	/*padding-bottom:10px;*/
+		
+	position:relative;
+		
+
 }
 #masthead .advert {
 	width: 408px;
@@ -487,7 +493,7 @@ div#masthead.container div.row {
 }
 /* Main Search */
 
-#main-search {
+/* #main-search {
 	clear: both;
 	margin: 10px 0 0 0;
 	overflow:hidden;
@@ -499,10 +505,10 @@ div#masthead.container div.row {
 	padding:0;
 	position:relative;
 	float:left;
-}
+}*/
 /*/Search Box/*/
-
-#main-search .search-title {
+/**** see custom css below ***********/
+/*#main-search .search-title {
 	color:#666;
 	font-size:18px;
 	text-shadow:none;
@@ -565,7 +571,7 @@ div#masthead.container div.row {
 	line-height: 35px;
 	cursor: pointer;
 	cursor: hand;
-}
+}*/
 /* =========== [ 5. MIDDLE AKA CONTENT ] =========== */
 /* Main Content Global Elements */
 
@@ -1174,9 +1180,9 @@ article.training {
 #create-listing label {
 	display: block;
 }
-/*#create-listing .file-field label {
+#create-listing .file-field label {
 	display: inline;
-}*/
+}
 
 /* Search */
 body.page-template-page-search-php article {
@@ -1233,10 +1239,10 @@ input[type="password"]
     width: auto;
 }
 
-#main-search select
+/*#main-search select
 {
     width: 150px;
-}
+}*/
 
 /* Terms of Use on Registration Wizard */
 #step3 form div
@@ -1252,3 +1258,192 @@ input[type="password"]
 .taxsite-pic {padding:10px 0 10px 28px; border:none;}
 
 .yui3-u-1-4 {margin-right:20px;}
+
+/*********:::::: Responsive styles for search form on Tax Search Listings page found in header.php :::::::::::*********/
+/*********::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*********/
+#search-container {
+	clear:both;width:95%;
+	margin:26px auto;
+	display:block;
+	position:relative;
+	overflow:hidden;
+}
+
+h3 {
+	font: 24px 'Helvetica Nueue', Helvetica, Arial,sans-serif normal;
+	color:#FF7B17;
+	margin-bottom:16px;
+}
+
+#searchform {
+	
+	font-size: 14px; /* Primary font size of form. Contained elements' font size are all relative to this setting */
+	position:relative;
+	font-family: 'Helvetica Nueue', Helvetica, Arial,sans-serif;
+	margin:0;
+	overflow:hidden;
+	padding:0;
+}
+
+
+
+#searchform .styled-select {
+	height:3em;
+	width: 98%;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	border: 1px solid #3EA9CB;
+   overflow: hidden;
+   background:#fff;
+   /*background: url(new_arrow.png) no-repeat right #ddd;*/
+   }
+
+#searchform input{
+	width: 98%;
+	max-width: 264px;
+	min-width: 150px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	border: 1px solid #3EA9CB;
+	font: normal 1em auto; /* 24px, or 16px x 1.5 */
+	font-family: 'Helvetica Nueue', Helvetica, Arial,sans-serif;
+	color:#666;
+	padding: 0.8266666666666667em; /* 10px, or 24px x 0.4166666666666667 */
+	/*line-height: 1;*/
+	-webkit-appearance: none;
+	background:transparent;
+	
+}
+
+#searchform #search-text {}
+
+
+#searchform .styled-select select{
+	width: 100%;
+	border-radius: none;
+	border: none;
+	font: normal 1em auto; /* 24px, or 16px x 1.5 */
+	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
+	color:#666;
+	padding: 0.8166666666666667em; /* 10px, or 24px x 0.4166666666666667 */
+	height:3em;
+	line-height: 1;
+	-webkit-appearance: none;
+	background:transparent;
+}
+
+#searchform input:focus,#searchform .styled-select select:focus{
+	border: 1px solid #FF7B17;
+}
+
+#searchform .formcolumn{ /* column div inside form */
+	width: 32%;
+	float: left;
+	padding:0;
+	margin:0;
+}
+
+#searchform .formcolumn.first{
+	margin-right: 2%; /* 2% margin after column */
+}
+#searchform .formcolumn.middle{
+	margin-right: 2%; /* 2% margin aftercolumn */
+}
+#searchform .formcolumn.last{
+	margin-right: 0; /* 0 margim */
+}
+#searchform .formcolumn p label{
+	font: 1em 'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	text-transform: none;
+	display: block;
+	margin-top: 2em;
+	margin-bottom: 1em;
+}
+
+
+
+#searchform div.buttons{
+	clear: both;
+	text-align: center;
+	padding-bottom:30px;
+	
+}
+#searchform button{
+	/* margin-top: 64px; adjusted margin-top for horizontal alignment */
+	margin-top: 44px;
+	width: 98%;
+	cursor: pointer;
+	min-width: 100px;
+	max-width: 600px; 
+	height:46px;		
+    font:18px 'Helvetica Nueu', Helvetica, Arial, sans-serif;
+	color:#ffffff;
+	font-weight:normal;
+	text-transform: uppercase;
+	text-decoration:none;	
+    padding: auto auto;	
+	-moz-border-radius:6px 6px 6px 6px;
+	-webkit-border-radius:6px 6px 6px 6px;
+	border-radius: 6px 6px 6px 6px;
+	border:1px solid #3EA9CB;
+	background-color:#3EA9CB;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #3EA9CB), color-stop(1, #389EC0) );
+	background:-moz-linear-gradient( center top, #3EA9CB 5%, #389EC0 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#3EA9CB', endColorstr='#389EC0');
+	display:inline-block;
+
+}
+
+#searchform button:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #389EC0), color-stop(1, #3EA9CB) );
+	background:-moz-linear-gradient( center top, #389EC0 5%, #3EA9CB 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#389EC0', endColorstr='#3EA9CB');
+}
+#searchform button:active {
+	position:relative;
+	top:1px;
+}
+
+
+@media screen and (max-width: 480px){ /* responsive form settings, when window width is 480px or less */
+
+	#searchform{
+		font-size: 14px; /* decrease form font size */
+	}
+
+	#searchform .formcolumn{
+		width: 180%;
+		float: none;
+	}
+	
+	#searchform .formcolumn.first{
+		width:100%;
+		margin-right: 0; /* remove right margin from first form column */
+	}
+
+	#searchform .formcolumn.middle{
+		width:100%;
+		padding-top: 2em; /* add padding to top of 2nd form column, so there is a gap between the 1st and 2nd column */
+	}
+	
+	#searchform .formcolumn.last{
+		width:100%;
+		padding-top: 2em; /* add padding to top of 2nd form column, so there is a gap between the 1st and 2nd column */
+	}
+
+	#searchform select{
+		width: 98%;
+	}
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+	#searchform select { 
+		-webkit-appearance: menulist-button; 
+	} 
+}
+
+/*********::::::  //end styles for search form on Tax Search Listings page found in header.php :::::::::::*********/
+/*********::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*********/
