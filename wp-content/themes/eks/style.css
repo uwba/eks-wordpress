@@ -188,8 +188,8 @@ div#masthead.container div.row {
 }
 #rounded-nav-box-overlay {
 
-	background: transparent url('images/nav-box-overlay.png') no-repeat 0 5px;
-		
+	/*background: transparent url('images/nav-box-overlay.png') no-repeat 0 5px;
+	*/	
 	margin-top: -5px;
 	padding-top: 5px;
 	padding:0;
@@ -254,6 +254,9 @@ div#masthead.container div.row {
 #sidebar p {
     margin: 5px 0;
 }
+
+#content #sidebar.widget li {list-style-type: square;}
+
 /* ============ /Navigation Tweaks ============ */
 
 /* Navigation */
