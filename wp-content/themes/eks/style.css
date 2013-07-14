@@ -296,9 +296,15 @@ div#masthead.container div.row {
 	text-align: left;
 	text-shadow: 0 1px 1px #0E8EA5;
 	text-transform:uppercase;
+	text-decoration: none;
 }
+
 #main-navigation .menu li.first {
 	border-left: none;
+}
+
+#main-navigation .menu li.current-menu-item {
+	background: #32A9d9 url('images/nav-texture-active.png') repeat 0 0;
 }
 /* Dropdown navigation menu */
 #main-navigation .menu ul li ul.sub-menu {
@@ -320,9 +326,11 @@ div#masthead.container div.row {
 	height: auto;
 	width: 200px;
 	margin: 0 0 0 -6px;
-	border-left: 6px solid rgba(0, 0, 0, 0.5);
-	border-right: 6px solid rgba(0, 0, 0, 0.5);
-	border-bottom: 6px solid rgba(0, 0, 0, 0.5);
+	/*border-left: 6px solid rgba(14, 142, 165, 0.5);
+	border-right: 6px solid rgba(14, 142, 165, 0.5);
+	border-bottom: 6px solid rgba(14, 142, 165, 0.5);*/
+	border:6px solid #0E8EA5;
+	border-top:none;
 	-moz-background-clip: border;
 	-webkit-background-clip: border;
 	background-clip: border-box;
@@ -353,7 +361,7 @@ div#masthead.container div.row {
 	-moz-border-radius: 5px 5px 5px 5px;
 	-webkit-border-radius: 5px 5px 5px 5px;
 	border-radius: 5px 5px 5px 5px;
-	border-top: 6px solid rgba(0, 0, 0, 0.5);
+	border-top: 6px solid rgba(14, 142, 165, 0.5);
 	left: 200px;
 	top: 0;
 	margin: -6px 0 0 0;
@@ -390,9 +398,10 @@ div#masthead.container div.row {
 	z-index: 99;
 	background-color: #36bed9;
 	min-width: 675px;
-	border-left: 6px solid rgba(0, 0, 0, 0.5);
-	border-right: 6px solid rgba(0, 0, 0, 0.5);
-	border-bottom: 6px solid rgba(0, 0, 0, 0.5);
+	/*border-left: 6px solid rgba(14, 142, 165, 0.5);
+	border-right: 6px solid rgba(14, 142, 165, 0.5);
+	border-bottom: 6px solid rgba(14, 142, 165, 0.5);*/
+	border:6px solid #0E8EA5;
 	-moz-background-clip: border;
 	-webkit-background-clip: border;
 	background-clip: border-box;
@@ -451,7 +460,7 @@ div#masthead.container div.row {
 }
 #main-navigation .adv_categories .catcol ul li.maincat a {
 	border-right: medium none;
-	color: #545454;
+	color: #fff;
 	display: inline-block;
 	float: none;
 	font-weight: bold;
@@ -609,9 +618,10 @@ div#masthead.container div.row {
 	font-weight:normal;
 	line-height: 24px;*/
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
-	letter-spacing:.1em;
-	font-size:36px;
-	line-height:42px;
+	font-weight:normal;
+	letter-spacing:0em;
+	font-size:42px;
+	line-height:48px;
 	color:#f05e25;
 	margin:0px 0 20px 0px;
 	padding:0px;
@@ -622,8 +632,12 @@ div#masthead.container div.row {
 	position: relative;
 }
 .page article.page h1 a {
+	letter-spacing:0em;
+	font-size:42px;
+	line-height:48px;
 	color:#f05e25;
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
+	font-weight:normal;
 }
 #main .section-head h2 {
 	margin:0;
@@ -633,8 +647,8 @@ div#masthead.container div.row {
 	font-size: 18px;
 	font-weight:bold;*/
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
-	letter-spacing:.1em;
-	font-size:36px;
+	letter-spacing:.0;
+	font-size:27px;
 	line-height:21px;
 	color:#f05e25;
 	-moz-text-shadow: 0;
@@ -659,7 +673,7 @@ article > h2 {
 	margin:0 0 6px 0;
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
 	font-size: 18px;
-	font-weight: bold;
+	font-weight: normal;
 	float: none;
 }
 .single-post article.post .post-heading {
@@ -669,9 +683,9 @@ article > h2 {
 	font-weight: normal;
 	top: 0;
 	height: 33px;
-	-moz-text-shadow: 0 1px 0 #FFF;
-	-webkit-text-shadow: 0 1px 0 #FFF;
-	text-shadow: 0 1px 0 #fff;
+	-moz-text-shadow: none;
+	-webkit-text-shadow: none;
+	text-shadow: none;
 	position: relative;
 	display: inline-block;
 }
@@ -682,9 +696,9 @@ article.post .post-heading a, article.post .post-heading .left-hanger {
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	line-height: 20px;
-	-moz-text-shadow: 0 1px 0 #FFF;
-	-webkit-text-shadow: 0 1px 0 #FFF;
-	text-shadow: 0 1px 0 #FFF;
+	-moz-text-shadow: none;
+	-webkit-text-shadow: none;
+	text-shadow: none;
 }
 /**/
 #content {

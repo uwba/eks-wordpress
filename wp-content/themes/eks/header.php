@@ -255,10 +255,12 @@
 </div>
 <div id="breadcrumbs" class="container">
   <div class="row">
-    <?php breadcrumb_trail( array(
+    <?php if (!is_front_page()){ 
+      breadcrumb_trail( array(
 			'separator' => '&raquo;',
 			'before' => '',
 			'show_home' => '<img src="' . get_template_directory_uri() . '/images/breadcrumb-home.png" />',
-		) ); ?>
+		) ); 
+  } ?>
   </div>
 </div>
