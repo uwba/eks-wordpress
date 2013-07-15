@@ -50,7 +50,7 @@
                 }
             } else { // Not a preparer 
                 ?>
-                <p>Your Site Coordinator will be in contact with you regarding your training.</p>
+                <p>Your Site Coordinator will be in contact with you regarding your training.  If you have any questions, you may email your coordinator using the email address listed in the sidebar to the right.</p>
                 
                 <p>If you would like to change your tax site, <a href="/volunteer-registration/#complete">click here</a>.</p>
             <?php

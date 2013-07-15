@@ -1,0 +1,364 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Easy Sign Up\n"
+"POT-Creation-Date: 2013-03-18 20:25+0100\n"
+"PO-Revision-Date: 2013-03-18 21:22+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: Dutch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.5\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: easy_sign_up.php:87
+msgid ""
+"<b>Important Message:</b> This update will changes the way Easy Sign Up's "
+"Extras work! This message will self destruct in 60 seconds."
+msgstr ""
+"<b>Belangrijke mededeling:</b> Deze update wijzigt de manier waarop Easy "
+"Sign Up's Extras werkt! Deze mededing verdwijnt na 60 seconden."
+
+#: easy_sign_up.php:97
+msgid "Please have a look at the upgrade info page"
+msgstr "Kijk a.u.b. even op de upgrade info pagina"
+
+#: lib/esu-admin-class.php:37
+msgid "Options Page"
+msgstr "Opties Pagina"
+
+#: lib/esu-admin-class.php:56
+msgid "Settings saved."
+msgstr "Settings opgeslagen."
+
+#: lib/esu-admin-class.php:76
+msgid " Options"
+msgstr "Opties"
+
+#: lib/esu-admin-class.php:192
+msgid "Save Your Changes"
+msgstr "Wijzigingen opslaan"
+
+#: lib/esu-admin-class.php:202
+msgid "Making Use of"
+msgstr "Maakt gebruik van"
+
+#: lib/esu-admin-class.php:205
+msgid ""
+"<a name=\"easy_help\"></a> <ul> \n"
+"\t\t\t\t\t\t\t  \t\t<li>Use the following short code in your pages and posts:"
+"</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li><code>[easy_sign_up<br>\n"
+"\t\t\t\t\t\t\t  \t\ttitle=\"Your Title Here\"<br> \n"
+"\t\t\t\t\t\t\t  \t\t<abbr title=\"Show First Name and Last Name fields"
+"\">fnln</abbr>=\"1\"<br>\n"
+"\t\t\t\t\t\t\t  \t\tphone=\"1\"<br>\n"
+"\t\t\t\t\t\t\t  \t\tesu_label=\"A unique identifier for your form\"<br> \n"
+"\t\t\t\t\t\t\t  \t\tesu_class=\"your-class-here\"]</code>\n"
+"\t\t\t\t\t\t\t  \t\t</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li> \n"
+"\t\t\t\t\t\t\t  \t\tAll the attributes are optional if you don't want them "
+"just add the short code without it, e.g.: <code>[easy_sign_up]</code></li>\n"
+"\t\t\t\t\t\t\t  \t\t</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li>If you would like to include the name person who "
+"signed up in the Thank You Email just paste: \n"
+"\t\t\t\t\t\t\t  \t\t<code>#fullname#</code> into the Thank You Email text "
+"field where you'd like to see it.</li>\n"
+"\t\t\t\t\t\t\t  \t\t</ul>"
+msgstr ""
+"<a name=\"easy_help\"></a> <ul> \n"
+"\t\t\t\t\t\t\t  \t\t<li>Gebruik de volgende short codes in je pagina's en "
+"posts:</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li><code>[easy_sign_up<br>\n"
+"\t\t\t\t\t\t\t  \t\ttitle=\"Jouw titel hier\"<br> \n"
+"\t\t\t\t\t\t\t  \t\t<abbr title=\"Tonen voornaam en achternaam velden"
+"\">fnln</abbr>=\"1\"<br>\n"
+"\t\t\t\t\t\t\t  \t\tphone=\"1\"<br>\n"
+"\t\t\t\t\t\t\t  \t\tesu_label=\"Een unieke identifier voor jou formulier"
+"\"<br> \n"
+"\t\t\t\t\t\t\t  \t\tesu_class=\"jouw-classe-hier\"]</code>\n"
+"\t\t\t\t\t\t\t  \t\t</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li> \n"
+"\t\t\t\t\t\t\t  \t\tAlle attributen zijn optioneel als je ze niet wilt "
+"gebruiken gebruik de shortcode dan zonder, bijv.: <code>[easy_sign_up]</"
+"code></li>\n"
+"\t\t\t\t\t\t\t  \t\t</li>\n"
+"\t\t\t\t\t\t\t  \t\t<li>Als je de naam van de inschrijver wil invoegen in de "
+"bedank mail, gewoon plakken: \n"
+"\t\t\t\t\t\t\t  \t\t<code>#fullname#</code> in de bedank mail tekstveld waar "
+"je deze wilt zien.</li>\n"
+"\t\t\t\t\t\t\t  \t\t</ul>"
+
+#: lib/esu-admin-class.php:271
+msgid "Like this Plugin? - Spread the Word!"
+msgstr "Vind je deze plugin leuk/handig? Vertel het verder"
+
+#: lib/esu-admin-class.php:273
+msgid "This plugin has cost me many hours of work, if you use it, please:"
+msgstr ""
+"Het maken van deze plugin heeft me vele uren gekost, als je hem gebruikt, "
+"graag :"
+
+#: lib/esu-admin-class.php:277
+msgid ""
+"Rate the plugin <span title=\"Five Stars\">&#9733;&#9733;&#9733;&#9733;"
+"&#9733;</span> on WordPress.org"
+msgstr ""
+"Beoordeel deze plugin <span title=\"Vijf sterren\">&#9733;&#9733;&#9733;"
+"&#9733;&#9733;</span> op WordPress.org"
+
+#: lib/esu-admin-class.php:281
+msgid "Blog about it &amp; link to the plugin page"
+msgstr "Blog erover &amp; link naar de plugin pagina"
+
+#: lib/esu-admin-class.php:284
+msgid "Upgrade your plugin"
+msgstr "Upgrade je plugin"
+
+#: lib/esu-admin-class.php:288
+msgid "Need WordPress Design? Themes and Plugins"
+msgstr "Een wordpress design nodig? Themes en plugins"
+
+#: lib/esu-admin-class.php:288
+msgid "You can hire me."
+msgstr "Je kan me inhuren."
+
+#: lib/esu-admin-class.php:303
+msgid "Do you need help?"
+msgstr "Heb je hulp nodig?"
+
+#: lib/esu-admin-class.php:307
+msgid ""
+"If you need support or want to suggest improvements to the plugin please "
+"visit the "
+msgstr ""
+"Als je support nodig hebt of je hebt suggesties om deze plugin te "
+"verbeteren, bezoek a.u.b. de"
+
+#: lib/esu-admin-class.php:308
+msgid "plugin's support forum"
+msgstr "plugin's support forum"
+
+#: lib/esu-admin-class.php:323
+msgid "Latest News"
+msgstr "Laatste nieuws"
+
+#: lib/esu-admin-class.php:341
+msgid "Upgrade Options"
+msgstr "Upgrade Opties"
+
+#: lib/esu-admin-class.php:343
+msgid "offers the following add-ons:"
+msgstr "bieden de volgende add-ons:"
+
+#: lib/esu-form-process-class.php:40
+msgid "sorry nothing was sent - please use the back button and try again"
+msgstr ""
+"Sorry er is niks verzonden - gebruik a.u.b. de terug-knop en probeer het "
+"nogmaals"
+
+#: lib/esu-form-process-class.php:40
+msgid "sorry nothing was sent, try again"
+msgstr "Sorry er is niks verzonden, probeer het nog eens"
+
+#: lib/esu-form-process-class.php:44
+msgid "Error: please fill out all the required fields"
+msgstr "Error : vul a.u.b. alle verplichte velden in"
+
+#: lib/esu-form-process-class.php:54
+msgid "Please fill out your name"
+msgstr "Vul a.u.b. uw naam in"
+
+#: lib/esu-form-process-class.php:56
+msgid "Please fill out your email address"
+msgstr "Vul a.u.b. uw emailadres in"
+
+#: lib/esu-form-process-class.php:57
+msgid "Phone:"
+msgstr "Telefoon:"
+
+#: lib/esu-form-process-class.php:76
+msgid "signed up and been redirected to"
+msgstr "inschrijven en doorsturen naar"
+
+#: lib/esu-form-process-class.php:78
+msgid "Email confirmation from"
+msgstr "Bevestigings email formulier"
+
+#: lib/esu-form-process-class.php:142
+msgid "Failed Security Check: nothing was sent"
+msgstr "Fout in Beveiligings Controle: er is niks verzonden"
+
+#: lib/esu-form-process-class.php:143
+msgid "Failed Nonce Security Check"
+msgstr "Fout in Nonce Beveiligings Controle"
+
+#: lib/esu-front-end-class.php:89
+msgid "Error: Needs an array"
+msgstr "Fout: Heeft een lijst nodig"
+
+#: lib/esu-front-end-class.php:259
+msgid "Required"
+msgstr "Verplicht"
+
+#: lib/esu-front-end-class.php:260
+msgid "Not Valid"
+msgstr "Niet valide"
+
+#: lib/esu-utility-functions.php:81
+msgid "First Name"
+msgstr "Voornaam"
+
+#: lib/esu-utility-functions.php:88
+msgid "Last Name"
+msgstr "Achternaam"
+
+#: lib/esu-utility-functions.php:95
+msgid "Name"
+msgstr "Naam"
+
+#: lib/esu-utility-functions.php:106
+msgid "Email"
+msgstr "Email"
+
+#: lib/esu-utility-functions.php:113
+msgid "Phone"
+msgstr "Telefoon"
+
+#: lib/esu-utility-functions.php:124
+msgid "Send"
+msgstr "Verzenden"
+
+#: lib/esu-utility-functions.php:140
+msgid "Notification Email"
+msgstr "Notificatie email"
+
+#: lib/esu-utility-functions.php:141
+msgid ""
+"<br>Where you want <strong>your</strong> Notification Email sent."
+"<br>Normally your email address."
+msgstr ""
+"<br>Waar wil je  <strong>jouw</strong> Notificatie email naar toe sturen."
+"<br>Normaal gesproken je eigen mailadres."
+
+#: lib/esu-utility-functions.php:147
+msgid "Automated Reply Email"
+msgstr "Geautomatiseerde antwoord email"
+
+#: lib/esu-utility-functions.php:148
+msgid ""
+"<br>This is the <strong>Reply To</strong> email address the user sees.\n"
+"                <br>You may want to set it to your general email address."
+msgstr ""
+"<br>Dit is de <strong>beantwoord naar</strong> emailadres die de gebruiker "
+"ziet.\n"
+"                <br>Wellicht wil je deze zetten naar je algemene mailadres."
+
+#: lib/esu-utility-functions.php:155
+msgid "Redirection URL"
+msgstr "Doorverwijs URL"
+
+#: lib/esu-utility-functions.php:156
+msgid ""
+"<br><strong>Don't forget the http://</strong><br>This is the website address "
+"that your user will be redirect to once they press the send button. \n"
+"              You could send them to a thank you page in your website. "
+"<em><strong>Tip:</strong> It does not have to be on your website.</em>"
+msgstr ""
+"<br><strong>Vergeet niet de http://</strong><br>Dit is het websiteadres waar "
+"de user naar toe gestuurd wordt als ze op de verzenden-knop hebben "
+"gedrukt. \n"
+"              Je kan ze ook doorsturen naar een bedankpagina op je website. "
+"<em><strong>Tip:</strong> Deze hoeft niet op je website te staan.</em>"
+
+#: lib/esu-utility-functions.php:163
+msgid "Thank You Email to Client"
+msgstr "Bedankmail naar de klant"
+
+#: lib/esu-utility-functions.php:164
+msgid ""
+" is the placeholder for the name field of the form.<br> When you customize "
+"the text <strong>remember to add it back in if you want to personalize</"
+"strong> the confirmation letter.</p>"
+msgstr ""
+"is de placeholder door het naamveld in het formulier.<br> Als je de tekst "
+"wijzigt <strong>vergeet deze dan niet terug te zetten als je wilt "
+"personaliseren</strong> the confirmation letter.</p>"
+
+#: lib/esu-utility-functions.php:166
+msgid ""
+"Be aware that some email applications block images from loading and "
+"displaying unless a user clicks on show or download images in their email "
+"account. So if they have this security feature enabled (By choice or "
+"default) it will appear that there are no images showing in your recipients' "
+"inbox. There is nothing that you can do to influence that, force images to "
+"display or get around that email inbox security feature."
+msgstr ""
+"Let op: sommige emailprogramma's blokkeren plaatjes totdat de gebruiker "
+"aangeeft de plaatjes te willen zien of downloaden. Dus als ze deze "
+"beveiliging geactiveerd hebben (bewust of by default) zullen er geen "
+"plaatjes zichtbaar zijn. Hier kun je niks aan doen."
+
+#: lib/esu-utility-functions.php:169
+msgid ""
+"Hi #fullname# Thank you for visiting our website<br>We hope that you found "
+"it informative.<br><br>Regards,<br> "
+msgstr ""
+"Hallo #fullname# Bedankt voor het bezoeken van onze website<br>We hopen dat "
+"je deze informatie nuttig vond.<br><br>Met vriendelijke groet,<br> "
+
+#: lib/esu-utility-functions.php:171
+msgid "Slam Spam with Akismet"
+msgstr "Verwijder Spam met Akismet"
+
+#: lib/esu-utility-functions.php:172
+msgid ""
+"This requires you to have the <a href=\"http://wordpress.org/extend/plugins/"
+"akismet/\" target=\"_blank\">Akismet plugin</a> installed and enable."
+msgstr ""
+"Dit vergt dat je de  <a href=\"http://wordpress.org/extend/plugins/akismet/"
+"\" target=\"_blank\">Akismet plugin</a> geinstalleerd en geactiveerd hebt."
+
+#: lib/esu-utility-functions.php:183
+msgid "Delete Setting on Deactivation"
+msgstr "Verwijder instellingen bij deactiveren"
+
+#: lib/esu-utility-functions.php:184
+msgid ""
+"Before you deactivate this plugin check this box if you want to remove all "
+"the options above"
+msgstr ""
+"Voordat je deze pluging deactiveerd, selecteer deze box als je alle "
+"bovenstaande instellingen wilt verwijderen"
+
+#: lib/esu-widget-class.php:91
+msgid "Title:"
+msgstr "Titel:"
+
+#: lib/esu-widget-class.php:96
+msgid "Hidden Label:"
+msgstr "Verborgen Label:"
+
+#: lib/esu-widget-class.php:99
+msgid ""
+"The label will be included in a hidden form field, allowing you to keep "
+"track of different campaigns."
+msgstr ""
+"Dit label wordt gebruikt in een verborgen veld in het formulier, hiermee kun "
+"je verschillende campagnes in de gaten houden"
+
+#: lib/esu-widget-class.php:102
+msgid "Separate the first and last name fields"
+msgstr "Voornaam en achternaam scheiden"
+
+#: lib/esu-widget-class.php:103
+msgid "Show phone the field"
+msgstr "Toon het telefoon veld"
+
+#: lib/includes/esu-widget-setup.php:6
+#, php-format
+msgid "A widget that displays the %s form."
+msgstr "Een widget die het %s formulier toont"

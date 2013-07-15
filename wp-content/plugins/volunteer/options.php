@@ -2,6 +2,7 @@
 
 function eks_register_mysettings() {
     //register our settings
+    register_setting('eks-settings-group', 'volunteer_enable_registration');    
     register_setting('eks-settings-group', 'volunteer_email_body');
     register_setting('eks-settings-group', 'volunteer_email_subject');
     
@@ -77,8 +78,13 @@ function eks_settings_page() {
             </fieldset>
             
             <fieldset>
-                <legend>Volunteer Registration Email</legend>
-                <p>This is the content of the email that new volunteers and coordinators will receive upon registration.  For best results, only use plain text.  The special tokens <code>[USERNAME]</code> and <code>[PASSWORD]</code> will be replaced with the user's details when the email is sent.</p>
+                <legend>Volunteer Registration</legend>
+                
+                <div class="label">Enable Volunteers to Register?</div>
+                <input type="hidden" name="volunteer_enable_registration" value="0" />
+                <input type="checkbox" name="volunteer_enable_registration" value="1" <?php echo get_option('volunteer_enable_registration') == 1 ? 'checked' : '' ?> />
+                       
+                <p>Below is the content of the email that new volunteers and coordinators will receive upon registration.  For best results, only use plain text.  The special tokens <code>[USERNAME]</code> and <code>[PASSWORD]</code> will be replaced with the user's details when the email is sent.</p>
                 <?php settings_fields('eks-settings-group'); ?>
 
                 <div class="label">Email Subject</div>

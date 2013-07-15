@@ -38,14 +38,17 @@ $_SESSION['role'] = "volunteer";
             // http://site.local/wp-admin/admin-ajax.php?action=myajax-submit&postID=1
             wp_localize_script('volunteer-registration', 'Volunteer', array('ajaxurl' => admin_url('admin-ajax.php'), 'step' => $step, 'action' => 'myajax-submit', 'success_url' => '/my-tax-sites'));
             wp_localize_script('volunteer-registration', 'TaxSearch', array('ajaxurl' => admin_url('admin-ajax.php'), 'action' => 'tax_search'));
-            if (!is_volunteer()) { ?>
+            
+            if (get_option('volunteer_enable_registration') == 1) { 
+                
+            if (!is_volunteer()) { // Person is not a volunteer yet ?>
             <p>Thank you for your interest in volunteering with Earn It! Keep It! Save It! Please click on the sign up link below to complete your registration.</p>
             <p>
                 <strong>Please Note:</strong><br/>
                 By signing up to volunteer below, you are confirming your commitment to volunteer for the upcoming tax season. If you are interested but only want more information at this time, <a href="/county-coordinators">click here to find out more</a>.
             </p>
-            <?php } else { ?>
-            <!-- TODO: Copy for logged-in volunteers goes here -->
+            <?php } else { // Person is a volunteer ?>
+            <!-- Copy for logged-in volunteers goes here -->
             <?php } ?>
             <p><a id="volunteer_register" href="<?php echo site_url('wp-admin/admin-ajax.php?action=myajax-submit'); ?>"><?php echo !(is_volunteer()) ? 'Sign Up to Volunteer Now' : 'Update My Registration' ?></a></p>
 
@@ -162,6 +165,14 @@ $_SESSION['role'] = "volunteer";
                         <input type="submit" value="Continue"/>                    
                 </div>
             </div>
+            <?php } else { // Volunteer registration is not enabled, so display the Easy Sign Up plugin. ?>
+            
+            <p>Thank you for your interest, but we are not yet accepting volunteer registrations. Please fill out the form below and be notified when registration opens.</p>
+            
+            <?php echo do_shortcode( '[easy_sign_up]' ) ?>
+
+            
+            <?php } ?>
     </div>
 </div>
 <?php get_sidebar(); ?>

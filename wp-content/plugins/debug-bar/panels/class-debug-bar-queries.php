@@ -31,6 +31,10 @@ class Debug_Bar_Queries extends Debug_Bar_Panel {
 			$counter = 0;
 
 			foreach ( $wpdb->queries as $q ) {
+                            $query = $q[0];
+                            $elapsed = $q[1];
+                            $debug = $q[2];
+                            $row_count = isset($q[3]) ? $q[3] : 'n/a';
 				list($query, $elapsed, $debug, $row_count) = $q;
 
 				$total_time += $elapsed;
