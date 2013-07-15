@@ -63,6 +63,35 @@ a, a:link, a:visited, a:hover, a:active {
 	min-width: 755px;
 	margin: 0 auto;
 }
+
+.rounded {
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+}
+
+.round-nav-overlay {
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	background:#fff;
+	border:1px solid #32A9d9;
+}
+
+.rounded-small {
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.rounded-t {
+	-webkit-border-top-left-radius: 10px;
+	-webkit-border-top-right-radius: 10px;
+	-moz-border-radius-topleft: 10px;
+	-moz-border-radius-topright: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
 /* =========== [ 3. TYPOGRAPHY, GENERAL ] =========== */
 p { /*color: #444;*/
 	color:#666;
@@ -180,9 +209,9 @@ div#masthead.container div.row {
 
 #rounded-nav-box {
 	
-	-moz-box-shadow: 0 1px 3px #666;
-	-webkit-box-shadow: 0 1px 3px #666;
-	box-shadow: 0 1px 3px #666;
+	-moz-box-shadow: 0 1px 1px #3EA9CB;
+	-webkit-box-shadow: 0 1px 1px #3EA9CB;
+	box-shadow: 0 1px 1px #3EA9CB;
 	position:relative;
 	
 }
@@ -194,9 +223,11 @@ div#masthead.container div.row {
 	margin-top: -5px;
 	padding-top: 5px;
 	padding:0;
-	/*padding-bottom:10px;*/
-		
+	/*padding-bottom:10px;*/		
 	position:relative;
+	-moz-box-shadow: none;
+	-webkit-box-shadow:none;
+	box-shadow: none;
 		
 
 }

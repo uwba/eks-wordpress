@@ -25,7 +25,7 @@
 <div id="main-navigation" class="container">
   <div class="row">
   <div id="rounded-nav-box" class="rounded">
-  <div id="rounded-nav-box-overlay">
+  <div id="rounded-nav-box-overlay" class="round-nav-overlay">
   <?php wp_nav_menu( array(
 					'theme_location' => 'header',
 					'container_class' => 'menu rounded',
