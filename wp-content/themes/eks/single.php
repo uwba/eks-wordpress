@@ -11,7 +11,6 @@
 			<?php appthemes_before_blog_post_title(); ?>
 
 			<h1 class="post-heading"><span class="left-hanger"><?php the_title(); ?></span></h1>
-			<?php comments_popup_link( "0", "1", "%", "comment-count" ); ?> comments
 
 			<?php appthemes_after_blog_post_title(); ?>
 			
