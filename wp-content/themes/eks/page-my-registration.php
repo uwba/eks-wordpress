@@ -83,16 +83,30 @@ $_SESSION['role'] = "volunteer";
                 </form>
 
                 <form id="step2" class="step" method="POST" action="<?php echo admin_url('admin-ajax.php'); ?>">
-                    <h3>Please choose one or more volunteer positions you are interested in.</h3>
+                    <h3>Please choose the volunteer position you are interested in.</h3>
                     <div class="error"></div>
-                    <label><input type="checkbox" name="position[]" value="preparer" id="position" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'preparer') echo 'selected="selected" ' ?>/> Tax Preparer<br/><span>Tax preparers assist taxpayers with their tax returns. Volunteers will complete a training course and become IRS certified to prepare taxes. Bilingual tax preparers are always in high demand.</span></label><br/>
+
+                    <label>
+                        <input class="position" id="position" name="position[]" type="radio" value="preparer" <?php echo !empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'preparer' ? 'checked' : ''; ?> /> Tax Preparer<br/><span>Tax preparers assist taxpayers with their tax returns. Volunteers will complete a training course and become IRS certified to prepare taxes. Bilingual tax preparers are always in high demand.</span>
+                    </label><br/>
+
                     <div id="preparer-sub">Experience:  
                         <label><input type="radio" name="preparer" value="new" <?php if (empty($_SESSION['volunteer']['preparer']) || (!empty($_SESSION['volunteer']['preparer']) && $_SESSION['volunteer']['preparer'] == 'new')) echo 'checked ' ?> />New tax preparer</label>
                         <label><input type="radio" name="preparer" value="returning" <?php if (!empty($_SESSION['volunteer']['preparer']) && $_SESSION['volunteer']['preparer'] == 'returning') echo 'checked ' ?> />Returning tax preparer</label><br/>
                     </div>
-                    <label><input type="checkbox" name="position[]" value="screener" id="screener" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'screener') echo 'selected="selected" ' ?>/> Screener<br/><span>Screeners are responsible for assisting clients with the intake form and ensuring taxpayers have the correct tax documents and identification. The screener also ensures that we are allowed to prepare the return within the program guidelines.  This is a critical role as it is the initial point at which important tax return information is gathered and verified.  Training is provided by each site.</span></label><br/>
-                    <label><input type="checkbox" name="position[]" value="greeter" id="greeter" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'greeter') echo 'selected="selected" ' ?>/> Greeter<br/><span>Greeters welcome tax filers to the tax site during the tax season, and may also inform taxpayers about other available community resources. Training is provided by each tax site.</span></label><br/>
-                    <label><input type="checkbox" name="position[]" value="interpreter" id="interpreter" class="position" <?php if (!empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'interpreter') echo 'selected="selected" ' ?>/> Interpreter<br/><span>Interpreters aid taxpayers by working alongside them and their tax preparers. Spanish-speaking volunteers are always needed. Training is provided by each tax site.</span></label><br/>
+                    
+                    <label>
+                        <input class="position" name="position[]" type="radio" value="screener" id="screener" <?php echo !empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'screener' ? 'checked' : ''; ?> /> Screener<br/><span>Screeners are responsible for assisting clients with the intake form and ensuring taxpayers have the correct tax documents and identification. The screener also ensures that we are allowed to prepare the return within the program guidelines.  This is a critical role as it is the initial point at which important tax return information is gathered and verified.  Training is provided by each site.</span>
+                    </label><br/>
+                    
+                    <label>
+                        <input class="position" name="position[]" type="radio" value="greeter" id="greeter" <?php echo !empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'greeter' ? 'checked' : ''; ?> /> Greeter<br/><span>Greeters welcome tax filers to the tax site during the tax season, and may also inform taxpayers about other available community resources. Training is provided by each tax site.</span>
+                    </label><br/>
+
+                    <label>
+                        <input class="position" name="position[]" type="radio" value="interpreter" id="interpreter" <?php echo !empty($_SESSION['volunteer']['position'][0]) && $_SESSION['volunteer']['position'][0] == 'interpreter' ? 'checked' : ''; ?> /> Interpreter<br/><span>Interpreters aid taxpayers by working alongside them and their tax preparers. Spanish-speaking volunteers are always needed. Training is provided by each tax site.</span>
+                    </label><br/>
+                    
                     <input type="submit" value="Next"/>
                 </form>
                 
