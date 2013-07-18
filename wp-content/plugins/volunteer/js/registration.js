@@ -111,10 +111,11 @@ jQuery(document).ready(function($) {
             beforeSubmit: function(arr, $form, options) {
             },
             success: function(response, statusText, xhr, $form) {
-       // debugger;
                 if (response.success)
                 {
                     $('#step6 .results').html(toHTML(response.html));
+                    $('#step6 h3').text(response.header);
+                    $('#step6 .footer').text(response.footer);
                     gotoStep(6);
                 }
             }

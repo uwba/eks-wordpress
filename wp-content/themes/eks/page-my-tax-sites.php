@@ -25,10 +25,12 @@
 			<p class="listing-description"><strong>Position: </strong><?php echo implode(', ', $tax_sites[get_the_ID()]);?></p></article><?php
 			}
                         ?>
-            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration/#complete">click here</a>.
+            <p>If you would like to change your tax site or training assignment, <a href="/volunteer-registration/#complete">click here</a>.</p>
+            <p style="font-style:italic">If you are interested in other volunteer positions, please let your site coordinator know.</p>
+                
             <?php
 		} else {
-			?><p>No tax site has been chosen yet.  <p><a href="/volunteer-registration/#complete">Click here</a> to sign up for a tax site now.</p></p><?php
+			?><p>No tax site has been chosen yet.  <p><a href="/volunteer-registration/#complete">Click here</a> to sign up for a tax site now.</p><?php
 		}
 		?>
 	</div>

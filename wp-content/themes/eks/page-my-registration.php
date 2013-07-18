@@ -123,7 +123,7 @@ $_SESSION['role'] = "volunteer";
                     <form id="step41" action="<?php echo admin_url('admin-ajax.php'); ?>" method="get" class="mti_font_element">
                         <h3>Please select a tax site you are interested in volunteering at by using the search box below.</h3>
                         <div class="yui3-g">
-                            <div class="yui3-u-3-4">
+                            <div class="yui3-u-1-2">
                                 <div id="main-search" class="mti_font_element">
                                     <div class="search-for mti_font_element">
                                         <label for="search-text" class="mti_font_element">
@@ -135,7 +135,7 @@ $_SESSION['role'] = "volunteer";
                                     </div>
                                 </div>
                             </div>
-                            <div class="yui3-u-1-4">
+                            <div class="yui3-u-1-2">
                                 <div class="search-button mti_font_element">
                                     <button class="rounded-small mti_font_element" id="search-submit" type="submit">Search</button>
                                 </div>
@@ -163,9 +163,9 @@ $_SESSION['role'] = "volunteer";
                 
                 <div id="step6" class="step">
                     <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="POST" class="mti_font_element">
-                        <h3>Please confirm the training you would like to sign up for, or press the back button to view another training.</h3>
+                        <h3></h3>
                         <div class="results"></div>
-                        <p style="padding-bottom:20px">By clicking the "Confirm" button below, you are committing to attending the training listed above.</p>
+                        <p style="padding-bottom:20px" class="footer"></p>
                         <input type="button" class="back" value="Back"/>
                         <input type="submit" value="Confirm"/>
                         

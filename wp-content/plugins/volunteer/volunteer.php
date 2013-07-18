@@ -187,25 +187,13 @@ function myajax_submit() {
                 $_SESSION['volunteer']['name'] = $current_user->data->user_nicename;
                 $_SESSION['volunteer']['email'] = $current_user->data->user_email;
                 $_SESSION['volunteer']['phone'] = $meta['phone'][0];
-                error_log(print_r($meta, true));
             }
+            
             // Get any existing post object if you can, for the Volunteer/Tax Site association
-            //error_log($current_user);
-//            $query = new WP_Query( array(
-//                'author' => $current_user->data->ID,
-//                'post_type' => 'volunteer'
-//                    ) );
-            //error_log('user='.print_r($current_user->data, true));
-            error_log('user id=' . print_r($current_user->data->ID, true));
-            //die();
-            //die();
-
-
             $my_posts = get_posts(array(
                 'author' => $_SESSION['volunteer']['user_ID'],
                 'post_type' => 'volunteer'
             ));
-            //die();
 
             if (count($my_posts) > 0) {
                 $post_id = $my_posts[0]->ID;
@@ -324,9 +312,12 @@ function myajax_submit() {
 
         case 5: // Selected desired Training, so show the details so the volunteer can confirm
             $_SESSION['volunteer']['training'] = $_POST['training'];
-            if (empty($_SESSION['volunteer']['training']))
-                $html = '<div>Your site coordinator will be in contact with you regarding your training.</div>';
-            else {
+            
+            $header = 'Your site coordinator will be in contact with you regarding your training.';
+            $html = '';
+            $footer = 'Please click the "Confirm" button below.';
+            
+            if (!empty($_SESSION['volunteer']['training'])) {
                 $training = get_post($_POST['training']);
                 $training_meta = get_post_meta($training->ID);
 
@@ -337,14 +328,18 @@ function myajax_submit() {
                     " . (empty($training_meta['special_instructions'][0]) ? '' : "Special Instructions: {$training_meta['special_instructions'][0]}<br/>") . "
                     </p>";
 
+                $header = 'Please confirm the training you would like to sign up for, or press the back button to view another training.';
                 $html = "<p style='font-weight:bold'>{$training->post_title}</p><p>{$training->post_content}</p> $details";
+                $footer = 'By clicking the "Confirm" button below, you are committing to attending the training listed above.';
             }
             $response = json_encode(array(
                 'success' => true,
                 'errors' => array(),
                 'step' => 6,
                 'data' => $_SESSION['volunteer'],
-                'html' => $html
+                'html' => $html,
+                'header' => $header,
+                'footer' => $footer
             ));
             break;
 
