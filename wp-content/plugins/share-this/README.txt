@@ -1,39 +1,52 @@
-=== ShareThis: Share Buttons and Sharing Analytics ===
-Tags:share, share this, sharethis, addthis, addtoany, share this, bookmark facebook, like, send, google plus, +1, sharing, pinterest, sharenow, hovering bar, floating buttons, copy and paste,
+=== ShareThis: Share Buttons and Social Analytics ===
+Tags:share, share this, sharethis, addthis, addtoany, share this, bookmark facebook, like, send, google plus, +1, sharing, pinterest, sharenow, hovering bar, floating buttons, copy and paste,copynshare, instagram, linkedin
 
 Contributors:ShareThis
 Requires at least: 1.5
-Tested up to: 3.4
+Tested up to: 3.5
 Stable tag: trunk
 
-Quick & easy sharing service that allows your users to share content - features Open Graph Sharing, Hovering Bar and CopyNShare!
+Social Charge your Content with ShareThis - features Social Analytics, CopyNShare, Open Graph Sharing, and the Hovering Bar!
 
 == Description ==
 
-Increase social activity on your site with the ShareThis and ShareNow widgets.
+**Increase social activity on your site with ShareThis!**
 
-With access to *120 social channels* (including Facebook, Twitter, Like, +1, Email and more), The ShareThis widget is a quick and easy sharing solution for your site to keep your audience engaged in your content and increase traffic to your site. You can also customize your widget for seamless integration to your site. You have the option to use small or large buttons, add counters and place the widget in a clear location for your users to share.
+* Choose from to 120 social channels, including Facebook, Twitter, LinkedIn, and Pinterest.
+* Use small or large buttons, add counters or use one of the Sharing Bars 
+* Access to greater insights by creating a Social Analytics Dashboard account
 
-= NEW =
-
-**[CopyNShare](http://support.sharethis.com/customer/portal/articles/517332#copynshare)**is a new ShareThis widget feature in open beta that that ! CopyNShare is the new ShareThis widget feature in open beta that enables you to track the shares that occur when a user copies and pastes your website's URL or content. ShareThis adds a special #hashtag at the end of your address bar URL to keep track of where your content is being shared on the web, from Facebook, Twitter to emails, etc. When a user copies text within your site, a “See more: yourURL.com#SThashtag” will appear after the pasted text. Enable CopyNShare for your widget! [FAQs](http://support.sharethis.com/customer/portal/articles/517332#copynshare)
-
-**Hovering Bar** is now available to WordPress users! Always present on the left or right side of content, the Hovering Bar makes it easier for your users to share. It's always in view - even when your users scroll up and down the page. [Get the Hovering Bar Now!](http://support.sharethis.com/customer/portal/articles/446440-wordpress-integration#Plugin-Options)
-
-**[ShareNow](http://sharethis.com/publishers/get-sharenow)** is the new social tool that allows you to leverage *frictionless sharing* without having to create your own custom solution and puts your users in control over how they share content. Placed on the right or left side of your content, ShareNow makes it easier for your users to share, delete and re-share to their social network timeline. Increase sharing activity on your site and add ShareNow!
-
-Join the ShareThis Publisher Network of over 2M sites and get access to your analytics:
-Check out the live demo (http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home)
+**Join the ShareThis Network**  
+Join the ShareThis Network of over 2.4M sites and get access to your analytics: Check out the [live demo](http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home).
 
 * Daily sharing activity per registered domain
-* Detailed reports on the top shared URLs (content) of your site(s)
+* Detailed reports on the top shared URLs of your site(s)
 * Top social channel reports
-* Analysis of the social quality of your site via [SQI – Social Quality Index] (http://sharethis.com/sqi).
+* Analysis of the social quality of your site via [SQI – Social Quality Index](www.sharethis.com/sqi).
 
-More information about the [ShareThis plugin for WordPress] (http://help.sharethis.com/integration/wordpress).
 
-More information about the [ShareNow plugin for WordPress] (http://support.sharethis.com/customer/portal/articles/542253-sharenow-by-sharethis).
+**SnapSets Beta - Released on July 18, 2013**  
+We've just released [SnapSets](http://snapsets.sharethis.com/publishers.html) in open beta! Contact us to learn more. 
 
+**Track Users' Copy and Paste Shares**  
+[CopyNShare](http://support.sharethis.com/customer/portal/articles/517332#copynshare) is a ShareThis widget feature in open beta that enables you to track the shares that occur when a user copies and pastes your website's URL or content. Two options are available:
+
+* To track address URL copy and pastes, a special #hashtag is added at the end of your address bar URL 
+* To track users copy and pastes of content, a “See more: yourURL.com#SThashtag” will appear after the pasted text
+
+Enable CopyNShare for your widget! [FAQs](http://support.sharethis.com/customer/portal/articles/517332#copynshare)
+
+
+**Make it Easier for your Users to Share your Content**  
+Hovering Bar is always present on the left or right side of content, makes it easier for your users to share. It's always in view - even when your users scroll up and down the page. [Get the Hovering Bar Now!](http://support.sharethis.com/customer/portal/articles/446440-wordpress-integration#Plugin-Options)
+
+
+**Leverage Frictionless Sharing**  
+[ShareNow](http://sharethis.com/publishers/get-sharenow) is the new social tool that allows you to leverage frictionless sharing without having to create your own custom solution and puts your users in control over how they share content. Placed on the right or left side of your content, ShareNow makes it easier for your users to share, delete and re-share to their social network timeline. Increase sharing activity on your site and add ShareNow! [FAQs](http://support.sharethis.com/customer/portal/articles/542253-sharenow-by-sharethis)
+
+More information about the [ShareThis plugin for WordPress](http://help.sharethis.com/integration/wordpress)
+
+More information about the [ShareNow plugin for WordPress](http://support.sharethis.com/customer/portal/articles/542253-sharenow-by-sharethis).
 == Installation ==
 
 1. Download the plugin archive and expand it (you've likely already done this).
@@ -44,6 +57,32 @@ More information about the [ShareNow plugin for WordPress] (http://support.share
 6. To enable Hovering Bar (floating share buttons), go to the ShareThis Options page and scroll down check the 'Enable Hovering Bar' button.
 
 == Changelog ==
+7.0.4
+1. jQuery noConflict fixed 
+2. Yoast SEO conflict fixed
+
+7.0.3
+
+1. CSS Fixes
+
+7.0.2
+
+1. Versioning bug
+
+7.0.1
+
+1. Fixes for IE
+
+7.0
+
+1. Pulldown bar implementation
+2. Improved plugin configuration user interface
+3. Support for more social services
+
+6.0
+
+1. CNS implementation
+2. Bug Fixes.
 
 5.4.1
 
@@ -68,50 +107,46 @@ More information about the [ShareNow plugin for WordPress] (http://support.share
 
 == Sharing Analytics ==
 
-Once you join the the ShareThis Publisher Network, you get access to ShareThis Analytics.  Create your account and register your domain to access your site’s sharing activity. 
-Check out the live demo (http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home)
+Once you join the the ShareThis Network, you get access to your Social Analytics Dashboard.  Create your account and register your domain to access your site’s sharing activity. 
+Check out the [live demo](http://sharethis.com/publishers/metrics-dashboard?txtHidDemo=demo#home).
 
 Reports include:
-1. Daily sharing activity per registered domain
-2. Detailed reports on the top shared URLs (content) of your site(s)
-3. Top social channel reports
-4. Analysis of the social quality of your site via [SQI – Social Quality Index] (http://sharethis.com/sqi)
+* Daily sharing activity per registered domain
+* Detailed reports on the top shared URLs of your site(s)
+* Top social channel reports
+* Analysis of the social quality of your site via [SQI – Social Quality Index](www.sharethis.com/sqi).
 
-**NEW** Find out how many users share by copy and pasting the url or text. Look for 'CopyNShare' in the channel report.
-
-What are you waiting for? Download the ShareThis plugin today and get access to your ShareThis Analytics!
+What are you waiting for? Download the ShareThis plugin today and get access to your Social Analytics Dashboard!
 
 == About Us ==
 
-ShareThis’ mission is to make the world more connected, trusted and valuable through sharing. Our goal is to provide websites with solutions to improve and drive value from the social engagement of their site. 
+ShareThis' mission is to make the world more connected, trusted and valuable through sharing. Our goal is to provide websites with solutions to improve and drive value from the social engagement of their site. 
 
-With the ShareThis Publisher Network of 2M websites, 120 social channels and a reach of 80% of the web (US), ShareThis is the largest ecosystem for sharing and engagement across the web. 
+With the ShareThis Publisher Network of over 2.4M websites, 120 social channels and a reach of 95% of the web (US), ShareThis is the largest ecosystem for sharing and engagement across the web. 
 
 Learn More at http://www.sharethis.com
 
 == Frequently Asked Questions ==
 
-Check out [our support](http://help.sharethis.com) and [our Wordpress customization area](http://help.sharethis.com/integration/wordpress)
+Check out [our support page](support.sharethis.com) and [our Wordpress customization area](http://support.sharethis.com/customer/portal/articles/446440-wordpress-integration)
 
-Still got questions? If you need technical help, check out the support info below or email us at support@sharethis.com.
+Still have questions? If you need technical help, email us at support@sharethis.com.
 
 == Support ==
 
-Have questions or suggestions for us? Perhaps it's already answered or being discussed in the ShareThis forums or on ShareThis Support:
+Have questions or suggestions for us? Perhaps it's already answered or being discussed in the ShareThis forums or on our ShareThis Support Section:
 
 [Forums](http://forums.sharethis.com)
 
-[Documentation](http://help.sharethis.com/integration/wordpress)
+[Documentation](http://support.sharethis.com/customer/portal/articles/446440-wordpress-integration)
 
-If you would like to contact the support team via email you can reach us at:
- 
-support@sharethis.com
+If you would like to contact the support team via email you can reach us at: support@sharethis.com
 
 == Screenshots ==
-Check out some screenshots of our new widget in action!
+Check out some screenshots of our widget in action!
 
 1. Screenshot of the ShareThis widget when a user clicks on it.
-2. Screenshot of the ShareNow widget.
+2. Screenshot of the Social Analytics Dashboard
 3. Screenshot of the ShareThis widget above content.
-4. Example of the ShareThis widget with counters.
+4. Screenshot of the ShareNow widget.
 5. Example of the Hovering Bar.

@@ -1,27 +1,31 @@
 <?php
-/*--------------------------------------------------------------------------------------
+
+/*
+*  Export
 *
-*	ACF Export
-*
-*	@author Elliot Condon
-*	@since 3.0.2
-* 
-*-------------------------------------------------------------------------------------*/
+*  @description: 
+*  @since: 3.6
+*  @created: 25/01/13
+*/
+
 
 // vars
 $defaults = array(
-	'acf_abspath' => '../../../../..',
-	'acf_posts' => array()
+	'acf_posts' => array(),
+	'nonce' => ''
 );
-$options = array_merge( $defaults, $_POST );
+$my_options = array_merge( $defaults, $_POST );
 
 
-require_once( $options['acf_abspath'] . '/wp-load.php');
-require_once( $options['acf_abspath'] . '/wp-admin/admin.php');
-		
+// validate nonce
+if( !wp_verify_nonce($my_options['nonce'], 'export') )
+{
+	wp_die(__("Error",'acf'));
+}
+
 
 // check for posts
-if( !$options['acf_posts'] )
+if( empty($my_options['acf_posts']) )
 {
 	wp_die(__("No ACF groups selected",'acf'));
 }
@@ -67,7 +71,7 @@ function wxr_site_url() {
 		return network_home_url();
 	// wp: the blog url
 	else
-		return get_bloginfo_rss( 'url' );
+		return get_site_url();
 }
 
 /**
@@ -183,13 +187,16 @@ echo '<?xml version="1.0" encoding="' . get_bloginfo('charset') . "\" ?>\n";
 	<wp:base_site_url><?php echo wxr_site_url(); ?></wp:base_site_url>
 	<wp:base_blog_url><?php bloginfo_rss( 'url' ); ?></wp:base_blog_url>
 <?php wxr_authors_list(); ?>
-<?php if ( $_POST['acf_posts'] ) {
+<?php if ( $my_options['acf_posts'] ) {
 
-	global $wp_query;
+	global $wp_query, $wpdb, $post;
 	$wp_query->in_the_loop = true; // Fake being in the loop.
-
-	$where = 'WHERE ID IN (' . join( ',', $_POST['acf_posts'] ) . ')';
-	$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
+	
+	// create SQL with %d placeholders
+	$where = 'WHERE ID IN (' . substr(str_repeat('%d,', count($my_options['acf_posts'])), 0, -1) . ')';
+	
+	// now prepare the SQL based on the %d + $_POST data
+	$posts = $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$wpdb->posts} $where", $my_options['acf_posts']));
 
 	// Begin Loop
 	foreach ( $posts as $post ) {

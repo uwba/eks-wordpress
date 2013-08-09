@@ -5,7 +5,7 @@ Plugin URI: http://soliloquywp.com/
 Description: Soliloquy is the best responsive WordPress slider plugin. Period.
 Author: Thomas Griffin
 Author URI: http://thomasgriffinmedia.com/
-Version: 1.5.4.3
+Version: 1.5.4.5
 License: GNU General Public License v2.0 or later
 License URI: http://www.opensource.org/licenses/gpl-license.php
 */
@@ -67,7 +67,7 @@ class Tgmsp {
 	 *
 	 * @var string
 	 */
-	public $version = '1.5.4.3';
+	public $version = '1.5.4.5';
 
 	/**
 	 * Holds a copy of the main plugin filepath.
@@ -175,24 +175,24 @@ class Tgmsp {
 					$tgmsp_addons = new Tgmsp_Addons( $soliloquy_license['license'] );
 
 				/** Load the updates page */
-				$tgmsp_updates = new Tgmsp_Updates;
+				$tgmsp_updates = new Tgmsp_Updates();
 			}
 
 			/** Instantiate all the necessary admin components of the plugin */
-			$tgmsp_admin		= new Tgmsp_Admin;
-			$tgmsp_ajax			= new Tgmsp_Ajax;
-			$tgmsp_adminassets	= new Tgmsp_AdminAssets;
-			$tgmsp_editor		= new Tgmsp_Editor;
-			$tgmsp_help			= new Tgmsp_Help;
-			$tgmsp_license		= new Tgmsp_License;
-			$tgmsp_media		= new Tgmsp_Media;
+			$tgmsp_admin	   = new Tgmsp_Admin();
+			$tgmsp_ajax		   = new Tgmsp_Ajax();
+			$tgmsp_adminassets = new Tgmsp_AdminAssets();
+			$tgmsp_editor	   = new Tgmsp_Editor();
+			$tgmsp_help		   = new Tgmsp_Help();
+			$tgmsp_license	   = new Tgmsp_License();
+			$tgmsp_media	   = new Tgmsp_Media();
+			$tgmsp_strings	   = new Tgmsp_Strings();
 		endif;
 
 		// Load these components regardless.
-		$tgmsp_assets		= new Tgmsp_Assets;
-		$tgmsp_posttype		= new Tgmsp_Posttype;
-		$tgmsp_shortcode	= new Tgmsp_Shortcode;
-		$tgmsp_strings		= new Tgmsp_Strings;
+		$tgmsp_assets	 = new Tgmsp_Assets();
+		$tgmsp_posttype	 = new Tgmsp_Posttype();
+		$tgmsp_shortcode = new Tgmsp_Shortcode();
 
 	}
 
@@ -309,7 +309,7 @@ class Tgmsp {
 }
 
 /** Instantiate the init class */
-new Tgmsp;
+$tgmsp = new Tgmsp();
 
 if ( ! function_exists( 'soliloquy_slider' ) ) {
 	/**

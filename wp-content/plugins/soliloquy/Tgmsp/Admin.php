@@ -138,6 +138,14 @@ class Tgmsp_Admin {
 	 */
 	public function output_soliloquy_plugin_settings( $license ) {
 
+		// Output a message if the user has just upgraded from Soliloquy Lite.
+		if ( isset( $_GET['just_upgraded'] ) && $_GET['just_upgraded'] ) {
+			echo '<div class="soliloquy-just-upgraded">';
+				echo '<h2 class="soliloquy-upgraded-title">' . Tgmsp_Strings::get_instance()->strings['congrats'] . '</h2>';
+				echo '<p>' . Tgmsp_Strings::get_instance()->strings['congrats_desc'] . '</p>';
+			echo '</div>';
+		}
+
 		if ( ! $license || empty( $license['license'] ) ) {
 			echo '<form method="post" action="">';
 				wp_nonce_field( 'soliloquy-verify-license-key' );

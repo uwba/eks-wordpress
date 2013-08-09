@@ -33,17 +33,17 @@ class Tgmsp_AdminAssets {
 		$dev = defined( 'SOLILOQUY_DEV' ) && SOLILOQUY_DEV ? '-dev' : '';
 
 		/** Register scripts and styles */
-		wp_register_script( 'soliloquy-admin', plugins_url( 'js/admin' . $dev . '.js', dirname( __FILE__ ) ), array( 'jquery', 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror', plugins_url( '/js/codemirror.js', dirname( __FILE__ ) ), array( 'jquery' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-php', plugins_url( '/js/codemirror-php.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-html', plugins_url( '/js/codemirror-html.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-css', plugins_url( '/js/codemirror-css.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-js', plugins_url( '/js/codemirror-js.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-xml', plugins_url( '/js/codemirror-xml.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_script( 'soliloquy-codemirror-clike', plugins_url( '/js/codemirror-clike.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), '1.0.0', true );
-		wp_register_style( 'soliloquy-admin', plugins_url( 'css/admin' . $dev . '.css', dirname( __FILE__ ) ) );
-		wp_register_style( 'soliloquy-codemirror', plugins_url( '/css/codemirror.css', dirname( __FILE__ ) ) );
-		wp_register_style( 'soliloquy-codemirror-elegant', plugins_url( '/css/codemirror-eclipse.css', dirname( __FILE__ ) ) );
+		wp_register_script( 'soliloquy-admin', plugins_url( 'js/admin' . $dev . '.js', dirname( __FILE__ ) ), array( 'jquery', 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror', plugins_url( '/js/codemirror.js', dirname( __FILE__ ) ), array( 'jquery' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-php', plugins_url( '/js/codemirror-php.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-html', plugins_url( '/js/codemirror-html.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-css', plugins_url( '/js/codemirror-css.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-js', plugins_url( '/js/codemirror-js.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-xml', plugins_url( '/js/codemirror-xml.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_script( 'soliloquy-codemirror-clike', plugins_url( '/js/codemirror-clike.js', dirname( __FILE__ ) ), array( 'soliloquy-codemirror' ), Tgmsp::get_instance()->version, true );
+		wp_register_style( 'soliloquy-admin', plugins_url( 'css/admin' . $dev . '.css', dirname( __FILE__ ) ), array(), Tgmsp::get_instance()->version );
+		wp_register_style( 'soliloquy-codemirror', plugins_url( '/css/codemirror.css', dirname( __FILE__ ) ), array(), Tgmsp::get_instance()->version );
+		wp_register_style( 'soliloquy-codemirror-elegant', plugins_url( '/css/codemirror-eclipse.css', dirname( __FILE__ ) ), array(), Tgmsp::get_instance()->version );
 
 		/** Load assets */
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_assets' ) );

@@ -1,12 +1,12 @@
 === WordPress SEO by Yoast ===
 Contributors: joostdevalk
 Donate link: http://yoast.com/
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3
+License URI: http://www.gnu.org/licenses/gpl.html
 Tags: seo, SEO, google, meta, meta description, search engine optimization, xml sitemap, xml sitemaps, google sitemap, sitemap, sitemaps, robots meta, rss, rss footer, yahoo, bing, news sitemaps, XML News Sitemaps, WordPress SEO, WordPress SEO by Yoast, yoast, multisite, canonical, nofollow, noindex, keywords, meta keywords, description, webmaster tools, google webmaster tools, seo pack
 Requires at least: 3.3
-Tested up to: 3.5
-Stable tag: 1.4.1
+Tested up to: 3.6
+Stable tag: 1.4.13
 
 Improve your WordPress SEO: Write better content and have a fully optimized WordPress site using the WordPress SEO plugin by Yoast.
 
@@ -89,45 +89,7 @@ For more info, check out the following articles:
 
 == Frequently Asked Questions ==
 
-= The SEO title output for the plugin doesn't work as expected =
-
-You've set up a template for your titles, but things get added to it when they're output? You can do two things: either enable "Force rewrite titles" on the SEO -> Titles settings page, or go into your header.php and change the title element to just this:
-
-`<title><?php wp_title(''); ?></title>`
-
-= I'm not seeing a meta description in my `<head>` section? =
-
-Check whether your theme's `header.php` file contains a call to [wp_head()](http://codex.wordpress.org/Function_Reference/wp_head).
-
-= My meta descriptions aren't showing up in the search result pages =
-
-There are two possible issues with a meta description:
-
-1. You're putting out more than one of them due to multiple plugins adding a description, for instance the WordBooker plugin adds a description too but has an option to disable it, other SEO plugins running might be another cause.
-1. You're not seeing your meta description show up in the search result pages. Google will not alway show your meta description, the likelihood of your meta description appearing in the search results increases incredibly when your meta description contains the sought for keyword though, which is why the focus keyword functionality checks for the appearance of the focus keyword in the description.
-
-= Page X, Y, Z for plugin X doesn't work with your plugin enabled =
-
-Disable the clean permalinks feature on the SEO -> Permalinks settings page.
-
-= Does your plugin allow for Google News Sitemaps too? =
-
-It does! You'll need an add-on module for that though, which you can download from the [News SEO](http://yoast.com/wordpress/seo/news-seo/) module homepage!
-
-= Why is WordPress SEO better than All In One SEO Pack? =
-
-It's not a secret that the author of this plugin, Joost de Valk, aka Yoast, doesn't really like All In One SEO Pack. The main reason is that All in One SEO pack has a default option for auto generating meta descriptions that is actually making it harder for people to rank well in a lot of cases, giving them a false sense of security.
-
-Once you'll start using this plugin, you won't ask that question anymore, you'll just ask yourself "why does anyone still use All In One SEO"? There's several things this plugin does better: it has a snippet preview in the write post screen that'll help you optimize your titles, meta descriptions and copy instantly while working on your posts and pages.
-
-Also, other than All In One SEO Pack, this plugin has a completely working canonical implementation for all pages within your site, whereas the one in All In One SEO pack is broken, it was originally written by the author of this plugin, so he knows. It comes with XML Sitemaps, an XML News sitemap module, loads and loads of robots meta options and other options to improve your SEO.
-
-= I want to use your XML Sitemaps with NGINX, is that possible? =
-
-Yes, of course! Here are the rewrite rules you'll need:
-
-`rewrite ^/sitemap_index\.xml$ /index.php?sitemap=1 last;
-rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 last;`
+You'll find the [FAQ on Yoast.com](http://yoast.com/wordpress/seo/faq/).
 
 == Screenshots ==
 
@@ -136,10 +98,142 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
 3. The WordPress SEO settings for a taxonomy.
 4. The fully configurable XML sitemap for WordPress SEO.
 5. Easily import SEO data from All In One SEO pack and HeadSpace2 SEO.
-6. Example of the Linkdex Page Analysis functionality.
+6. Example of the Page Analysis functionality.
 7. The advanced section of the WordPress SEO meta box.
 
 == Changelog ==
+
+= 1.4.13 =
+
+* Bugfixes
+	* Fixed ampersand (&) in sitetitle in Title Templates loading as &amp;
+	* Fixed error when focus keyword contains a / - props [Jrf](http://profiles.wordpress.org/jrf).
+	* Fixed issue with utf8 characters in meta description - props [Jrf](http://profiles.wordpress.org/jrf).
+	* Fixed undefined property error - props [Jrf](http://profiles.wordpress.org/jrf).
+	* Fixed undefined index error for the last page of the tour - props [Jrf](http://profiles.wordpress.org/jrf).
+	* Fixed undefined index error for images without alt - props [Jrf](http://profiles.wordpress.org/jrf).
+    * Fix output of author for Google+ when using a static front page - props [petervanderdoes](https://github.com/petervanderdoes).
+    * Keyword density calculation not working when special character in focus keyword - props [siriuzwhite](https://github.com/siriuzwhite).
+    * Reverse output buffer cleaning for XML sitemaps, as that collides with WP Super Cache, thanks to [Rarst](https://github.com/Rarst) for finding this.
+    * Fix canonical and rel=prev / rel=next links for paginated home pages using index.php links.
+    * Fixed og:title not following title settings.
+* Enhancements
+	* Improved breadcrumbs and titles for 404 pages - props [Jrf](http://profiles.wordpress.org/jrf).
+    * Moved XSL stylesheet from a static file in wp-content folder to a dynamic one, allowing it to work for sites that prevented the wp-content dir from being opened directly, f.i. through Sucuri's hardening.
+    * Added a link in the XSL pointing back to the sitemap index on individual sitemaps.
+    * When remove replytocom is checked in the permalink settings, these are now also redirected out.
+    * Added filters to OpenGraph output functions that didn't have them yet.
+
+= 1.4.12 =
+
+* Bugfixes
+	* Submit button displays again on Titles & Metas page.
+	* SEO Title now calculates length correctly.
+	* Force rewrite titles should no longer reset wrongly on update.
+
+= 1.4.11 =
+
+* i18n
+	* Updated de_DE, ru_RU, zh_CN.
+* Bugfixes
+    * Make rel="publisher" markup appear on every page.
+    * Prevent empty property='article:publisher' markup from being output .
+    * Fixed twitter:description tag should only appears if OpenGraph is inactive.
+    * og:description will default to get_the_excerpt when meta description is blank (similar to how twitter:description works).
+	* Fixes only 25 tags (and other taxonomy) are being indexed in taxonomy sitemaps.
+	* Fix lastmod dates for taxonomies in XML sitemap index file.
+* Enhancements
+	* Changed Social Admin section to have a tab-layout.
+	* Moved Google+ section from Homepage tab of Titles & Metas to Social tab.
+	* Make twitter:domain use WordPress site name instead of domainname.
+	* Added more output filters in the Twitter class.
+
+= 1.4.10 =
+
+* Fixes
+    * Caching was disabled in certain cases, this update fixes that.
+* Enhancements
+    * Added option to disable author sitemap.
+    * If author pages are disabled, author sitemaps are now automatically disabled.
+
+= 1.4.9 =
+
+* i18n
+    * Updated .pot file
+    * Updated ar, da_DK, de_DE, el_GR, es_ES, fa_IR, fr_FR, he_IL, id_ID, nl_NL, ro_RO, sv_SE & tr_TK
+    * Added hr & sl_SI
+    * Many localization fixes
+* Bugfixes
+    * Fixed sitemap "loc" element to have encoded entities.
+    * Honor the language setting if other plugins set the language.
+    * sitemap.xml will now redirect to sitemap_index.xml if it doesn't exist statically.
+    * Added filters 'wpseo_sitemap_exclude_post_type' and 'wpseo_sitemap_exclude_taxonomy' to allow themes/plugins to exclude entries in the XML sitemap.
+    * Added RTL support, some CSS fixes.
+    * Focus word gets counted in meta description when defined by a template.
+    * Fixed some bugs with the focus keyword in the first paragraph test.
+    * Fixed display bug in SEO Title column when defined by a template ('Page # of #').
+    * Fixed a few strict notices that would pop up in WP 3.6.
+    * Prevent other plugins from overriding the WP SEO menu position.
+    * Enabled the advanced tab for site-admins on a multi-site install.
+	* Fixed post save error when page analysis is disabled.
+	* OpenGraph frontpage og:description and og:image tags now properly added to the frontpage.
+* Enhancements
+    * Added an HTML sitemap shortcode [wpseo_sitemap].
+    * Added an XML sitemap listing the author profile URLs.
+    * Added detection of Yoast's robots meta plugin and All In One SEO plugins, plugin now gives a notice to import settings and disable those plugins.
+    * Prevent empty image tags in Twitter Cards - props [Mike Bijon](https://github.com/mbijon).
+    * Add new `twitter:domain` tag  - props [Mike Bijon](https://github.com/mbijon).
+    * Add support for Facebooks new OG tags for media publishers.
+	* Allow authorship to be removed per post type.
+
+= 1.4.7 =
+
+* Properly fix security bug that should've been fixed in 1.4.5.
+* Move from using several $options arrays in the frontend to 1 class wide option.
+* Instead of firing all plugin options as function within head function, attach them to `wpseo_head` action, allowing easier filtering and changing.
+* Where possible, use larger images for Facebook Opengraph.
+* Add several filters and actions around social settings.
+
+= 1.4.6 =
+
+* Fix a possible fatal error in tracking.
+
+= 1.4.5 =
+
+* Bug fixes:
+    * Fix security issue which allowed any user to reset settings.
+    * Allow saving of SEO metadata for attachments.
+    * Set the max-width of the snippet preview to 520px to look more like Google search results, while still allowing it to work on lower resolutions.
+* Enhancements:
+    * Remove the shortlink http header when the hide shortlink checkbox is checked.
+    * Added a check on focus keyword in the page analysis functionality, checking whether a focus keyword has already been used before.
+    * Update how the tracking class calculates users to improve speed.
+
+= 1.4.4 =
+
+* Fix changelog for 1.4.3
+* Bugfixes
+    * Fix activation bug.
+* i18n
+	* Updated es_ES, id_ID, he_IL.
+
+= 1.4.3 =
+
+* Bugfixes
+    * Register core SEO menu at a lower than default prio so other plugins can tie in more easily.
+    * Remove alt= from page analysis score divs.
+    * Make site tracking use the site hash consistently between plugins.
+    * Improve popup pointer removal.
+
+= 1.4.2 =
+
+* Bugfixes
+    * Made the sitemaps class load in backend too so it always generates rewrites correctly.
+    * Changed > to /> in class-twitter.php for validation as XHTML.
+    * Small fix in metabox CSS for small screens (thx [Ryan Hellyer](http://ryanhellyer.net)).
+    * Load classes on plugins_loaded instead of immediately on load to allow WPML to filter options.
+* i18n
+    * Updated bs_BA, cs_CZ, da_DK, de_DE, fa_IR, fr_FR, he_IL, hu_HU, id_ID, it_IT, nl_NL, pl_PL, pt_BR, ru_RU and tr_TR
 
 = 1.4.1 =
 
@@ -170,7 +264,7 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
     * Slight performance improvement in options call by adding some caching (kudos to @Rarst as well).
     * Changed inner workings of search engine ping, adding YOAST_SEO_PING_IMMEDIATELY constant to allow immediate ping on publish.
     * Changed design of meta box, moving much of the help text out in favor of clicking on a help icon.
-    * Removed Linkdex box.
+    * Removed Linkdex branding from page analysis functionality.
 
 = 1.3.4.4 =
 
@@ -441,7 +535,7 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
 	* Fixes to OpenGraph images for homepage.
 	* Fixed a notice in OpenGraph class on 404 pages.
 	* Fixed notices in OpenGraph admin when selecting Facebook app as admin.
-	* Fixed a bug where half the Linkdex analyses wouldn't work when the visual editor is disabled.
+	* Fixed a bug where half the Page analyses wouldn't work when the visual editor is disabled.
 	* Changed the mime type of the XSL file for XML sitemaps to text/xml, so Firefox will display them properly.
 	* Made sure the default OpenGraph image will always show up when there's no other image.
 	* Updated tablesorting JS used in XML Sitemaps.
@@ -555,7 +649,7 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
 
 = 1.1.1 =
 
-* Fixed `sprintf` bug in Linkdex check.
+* Fixed `sprintf` bug in page analysis.
 * Fixed bug that caused inability to edit / save the search page title.
 * Fixed bug that caused inability to edit / save the "parent" blog in multisite settings.
 * Removed ability to edit WP Super Cache .htaccess file as it doesn't seem to be there anymore.
@@ -692,7 +786,7 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
 	* OpenGraph:
 		* Moved all OpenGraph code to specific OpenGraph class.
 		* Added option to specify and add FB Page and App ID and FB admin ID or ID's.
-	* Linkdex:
+	* Page Analaysis:
 		* Fixed bug in detection of headings with an ID or other attribute.
 	* Several performance optimizations to class includes.
 	* Some fixes in JavaScript keyword detection and keyword bolding in snippet when using colon and semicolons etc in title or meta description.
@@ -717,7 +811,7 @@ rewrite ^/([^/]+?)-sitemap([0-9]+)?\.xml$ /index.php?sitemap=$1&sitemap_n=$2 las
 	* No longer uses Google JS API for jQuery UI CSS, but included the needed classes in the plugins CSS files.
 	* Properly update sitemap for custom post types on publication.
 	* Fixed a notice in heading detection when no headings were found.
-	* Fixed a typo in Linkdex messages.
+	* Fixed a typo in Page Analysis messages.
 
 = 0.3.4 =
 

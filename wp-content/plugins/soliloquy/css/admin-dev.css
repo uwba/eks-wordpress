@@ -519,6 +519,26 @@
 	margin-top: 15px !important;
 }
 
+.soliloquy-just-upgraded {
+	background: #cbeca0;
+	border: 1px solid #97b48a;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	padding: 6px;
+	text-align: left;
+}
+
+.soliloquy-just-upgraded h2 {
+	font-size: 36px;
+	color: #333;
+}
+
+.soliloquy-just-upgraded p {
+	font-size: 14px;
+	line-height: 20px;
+}
+
 
 /* Media frame styling
 ------------------------------------------------------------ */

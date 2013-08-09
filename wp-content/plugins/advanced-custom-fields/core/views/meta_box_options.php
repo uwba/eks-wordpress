@@ -1,19 +1,21 @@
 <?php
 
 /*
-*  Meta Box: Options
+*  Meta box - options
 *
-*  @description: 
-*  @created: 23/06/12
+*  This template file is used when editing a field group and creates the interface for editing options.
+*
+*  @type	template
+*  @date	23/06/12
 */
-	
+
 
 // global
 global $post;
 
 	
 // vars
-$options = $this->parent->get_acf_options($post->ID);
+$options = apply_filters('acf/field_group/get_options', array(), $post->ID);
 	
 
 ?>
@@ -26,8 +28,8 @@ $options = $this->parent->get_acf_options($post->ID);
 		<td>
 			<?php 
 			
-			$this->parent->create_field(array(
-				'type'	=>	'text',
+			do_action('acf/create_field', array(
+				'type'	=>	'number',
 				'name'	=>	'menu_order',
 				'value'	=>	$post->menu_order,
 			));
@@ -42,7 +44,7 @@ $options = $this->parent->get_acf_options($post->ID);
 		<td>
 			<?php 
 			
-			$this->parent->create_field(array(
+			do_action('acf/create_field', array(
 				'type'	=>	'radio',
 				'name'	=>	'options[position]',
 				'value'	=>	$options['position'],
@@ -62,7 +64,7 @@ $options = $this->parent->get_acf_options($post->ID);
 		<td>
 			<?php 
 			
-			$this->parent->create_field(array(
+			do_action('acf/create_field', array(
 				'type'	=>	'radio',
 				'name'	=>	'options[layout]',
 				'value'	=>	$options['layout'],
@@ -84,7 +86,7 @@ $options = $this->parent->get_acf_options($post->ID);
 		<td>
 			<?php 
 			
-			$this->parent->create_field(array(
+			do_action('acf/create_field', array(
 				'type'	=>	'checkbox',
 				'name'	=>	'options[hide_on_screen]',
 				'value'	=>	$options['hide_on_screen'],
@@ -98,7 +100,10 @@ $options = $this->parent->get_acf_options($post->ID);
 					'slug'				=>	__("Slug"),
 					'author'			=>	__("Author"),
 					'format'			=>	__("Format"),
-					'featured_image'	=>	__("Featured Image")
+					'featured_image'	=>	__("Featured Image"),
+					'categories'		=>	__("Categories"),
+					'tags'				=>	__("Tags"),
+					'send-trackbacks'	=>	__("Send Trackbacks"),
 				)
 			));
 			

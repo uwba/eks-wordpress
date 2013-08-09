@@ -578,6 +578,7 @@ class Tgmsp_Shortcode {
 										} else {
 											$script .= 'soliloquySlider' . absint( $slider['id'] ) . '.pause();';
 										}
+									$script .= 'if ( 0 == event.data ) soliloquySlider' . absint( $slider['id'] ) . '.play()';
 								$script .= '}';
 							$script .= '}';
 

@@ -1,714 +1,831 @@
-<?php 
-/**
+<?php
+// plugin options
+$loginRadiusSettings = get_option('LoginRadius_settings');
+$loginRadiusDs = DIRECTORY_SEPARATOR;
+// include necessary files to detect a plugin
+include_once(ABSPATH . 'wp-admin'.$loginRadiusDs.'includes'.$loginRadiusDs.'plugin.php');
 
- * Function that process callback redirection.
-
+/** 
+ * Print the script required for enabling social login.
  */
-
-function get_redirect_location($http) {
-
-  $loc = urlencode($http.$_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
-
-  if (urldecode($loc) == wp_login_url() OR urldecode($loc) == site_url().'/wp-login.php?action=register' OR urldecode($loc) ==site_url().'/wp-login.php?loggedout=true') {
-
-    $loc = site_url().'/';
-
-  }
-
-  elseif (urldecode($_GET['redirect_to']) == admin_url()) {
-
-    $loc = site_url().'/';
-
-  }
-
-  elseif (isset($_GET['redirect_to'])) {
-
-    $loc = $_GET['redirect_to'];
-
-  }
-
-  else {
-
-    $loc = urlencode($http.$_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
-
-  }
-
-  return $loc;
-
+function login_radius_login_script(){
+	global $loginRadiusSettings, $loginRadiusObject;
+	$loginRadiusSettings['LoginRadius_apikey'] = trim($loginRadiusSettings['LoginRadius_apikey']);
+	if($loginRadiusObject->loginradiusValidateKey($loginRadiusSettings['LoginRadius_apikey'])){
+		if(isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off'){
+			$http = "https://";
+		}else{
+			$http = "http://";
+		}
+		?>
+		<!-- Script to enable social login -->
+		 <script src="//hub.loginradius.com/include/js/LoginRadius.js"></script>
+		 <script type="text/javascript"> var options={}; options.login=true; LoginRadius_SocialLogin.util.ready(function () { $ui = LoginRadius_SocialLogin.lr_login_settings;$ui.interfacesize = "";$ui.apikey = "<?php echo $loginRadiusSettings['LoginRadius_apikey'] ?>";$ui.callback = "<?php echo login_radius_get_callback($http) ?>"; $ui.lrinterfacecontainer ="interfacecontainerdiv"; $ui.interfacesize = "<?php if(isset($loginRadiusSettings['LoginRadius_interfaceSize'])){ echo trim($loginRadiusSettings['LoginRadius_interfaceSize']); }?>"; <?php if(isset($loginRadiusSettings['LoginRadius_numColumns']) && trim($loginRadiusSettings['LoginRadius_numColumns']) != ""){ echo '$ui.noofcolumns = '.trim($loginRadiusSettings['LoginRadius_numColumns']).';'; } ?> $ui.lrinterfacebackground = "<?php if(isset($loginRadiusSettings['LoginRadius_backgroundColor'])){ echo trim($loginRadiusSettings['LoginRadius_backgroundColor']); } ?>"; LoginRadius_SocialLogin.init(options); });
+		 </script>
+		<?php
+	}
 }
 
-
-
-/**
-
- * Function that shows social icons on wp.
-
+/** 
+ * Check if buddypress is active.
  */
-
-function Login_Radius_Connect_button( $newInterface = false ) {
-
-  global $LoginRadius_settings;
-
-  $title = $LoginRadius_settings['LoginRadius_title'];
-
-  if (!is_user_logged_in()) { 
-
-    if ($newInterface) {
-
-      $result = "<div style='margin-bottom: 3px;'><label>".$title."</label></div>".Login_Radius_get_interface( $newInterface );
-
-      return $result;
-
-    }
-
-    else {?>
-
-      <div>
-
-      <div style='margin-bottom: 3px;'><label><?php _e( $title, 'LoginRadius' ) ?></label></div><?php 
-
-      Login_Radius_get_interface($newInterface);?>
-
-      </div><?php
-
-    }
-
-  }
-
+function login_radius_is_bp_active(){
+	global $loginRadiusDs;
+	if(is_plugin_active("buddypress".$loginRadiusDs."bp-loader.php")){
+		return true;
+	}
+	return false;
 }
 
+/** 
+ * Validate url.
+ */
+function login_radius_validate_url($url){
+    $validUrlExpression = "/^(http:\/\/|https:\/\/|ftp:\/\/|ftps:\/\/|)?[a-z0-9_\-]+[a-z0-9_\-\.]+\.[a-z]{2,4}(\/+[a-z0-9_\.\-\/]*)?$/i";
+    return (bool)preg_match($validUrlExpression, $url);
+}
 
+/** 
+ * Get callback parameter of the social login iframe.
+ */
+function login_radius_get_callback($http){
+	$loc = urlencode($http.$_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]); 
+	if(urldecode($loc) == wp_login_url() OR urldecode($loc) == site_url().'/wp-login.php?action=register' OR urldecode($loc) == site_url().'/wp-login.php?loggedout=true'){ 
+		$loc = site_url().'/';
+	}elseif(isset($_GET['redirect_to']) && (urldecode($_GET['redirect_to']) == admin_url())){
+		$loc = site_url().'/'; 
+	}elseif(isset($_GET['redirect_to'])){ 
+		if(login_radius_validate_url(urldecode($_GET['redirect_to'])) && (strpos(urldecode($_GET['redirect_to']), 'http://') !== false || strpos(urldecode($_GET['redirect_to']), 'https://') !== false)){
+			$loc = $_GET['redirect_to'];
+		}else{
+			$loc = site_url().'/';
+		}
+	}else{ 
+		$loc = urlencode($http.$_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]); 
+	}
+	return $loc; 
+} 
 
-/**
-
- * Function that shows social icons on wp.
-
+/** 
+ * Display Social Login interface.
  */ 
+function Login_Radius_Connect_button($newInterface = false){
+	global $loginRadiusSettings;
+	$title = $loginRadiusSettings['LoginRadius_title'];
+	if(!is_user_logged_in()){
+		if($newInterface){ 
+			$result = "<div style='margin-bottom: 3px;'>";
+			if(trim($loginRadiusSettings['LoginRadius_apikey']) != "" && trim($loginRadiusSettings['LoginRadius_secret']) != ""){
+				$result .= "<label>".$title."</label>";
+			}
+			$result .= "</div>".login_radius_get_interface($newInterface);
+			return $result;
+		}else{
+			?> 
+			<div>
+			<div style='margin-bottom: 3px;'><?php if(trim($loginRadiusSettings['LoginRadius_apikey']) != "" && trim($loginRadiusSettings['LoginRadius_secret']) != ""){?><label><?php _e( $title, 'LoginRadius' ) ?></label><?php } ?></div>
+			<?php
+			login_radius_get_interface($newInterface);
+			?>
+			</div>
+			<?php 
+		} 
+	} 
+} 
 
-function Login_Radius_get_interface( $newInterface=false ) {
-
-  $LoginRadius_settings = get_option ('LoginRadius_settings');
-
-  $LoginRadius_apikey = trim($LoginRadius_settings['LoginRadius_apikey']);
-
-  $LoginRadius_secret = trim($LoginRadius_settings['LoginRadius_secret']);
-
-  $loginRadiusError = "<p style ='color:red;'>Your LoginRadius API key and secret is not valid, please correct it or contact LoginRadius support at <b><a href ='http://www.loginradius.com' target = '_blank'>www.LoginRadius.com</a></b></p>";
-
-  
-
-  $loginRadiusConnErr = "<p style ='color:red;'>Your API connection setting not working. try to change setting from module option or check your php.ini setting for (<b>cURL support = enabled</b> OR <b>allow_url_fopen = On</b>)</p>";
-
-  
-
-  $loginRadiusEmpty = "<p style ='color:red;'>To activate your plugin, please log in to LoginRadius and get API Key & Secret. Web: <b><a href ='http://www.loginradius.com' target = '_blank'>www.LoginRadius.com</a></b></p>";
-
-  
-
-  if($LoginRadius_apikey == "" && $LoginRadius_secret == ""){
-
-      if (!$newInterface)
-
-	  {
-
-        echo $loginRadiusEmpty;
-
-	  	return;
-
-      }
-
-	  else
-
-      { 
-
-		return $loginRadiusEmpty;
-
-      }
-
-  }
-
-  
-
-  if (isset($LoginRadius_apikey)) {
-
-    require_once ('LoginRadiusSDK.php');
-
-    $obj_auth = new LoginRadius();
-
-    $UserAuth = $obj_auth->loginradius_get_auth($LoginRadius_apikey, $LoginRadius_secret);
-
-    if ($UserAuth == "invalid") {
-
-	
-
-      if (!$newInterface)
-
-	  {
-
-        echo $loginRadiusError;
-
-	  	return;
-
-      }
-
-	  else
-
-      { 
-
-		return $loginRadiusError;
-
-      }
-
-    }
-
-	
-
-	if( $UserAuth == "api connection")
-
-	{
-
-	   if (!$newInterface)
-
-	   {
-
-		 echo $loginRadiusConnErr;
-
-		 return;
-
-	   }
-
-	   else
-
-	   { 
-
-		 return $loginRadiusConnErr;
-
-	   }
-
+/** 
+ * Get Socisl Login iframe. 
+ */  
+function login_radius_get_interface($newInterface = false){
+	global $loginRadiusSettings, $loginRadiusObject;
+	$loginRadiusApiKey = trim($loginRadiusSettings['LoginRadius_apikey']); 
+	$loginRadiusSecret = trim($loginRadiusSettings['LoginRadius_secret']); 
+	$loginRadiusError = "<div style='background-color: #FFFFE0;border:1px solid #E6DB55;padding:5px;'><p style ='color:red;'>Your LoginRadius API key or secret is not valid, please correct it or contact LoginRadius support at <b><a href ='http://www.loginradius.com' target = '_blank'>www.LoginRadius.com</a></b></p></div>"; 
+	if(empty($loginRadiusSecret)){
+		$loginRadiusResult = "";
+	}elseif(!$loginRadiusObject->loginradiusValidateKey($loginRadiusApiKey) || !$loginRadiusObject->loginradiusValidateKey($loginRadiusSecret)){
+		$loginRadiusResult = $loginRadiusError;
+	}else{
+		$loginRadiusResult = '<div class="interfacecontainerdiv"></div>';
 	}
-
-	
-
-    $IsHttps = (!empty($UserAuth->IsHttps) ? $UserAuth->IsHttps : '');
-
-    $iframeHeight = (!empty($UserAuth->height) ? $UserAuth->height : 50);
-
-    $iframeWidth = (!empty($UserAuth->width) ? $UserAuth->width : 169);
-
-    $http = ($IsHttps == 1 ? "https://" : "http://");
-	
-	$loc = get_redirect_location($http);
-    $loginRadiusResult = "<iframe src=".$http."hub.loginradius.com/Control/PluginSlider.aspx?apikey=".$LoginRadius_apikey."&callback=".$loc." width='".$iframeWidth."' height='".$iframeHeight."' frameborder='0' scrolling='no' allowtransparency='true' ></iframe>";
-
-    if (!$newInterface)
-
-	{
-
-      echo $loginRadiusResult;
-
-    }
-
-	else
-
-    {
-
-	  return $loginRadiusResult;
-
-  	}
-
-  }
-
+	// return/print interface HTML
+	if(!$newInterface){ 
+		echo $loginRadiusResult; 
+	}else{ 
+		return $loginRadiusResult; 
+	} 
 }
 
-
-
-/**
-
- * Function that shows social icons in widget area.
-
- */	
-
-function Login_Radius_widget_Connect_button( ) {
-
-  if (!is_user_logged_in()) { 
-
-    Login_Radius_get_interface();
-
-  }
-
-  // On user Login show user details.
-
-  if (is_user_logged_in() && !is_admin()) {
-
-    global $LoginRadius_settings;
-
-    global $user_ID; $size ='60';
-
-    $user = get_userdata($user_ID);
-
-    echo "<div style='height:80px;width:180px'><div style='width:63px;float:left;'>";
-
-    if (($user_thumbnail = get_user_meta ($user_ID, 'thumbnail', true)) !== false) {
-
-	
-
-      if (strlen (trim ($user_thumbnail)) > 0) {
-
-	    echo '<img alt="user social avatar" src="'.$user_thumbnail.'" height = "'.$size.'" width = "'.$size.'" title="'.$user->user_login.'" style="border:2px solid #e7e7e7;"/>';
-
-      }
-
-	  else {
-
-	    echo get_avatar( $user_ID, $size, $default, $alt );  
-
-	  }
-
-    }
-
-	
-
-	echo "</div><div style='width:110px;float:right;'>";
-
-	_e($user->user_login,  'LoginRadius') ;
-
-	//$redirect = get_permalink();
-
-	if ($LoginRadius_settings['LoginRadius_loutRedirect'] == 'custom' && !empty($LoginRadius_settings['custom_loutRedirect']))
-
-	{
-
-	  $redirect = htmlspecialchars($LoginRadius_settings["custom_loutRedirect"]);
-
-	}
-
-	else
-
-	{
-
-	  $redirect = home_url();?><br />
-
-     <?php 
-
-	 }
-
-	 ?>
-
-	  <a href="<?php echo wp_logout_url($redirect);?>"><?php _e('Log Out', 'LoginRadius');?></a></div></div><?php 
-
-  }
-
-}
-
-$LoginRadius_settings = get_option('LoginRadius_settings');
-
-
-// social share
-
-if( is_active_widget(false, false, 'loginradiusshare', true) || $LoginRadius_settings['LoginRadius_shareEnable'] == '1' )
-{
-
-	include('LoginRadius_socialShare.php');
-
-}
-
-// social counter
-
-if( is_active_widget(false, false, 'loginradiuscounter', true) || $LoginRadius_settings['LoginRadius_counterEnable'] == '1' )
-
-{
-	include('LoginRadius_socialCounter.php');
-
-}
-
-
-// Social Login location
-
-include('LoginRadius_location.php');
-
-
-
-if ($LoginRadius_settings['LoginRadius_loginform'] == '1' && $LoginRadius_settings['LoginRadius_loginformPosition'] == "embed") {
-
-  		add_action( 'login_form','Login_Radius_Connect_button');
-
-      add_action('bp_before_sidebar_login_form', 'Login_Radius_Connect_button');
-
-}
-
-if (($LoginRadius_settings['LoginRadius_loginform'] == '1' && $LoginRadius_settings['LoginRadius_loginformPosition'] == "beside") || ($LoginRadius_settings['LoginRadius_regform'] == '1' && $LoginRadius_settings['LoginRadius_regformPosition'] == "beside")) {  
-	 add_action('login_head', 'loginRadiusLoginInterface');
-
-     if($LoginRadius_settings['LoginRadius_loginformPosition'] == "beside"){
-
-	 	 add_action('bp_before_sidebar_login_form', 'Login_Radius_Connect_button');
-
-	 }
-
-	 if($LoginRadius_settings['LoginRadius_regformPosition'] == "beside"){
-		  add_action('bp_before_account_details_fields', 'Login_Radius_Connect_button');
-  	}
-
-}
-
-if ($LoginRadius_settings['LoginRadius_regform'] == '1' && $LoginRadius_settings['LoginRadius_regformPosition'] == "embed") {
-
-  add_action( 'register_form', 'Login_Radius_Connect_button');
-
-  add_action( 'after_signup_form','Login_Radius_Connect_button');
-
-      add_action('bp_before_account_details_fields', 'Login_Radius_Connect_button');
-
-
-
-}
-
-
-
-function LoginRadiusCommentScript(){
-
-   wp_enqueue_script('LoginRadiusCommentingScript', plugins_url('js/loginRadiusComments.js', __FILE__), array(), false, false);
-
-   wp_register_style('LoginRadiusCommentsCss', plugins_url('css/loginRadiusComments.css', __FILE__), array(), false, 'all');
-
-   wp_enqueue_style('LoginRadiusCommentsCss');
-
-}
-
-
-
-function loginRadiusMove_textarea( $loginRadiusInput = array () )
-
-{
-
-    static $loginRadiusTextarea = '';
-
-
-
-    if ( 'comment_form_defaults' === current_filter() )
-
-    {
-        // Copy the field to our internal variable …
-        $loginRadiusTextarea = $loginRadiusInput['comment_field'];
-
-        // … and remove it from the defaults array.
-
-        $loginRadiusInput['comment_field'] = '';
-		unset( $loginRadiusInput['comment_notes_after'] );
-
-        return $loginRadiusInput;
-
-    }
-
-
-    $loginRadiusCommentHtml = $loginRadiusTextarea."<div id='loginRadiusLoginMessage' style='background-color:#000000; display:none; width:95%;height:24px;padding-left:5px;color:#fff; font-size:small'><p class='comment-notes'>Post your comments via a social network or fill out your name and email.</p></div>".
-													"<div id='loginRadiusMainWrapper' style='display:none'>".
-
-
-												"<div id='loginRadiusWrapper' style='width:56%; float:right; padding-left:3%; border-left:1px solid #ccc; margin-left:10px'>";
-
-	if (is_user_logged_in() && !is_admin()) {
-
-		global $user_ID; $size ='60';
-
+/** 
+ * Display social login interface in widget area. 
+ */	 
+function Login_Radius_widget_Connect_button(){ 
+	if(!is_user_logged_in()){
+		login_radius_get_interface(); 
+	} 
+	// On user Login show user details. 
+	if(is_user_logged_in() && !is_admin()){ 
+		global $loginRadiusSettings; 
+		global $user_ID;
+		$size ='60';
 		$user = get_userdata($user_ID);
-
-		if (($user_thumbnail = get_user_meta ($user_ID, 'thumbnail', true)) !== false) {
-
-		  if (strlen (trim ($user_thumbnail)) > 0) {
-
-			echo '<img alt="user social avatar" src="'.$user_thumbnail.'" height = "'.$size.'" width = "'.$size.'" title="'.$user->user_login.'" style="border:2px solid #e7e7e7;"/>';
-
-		  }
-
-		  else {
-
-		  	echo "<div style='width:63px;height:70px;clear:both'>";
-
-			echo get_avatar( $user_ID, $size, $default, $alt ); 
-
-			echo '</div>';
-
-		  }
-
+		echo "<div style='height:80px;width:180px'><div style='width:63px;float:left;'>";
+		$currentSocialId = get_user_meta($user_ID, 'loginradius_current_id', true);
+		if(($userAvatar = get_user_meta($user_ID, 'loginradius_'.$currentSocialId.'_thumbnail', true)) !== false && strlen(trim($userAvatar)) > 0){
+			echo '<img alt="user social avatar" src="'.$userAvatar.'" height = "'.$size.'" width = "'.$size.'" title="'.$user->user_login.'" style="border:2px solid #e7e7e7;"/>';
+		}elseif(($userAvatar = get_user_meta($user_ID, 'loginradius_thumbnail', true)) !== false && strlen(trim($userAvatar)) > 0){
+			echo '<img alt="user social avatar" src="'.$userAvatar.'" height = "'.$size.'" width = "'.$size.'" title="'.$user->user_login.'" style="border:2px solid #e7e7e7;"/>';
+		}else{
+			echo @get_avatar($user_ID, $size, $default, $alt);   
 		}
+		echo "</div><div style='width:100px; float:left; margin-left:10px'>"; 
+		echo $user->user_login;
+		if($loginRadiusSettings['LoginRadius_loutRedirect'] == 'custom' && !empty($loginRadiusSettings['custom_loutRedirect'])){ 
+			$redirect = htmlspecialchars($loginRadiusSettings["custom_loutRedirect"]); 
+		}else{ 
+			$redirect = home_url();?>
+			<?php  
+		} 
+		?> 
+		<br/><a href="<?php echo wp_logout_url($redirect);?>"><?php _e('Log Out', 'LoginRadius');?></a></div></div><?php  
+	} 
+}
 
+global $loginRadiusSettings;
+// social share 
+if(isset($loginRadiusSettings['LoginRadius_shareEnable']) && $loginRadiusSettings['LoginRadius_shareEnable'] == '1'){ 
+	require_once('LoginRadius_socialShare.php'); 
+} 
+
+// Set Social Login position in "beside" mode
+require_once('LoginRadius_location.php');
+// display social login on login form
+if(isset($loginRadiusSettings['LoginRadius_loginform']) && $loginRadiusSettings['LoginRadius_loginform'] == '1' && isset($loginRadiusSettings['LoginRadius_loginformPosition']) && $loginRadiusSettings['LoginRadius_loginformPosition'] == "embed"){
+	add_action('login_form', 'Login_Radius_Connect_button'); 
+	add_action('bp_before_sidebar_login_form', 'Login_Radius_Connect_button'); 
+}
+// show Social Login interface before buddypress login form and register form
+if((isset($loginRadiusSettings['LoginRadius_loginform']) && $loginRadiusSettings['LoginRadius_loginform'] == '1' && isset($loginRadiusSettings['LoginRadius_loginformPosition']) && $loginRadiusSettings['LoginRadius_loginformPosition'] == "beside") || (isset($loginRadiusSettings['LoginRadius_regform']) && $loginRadiusSettings['LoginRadius_regform'] == '1' && isset($loginRadiusSettings['LoginRadius_regformPosition']) && $loginRadiusSettings['LoginRadius_regformPosition'] == "beside")){ 
+	add_action('login_head', 'login_radius_login_interface'); 
+	if($loginRadiusSettings['LoginRadius_loginformPosition'] == "beside"){
+		add_action('bp_before_sidebar_login_form', 'Login_Radius_Connect_button'); 
+	} 
+	if($loginRadiusSettings['LoginRadius_regformPosition'] == "beside"){
+		add_action('bp_before_account_details_fields', 'Login_Radius_Connect_button');
+	} 
+}
+// display Social Login interface on register form in embed mode
+if(isset($loginRadiusSettings['LoginRadius_regform']) && $loginRadiusSettings['LoginRadius_regform'] == '1' && isset($loginRadiusSettings['LoginRadius_regformPosition']) && $loginRadiusSettings['LoginRadius_regformPosition'] == "embed"){ 
+	add_action('register_form', 'Login_Radius_Connect_button'); 
+	add_action('after_signup_form','Login_Radius_Connect_button'); 
+	add_action('bp_before_account_details_fields', 'Login_Radius_Connect_button'); 
+} 
+
+// show social login interface on comment form
+if(isset($loginRadiusSettings['LoginRadius_commentEnable']) && $loginRadiusSettings['LoginRadius_commentEnable'] == '1'){
+	global $user_ID;
+	if(get_option('comment_registration') && intval($user_ID) == 0 && $loginRadiusSettings['LoginRadius_commentform'] != ""){
+		add_action('comment_form_must_log_in_after','Login_Radius_Connect_button'); 
+	}elseif(isset($loginRadiusSettings['LoginRadius_commentInterfacePosition'])){
+		switch($loginRadiusSettings['LoginRadius_commentInterfacePosition']){
+			case 'very_top':
+				$commentHook = 'comment_form_before';
+				break;
+			case 'before_fields':
+				$commentHook = 'comment_form_before_fields';
+				break;
+			case 'after_fields':
+				$commentHook = 'comment_form_after_fields';
+				break;
+			case 'after_submit':
+				$commentHook = 'comment_form';
+				break;
+			case 'very_bottom':
+				$commentHook = 'comment_form_after';
+				break;
+			case 'after_leave_reply':
+			default:
+				$commentHook = 'comment_form_top';
+		}
+		add_action($commentHook,'Login_Radius_Connect_button');
+	} 
+} 
+
+/** 
+ * Redirect users after login. 
+ */	 
+function login_radius_redirect($user_id){
+	global $loginRadiusSettings; 
+	$loginRedirect = $loginRadiusSettings['LoginRadius_redirect']; 
+	$customRedirectUrl = trim($loginRadiusSettings['custom_redirect']); 
+	$redirectionUrl = site_url();
+	$safeRedirection = false; 
+	if(!empty($_GET['redirect_to'])){
+		$redirectionUrl = $_GET['redirect_to'];
+		$safeRedirection = true; 
+	}else{
+		if(isset($loginRedirect)){
+			switch(strtolower($loginRedirect)){ 
+				case 'homepage': 
+					$redirectionUrl = site_url().'/'; 		 
+					break; 
+				case 'dashboard': 
+					$redirectionUrl = admin_url(); 
+					break; 
+				case 'bp': 
+					if(login_radius_is_bp_active()){
+						$redirectionUrl = bp_core_get_user_domain($user_id); 
+					}else{
+						$redirectionUrl = admin_url();	
+					}  
+					break; 
+				case 'custom':
+					if(isset($loginRedirect) && strlen($customRedirectUrl) > 0 && login_radius_validate_url($customRedirectUrl)){ 
+						$redirectionUrl = trim($customRedirectUrl); 
+					}else{
+						$redirectionUrl = site_url().'/'; 		 
+					}
+					break; 
+				default: 
+				case 'samepage':
+					if(strpos($_SERVER['HTTP_REFERER'], "&callback=") !== false){
+						$redirectionUrl = urldecode(substr($_SERVER['HTTP_REFERER'], strpos($_SERVER['HTTP_REFERER'], "&callback=")+10));
+					}else{
+						$redirectionUrl = site_url();
+					}
+					break; 
+			} 
+		} 
+	} 
+	if($safeRedirection){
+		wp_redirect($redirectionUrl);
+		exit();
+	}else{
+		wp_safe_redirect($redirectionUrl);
+		exit();
 	}
-
-	print $loginRadiusCommentHtml;
-
-}
-
-
-
-function loginRadiusWrapper_div_end(){
-	global $LoginRadius_settings;
-
-	echo '</div>'.
-
-		 '<div id="loginRadiusInterface">'.
-		"<div id='loginRadiusOr'><p>".htmlspecialchars(trim($LoginRadius_settings['LoginRadius_commentText']))."</p></div>";
-	echo Login_Radius_get_interface();
-
-	echo '</div>';
-
-}
-
-
-
-function loginRadiusWrapper_div_end2(){
-
-	echo '</div>';
-
-}
-
-
-
-
-
-function loginRadiusMainWrapperEnd(){
-
-	echo '</div>';
-
-}
-
-
-
-if ($LoginRadius_settings['LoginRadius_commentEnable'] == '1') {
-
-  if ( ( get_option('comment_registration') && !$user_ID ) && $LoginRadius_settings['LoginRadius_commentform'] ) {
-
-    add_action( 'comment_form_must_log_in_after','Login_Radius_Connect_button');
-
-  }
-
-  if( $LoginRadius_settings['LoginRadius_commentform'] == "new" ){
-
-    add_action('wp_enqueue_scripts', 'LoginRadiusCommentScript' );
-
-	add_action( 'comment_form_defaults', 'loginRadiusMove_textarea' );
-
-	add_action( 'comment_form_top', 'loginRadiusMove_textarea' );
-
-	add_action('comment_form_after_fields', 'loginRadiusWrapper_div_end');
-
-	add_action('comment_form_logged_in_after', 'loginRadiusWrapper_div_end2');
-
-	add_action('comment_form', 'loginRadiusMainWrapperEnd');
-
-  }elseif( $LoginRadius_settings['LoginRadius_commentform'] == "old" ){
-
-    add_action( 'comment_form_top','Login_Radius_Connect_button');
-
-  }
-
-}
-
-
-
-/**
-
- * Function for redirects user after login.
-
- */	
-
-function LoginRadius_redirect() {
-
-  $LoginRadius_settings = get_option ('LoginRadius_settings');
-
-  $LoginRadius_redirect = $LoginRadius_settings['LoginRadius_redirect'];
-
-  $LoginRadius_redirect_custom_redirect = $LoginRadius_settings['custom_redirect'];
-
-  $redirect_to = site_url();
-
-  $redirect_to_safe = false;
-
-  if (!empty($_GET['redirect_to'])) {
-
-    $redirect_to = $_GET['redirect_to'];
-
-    $redirect_to_safe = true;
-
-  }
-
-  else {
-    if (isset($LoginRadius_redirect)) {
-
-      switch (strtolower($LoginRadius_redirect)) {
-
-        case 'homepage':
-
-          $redirect_to = site_url().'/';
-
-		  break;
-
-		  
-
-		case 'dashboard':
-
-		  $redirect_to = admin_url();
-
-		  break;
-
-		  
-
-		case 'custom':
-
-		  if (isset ($LoginRadius_redirect) && strlen(trim($LoginRadius_redirect_custom_redirect)) > 0) {
-
-            $redirect_to = trim($LoginRadius_redirect_custom_redirect);
-
-          }
-
-		  break;
-
+} 
+/** 
+ * Return Sharing code. 
+ */	   
+function login_radius_get_sharing_code(){
+	global $loginRadiusSettings, $post;
+	$sharingScript = '<script type="text/javascript">var islrsharing = true; var islrsocialcounter = true;</script> <script type="text/javascript" src="//share.loginradius.com/Content/js/LoginRadius.js" id="lrsharescript"></script>';
+	$sharingScript .= '<script type="text/javascript">';
+	// horizontal sharing theme
+	if(isset($loginRadiusSettings['horizontal_shareEnable']) && $loginRadiusSettings['horizontal_shareEnable'] == "1"){
+		// interface
+		if($loginRadiusSettings['horizontalSharing_theme'] == "32" || $loginRadiusSettings['horizontalSharing_theme'] == "16"){
+			$interface = 'horizontal';
+		}elseif($loginRadiusSettings['horizontalSharing_theme'] == "single_large" || $loginRadiusSettings['horizontalSharing_theme'] == "single_small"){
+			$interface = 'simpleimage';
+		}elseif($loginRadiusSettings['horizontalSharing_theme'] == "counter_horizontal" || $loginRadiusSettings['horizontalSharing_theme'] == "counter_vertical"){
+			// set counter variables
+			$interface = 'simple';
+			$isHorizontal = "true";
+			// interface
+			if($loginRadiusSettings['horizontalSharing_theme'] == "counter_vertical"){
+				$type = 'vertical';
+			}else{
+				$type = 'horizontal';
+			}
+		}else{
+			$interface = 'horizontal';
+		}
+		// size
+		if($loginRadiusSettings['horizontalSharing_theme'] == "32" || $loginRadiusSettings['horizontalSharing_theme'] == "single_large"){
+			$size = '32';
+		}elseif($loginRadiusSettings['horizontalSharing_theme'] == "16" || $loginRadiusSettings['horizontalSharing_theme'] == "single_small"){
+			$size = '16';
+		}else{
+			$size = '32';
+		}
+		// counter providers
+		if($loginRadiusSettings['horizontalSharing_theme'] == "counter_horizontal" || $loginRadiusSettings['horizontalSharing_theme'] == "counter_vertical"){
+			if(isset($loginRadiusSettings['horizontal_counter_providers']) && is_array($loginRadiusSettings['horizontal_counter_providers'])){
+				$providers = implode('","', $loginRadiusSettings['horizontal_counter_providers']);
+			}else{
+				$providers = 'Facebook Like","Google+ +1","Pinterest Pin it","LinkedIn Share","Hybridshare';
+			}
+			// prepare counter script
+			$sharingScript .= 'LoginRadius.util.ready(function () { $SC.Providers.Selected = ["'.$providers.'"]; $S = $SC.Interface.'.$interface.'; $S.isHorizontal = '.$isHorizontal.'; $S.countertype = \''.$type.'\'; $S.show("loginRadiusHorizontalSharing"); });';
+		}else{
+			// sharing providers
+			if(isset($loginRadiusSettings['horizontal_rearrange_providers']) && count($loginRadiusSettings['horizontal_rearrange_providers']) > 0){
+				$providers = implode('","', $loginRadiusSettings['horizontal_rearrange_providers']);
+			}else{
+				$providers = 'Facebook","Twitter","GooglePlus","LinkedIn","Pinterest","Print","Email';
+			}
+			// prepare sharing script
+			$sharingScript .= 'LoginRadius.util.ready(function() { $i = $SS.Interface.'.$interface.'; $SS.Providers.Top = ["'.$providers.'"]; $u = LoginRadius.user_settings;';
+			if(isset($loginRadiusSettings["LoginRadius_apikey"]) && trim($loginRadiusSettings["LoginRadius_apikey"]) != ""){
+				$sharingScript .= '$u.apikey= \''.trim($loginRadiusSettings["LoginRadius_apikey"]).'\';';
+			}
+			$sharingScript .= '$i.size = '.$size.'; $u.sharecounttype="url"; $i.show("loginRadiusHorizontalSharing"); });';
+		}
+	}
+	// vertical sharing interface
+	if(isset($loginRadiusSettings['vertical_shareEnable']) && $loginRadiusSettings['vertical_shareEnable'] == "1"){
+		// relative vertical position
+		if($loginRadiusSettings['sharing_verticalPosition'] == 'top_left'){
+			$position1 = 'top';
+			$position2 = 'left';
+		}elseif($loginRadiusSettings['sharing_verticalPosition'] == 'top_right'){
+			$position1 = 'top';
+			$position2 = 'right';
+		}elseif($loginRadiusSettings['sharing_verticalPosition'] == 'bottom_left'){
+			$position1 = 'bottom';
+			$position2 = 'left';
+		}else{
+			$position1 = 'bottom';
+			$position2 = 'right';
+		}
+		// interface top offset
+		if($loginRadiusSettings['verticalSharing_theme'] == "counter_horizontal" || $loginRadiusSettings['verticalSharing_theme'] == "counter_vertical"){
+			$sharingVariable = 'S';
+		}else{
+			$sharingVariable = 'i';
+		}
+		$offset = "";
+		if(isset($loginRadiusSettings['sharing_offset']) && trim($loginRadiusSettings['sharing_offset']) != ""){
+			$offset = '$'.$sharingVariable.'.top = \''.trim($loginRadiusSettings['sharing_offset']).'px\'; $'.$sharingVariable.'.'.$position2.' = \'0px\';';
+		}else{
+			$offset = '$'.$sharingVariable.'.'.$position1.' = \'0px\'; $'.$sharingVariable.'.'.$position2.' = \'0px\';';
+		}
 		
-
-		default:
-
-		  case 'samepage':
-
-		    $redirect_to = $_GET['callback'];
-
-		  break;
-
-      }
-
-    }
-
-  }
-
-  include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-  
-  if( is_plugin_active("buddypress/bp-loader.php") ){
-		if(isset($LoginRadius_redirect) && strtolower($LoginRadius_redirect) == "samepage" ){
-			$redirect_to = site_url().$_SERVER['REQUEST_URI'];
+		$interface = 'Simplefloat';
+		if($loginRadiusSettings['verticalSharing_theme'] == "32"){
+			$size = '32';
+		}elseif($loginRadiusSettings['verticalSharing_theme'] == "16"){
+			$size = '16';
+		}elseif($loginRadiusSettings['verticalSharing_theme'] == "counter_horizontal" || $loginRadiusSettings['verticalSharing_theme'] == "counter_vertical"){
+			$interface = 'simple';
+			$isHorizontal = "false";
+			if($loginRadiusSettings['verticalSharing_theme'] == "counter_vertical"){
+				$type = 'vertical';
+			}elseif($loginRadiusSettings['verticalSharing_theme'] == "counter_horizontal"){
+				$type = 'horizontal';
+			}
+		}else{
+			$size = '16';
 		}
-		if( ($LoginRadius_settings['LoginRadius_commentEnable'] == '1') && ($LoginRadius_settings['LoginRadius_commentform'] == 'new') ){
-			$redirect_to = site_url().$_SERVER['REQUEST_URI'];
+		
+		// counter providers
+		if($loginRadiusSettings['verticalSharing_theme'] == "counter_horizontal" || $loginRadiusSettings['verticalSharing_theme'] == "counter_vertical"){
+			if(isset($loginRadiusSettings['vertical_counter_providers']) && is_array($loginRadiusSettings['vertical_counter_providers'])){
+				$providers = implode('","', $loginRadiusSettings['vertical_counter_providers']);
+			}else{
+				$providers = 'Facebook Like","Google+ +1","Pinterest Pin it","LinkedIn Share","Hybridshare';
+			}
+			// prepare counter script
+			$sharingScript .= 'LoginRadius.util.ready(function () { $SC.Providers.Selected = ["'.$providers.'"]; $S = $SC.Interface.'.$interface.'; $S.isHorizontal = '.$isHorizontal.'; $S.countertype = \''.$type.'\'; '.$offset.' $S.show("loginRadiusVerticalSharing"); });';
+		}else{
+			// sharing providers
+			if(isset($loginRadiusSettings['vertical_rearrange_providers']) && count($loginRadiusSettings['vertical_rearrange_providers']) > 0){
+				$providers = implode('","', $loginRadiusSettings['vertical_rearrange_providers']);
+			}else{
+				$providers = 'Facebook","Twitter","GooglePlus","LinkedIn","Pinterest","Print","Email';
+			}
+			// prepare sharing script
+			$sharingScript .= 'LoginRadius.util.ready(function() { $i = $SS.Interface.'.$interface.'; $SS.Providers.Top = ["'.$providers.'"]; $u = LoginRadius.user_settings;';
+			if(isset($loginRadiusSettings["LoginRadius_apikey"]) && trim($loginRadiusSettings["LoginRadius_apikey"]) != ""){
+				$sharingScript .= '$u.apikey= \''.trim($loginRadiusSettings["LoginRadius_apikey"]).'\';';
+			}
+			$sharingScript .= '$i.size = '.$size.'; '.$offset.' $i.show("loginRadiusVerticalSharing"); });';
 		}
-		bp_core_redirect($redirect_to);
-  }else {
- 		if( ($LoginRadius_settings['LoginRadius_commentEnable'] == '1') && ($LoginRadius_settings['LoginRadius_commentform'] == 'new') ){
-			wp_redirect($_GET['callback']); return; 
-		}
- 
-	  if ($redirect_to_safe) {
-		wp_redirect($redirect_to);
-	  }
-	  else {
-		wp_safe_redirect($redirect_to); 
-	  }
-  }
-
+	}
+	$sharingScript .= '</script>';
+	echo $sharingScript;
 }
 
+/** 
+ * Auto approve comments if user logs in through social login.
+ */ 
+function login_radius_approve_comment($approved){
+	global $loginRadiusSettings; 
+	if(empty($approved)){
+		if($loginRadiusSettings['LoginRadius_autoapprove'] == '1'){ 
+			$user_id = get_current_user_id(); 
+			if(is_numeric($user_id)){
+				$commentUser = get_user_meta($user_id, 'loginradius_provider_id', true); 
+				if($commentUser !== false){ 
+					$approved = 1; 
+				} 
+			} 
+		} 
+	} 
+	return $approved; 
+}
+// check if auto approve comment option is checked
+if(isset($loginRadiusSettings['LoginRadius_autoapprove']) && $loginRadiusSettings['LoginRadius_autoapprove'] == '1'){
+	add_action('pre_comment_approved', 'login_radius_approve_comment');
+}
 
-
-/**
-
- * Display Sharing Interface.
-
- */	  
-
-function loginradius_share_output() {
-	global $LoginRadius_settings;
-	if (strpos($LoginRadius_settings['LoginRadius_shareCode'], 'islrsocialcounter = false') !== false){
-		echo str_replace("islrsocialcounter = false", "islrsocialcounter = true", $LoginRadius_settings['LoginRadius_shareCode']);
+/** 
+ * Shortcode for social sharing.
+ */ 
+function login_radius_sharing_shortcode($params){
+	extract(shortcode_atts(array(
+		'style' => '',
+		'type' => 'horizontal'
+	), $params));
+	$return = '<div ';
+	// sharing theme type
+	if($type == "vertical"){
+		$return .= 'class="loginRadiusVerticalSharing" ';
 	}else{
-		echo $LoginRadius_settings['LoginRadius_shareCode'];
+		$return .= 'class="loginRadiusHorizontalSharing" ';
+	}
+	// style 
+	if($style != ""){
+		$return .= 'style="'.$style.'"';
+	}
+	$return .= '></div>';
+	return $return;
+}
+add_shortcode('LoginRadius_Share', 'login_radius_sharing_shortcode');
+
+/** 
+ * Shortcode for social counter.
+ * Deprecated since version 4.7 
+ */ 
+function login_radius_counter_shortcode($params){
+	extract(shortcode_atts(array(
+		'style' => ''
+	), $params));
+	$return = '<div class="loginRadiusHorizontalSharing" ';
+	if($style != ""){
+		$return .= 'style="'.$style.'"';
+	}
+	$return .= '></div>';
+	return $return;
+}
+add_shortcode('LoginRadius_Counter', 'login_radius_counter_shortcode');
+
+/** 
+ * Shortcode for social login.
+ */ 
+function login_radius_login_shortcode($params){
+	extract(shortcode_atts(array(
+		'style' => ''
+	), $params));
+	if($style != ""){
+		?>
+		<div style="<?php echo $style; ?>">
+		<?php
+	}
+	Login_Radius_Connect_button();
+	if($style != ""){
+		?>
+		</div>
+		<?php
 	}
 }
+add_shortcode('LoginRadius_Login', 'login_radius_login_shortcode');
 
-/**
+// replicate Social Login configuration to the subblogs in the multisite network
+if(is_multisite() && is_main_site()){
+	// replicate the social login config to the new blog created in the multisite network
+	function login_radius_replicate_settings($blogId){
+		global $loginRadiusSettings;
+		add_blog_option($blogId, 'LoginRadius_settings', $loginRadiusSettings);
+	}
+	add_action('wpmu_new_blog', 'login_radius_replicate_settings');
+	// update the social login options in all the old blogs
+	function login_radius_update_old_blogs($oldConfig){
+	    $newConfig = get_option('LoginRadius_settings');
+		if(isset($newConfig['multisite_config']) && $newConfig['multisite_config'] == "1"){
+			$blogs = get_blog_list(0, 'all');
+			foreach($blogs as $blog){
+				update_blog_option($blog['blog_id'], 'LoginRadius_settings', $newConfig);
+			}
+		}
+	}
+    add_action('update_option_LoginRadius_settings', 'login_radius_update_old_blogs');
+}
 
- * Display counter Interface.
+/** 
+ * Update mapping fields in database.
+ */ 
+function login_radius_map_id($id, $lrid, $provider, $thumb){
+	add_user_meta($id, 'loginradius_provider_id', $lrid);
+	add_user_meta($id, 'loginradius_mapped_provider', $provider); 
+	add_user_meta($id, 'loginradius_'.$provider.'_id', $lrid);
+	if($thumb != ""){
+		add_user_meta($id, 'loginradius_'.$lrid.'_thumbnail', $thumb);
+	}
+} 
 
- */	  
+/** 
+ * Mapping functionality.
+ */ 
+function login_radius_mapping(){
+	global $pagenow; 
+	if($pagenow == "profile.php"){
+		global $wpdb, $user_ID, $loginRadiusSettings;
+		// if remove button clicked
+		if(isset($_GET['loginRadiusMap']) && !empty($_GET['loginRadiusMap']) && isset($_GET['loginRadiusMappingProvider']) && !empty($_GET['loginRadiusMappingProvider'])){
+			$loginRadiusMapId = trim($_GET['loginRadiusMap']);
+			$loginRadiusMapProvider = trim($_GET['loginRadiusMappingProvider']);
+			// remove account
+			delete_user_meta($user_ID, 'loginradius_provider_id', $loginRadiusMapId);
+			if(isset($_GET['loginRadiusMain'])){
+				delete_user_meta($user_ID, 'loginradius_thumbnail');
+				delete_user_meta($user_ID, 'loginradius_provider');
+			}else{
+				delete_user_meta($user_ID, 'loginradius_'.$loginRadiusMapId.'_thumbnail');
+				$wpdb->query($wpdb->prepare("delete FROM $wpdb->usermeta WHERE user_id = %d AND meta_key = 'loginradius_mapped_provider' AND meta_value = %s limit 1", $user_ID, $loginRadiusMapProvider));
+				delete_user_meta($user_ID, 'loginradius_'.$loginRadiusMapProvider.'_id', $loginRadiusMapId);
+			}
+			?>
+			<script type="text/javascript">
+				location.href = "<?php echo admin_url( 'profile.php' ); ?>";
+			</script>
+			<?php
+			die;
+		} 
+		echo '<div id="loginRadiusError" style="background-color: #FFEBE8; border:1px solid #CC0000; display:none; padding:5px; margin:5px">';
+		_e('This account is already mapped', 'LoginRadius');
+		echo '</div>';
+		echo '<div id="loginRadiusSuccess" style="background-color: #FFFFE0; border:1px solid #E6DB55; display:none; padding:5px; margin:5px">';
+		_e('Account mapped successfully', 'LoginRadius');
+		echo '</div>';
+		?>
+		<div class="metabox-holder columns-2" id="post-body">
+		<div class="stuffbox" style="width:60%; padding-bottom:10px">
+		<h3><label><?php _e('Link your account', 'LoginRadius'); ?></label></h3>
+		<div class="inside" style='padding:0'>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-table editcomment">
+		<tr>
+			<td colspan="2"><?php _e('By adding another account, you can log in with the new account as well!', 'LoginRadius') ?></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+		<?php
+		login_radius_login_script();
+		login_radius_get_interface();
+		?>
+			</td>
+		</tr>
+		<?php
+		$LoginRadiusSecret = $loginRadiusSettings['LoginRadius_secret']; 
+		global $loginRadiusObject;
+		$loginRadiusMappingData = array(); 
+		$loginRadiusUserprofile = $loginRadiusObject->login_radius_get_userprofile_data($LoginRadiusSecret);
+		if($loginRadiusObject->IsAuthenticated == true && is_user_logged_in()){
+			$loginRadiusMappingData['id'] = (!empty($loginRadiusUserprofile->ID) ? $loginRadiusUserprofile->ID : ''); 
+			$loginRadiusMappingData['provider'] = (!empty($loginRadiusUserprofile->Provider) ? $loginRadiusUserprofile->Provider : '');
+			$loginRadiusMappingData['thumbnail'] = (!empty($loginRadiusUserprofile->ImageUrl) ? trim($loginRadiusUserprofile->ImageUrl) : '');
+			if(empty($loginRadiusMappingData['thumbnail']) && $loginRadiusMappingData['provider'] == 'facebook'){
+				$loginRadiusMappingData['thumbnail'] = "http://graph.facebook.com/" . $loginRadiusMappingData['id'] . "/picture?type=large";
+			}
+			$wp_user_id = $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $wpdb->usermeta WHERE meta_key='loginradius_provider_id' AND meta_value = %s", $loginRadiusMappingData['id'])); 
+			if(!empty($wp_user_id)){
+				// Check if verified field exist or not. 
+				$loginRadiusVfyExist = $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $wpdb->usermeta WHERE user_id = %d AND meta_key = 'loginradius_isVerified'", $wp_user_id)); 
+				if(!empty($loginRadiusVfyExist)){	// if verified field exists 
+					$loginRadiusVerify = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM $wpdb->usermeta WHERE user_id = %d AND meta_key = 'loginradius_isVerified'", $wp_user_id)); 
+					if($loginRadiusVerify != '1'){
+						login_radius_map_id($user_ID, $loginRadiusMappingData['id'], $loginRadiusMappingData['provider'], $loginRadiusMappingData['thumbnail']);
+						?>
+						<script type="text/javascript">
+							document.getElementById('loginRadiusSuccess').style.display = "block";
+						</script>
+						<?php
+					}else{
+						//account already mapped
+						?>
+						<script type="text/javascript">
+							document.getElementById('loginRadiusError').style.display = "block";
+						</script>
+						<?php 
+					} 
+				}else{
+					?>
+					<script type="text/javascript">
+						document.getElementById('loginRadiusError').style.display = "block";
+					</script>
+					<?php
+				} 
+			}else{
+				$loginRadiusMappingProvider = $loginRadiusMappingData['provider'];
+				$wp_user_lrid = $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $wpdb->usermeta WHERE meta_key='".$loginRadiusMappingProvider."Lrid' AND meta_value = %s", $loginRadiusMappingData['id'])); 
+				if(!empty($wp_user_lrid)){
+					$lrVerified = get_user_meta($wp_user_lrid, $loginRadiusMappingProvider.'LrVerified', true);
+					if($lrVerified == '1'){		// Check if lrid is the smae that verified email. 
+						// acount already mapped
+						?>
+						<script type="text/javascript">
+							document.getElementById('loginRadiusError').style.display = "block";
+						</script>
+						<?php
+					}else{
+						// map account 
+						login_radius_map_id($user_ID, $loginRadiusMappingData['id'], $loginRadiusMappingData['provider'], $loginRadiusMappingData['thumbnail']); 
+						?>
+						<script type="text/javascript">
+							document.getElementById('loginRadiusSuccess').style.display = "block";
+						</script>
+						<?php
+					} 
+				}else{
+					// map account 
+					login_radius_map_id($user_ID, $loginRadiusMappingData['id'], $loginRadiusMappingData['provider'], $loginRadiusMappingData['thumbnail']);
+					?>
+					<script type="text/javascript">
+						document.getElementById('loginRadiusSuccess').style.display = "block";
+					</script>
+					<?php 
+				} 
+			} 
+		} 
+		// show mapping list 
+		$loginRadiusMappings = get_user_meta( $user_ID, 'loginradius_mapped_provider', false );
+		$loginRadiusMappings = array_unique($loginRadiusMappings);
+		$connected = false;
+		$loginRadiusLoggedIn = get_user_meta($user_ID, 'loginradius_current_id', true);
+		?>
+			<?php
+			$totalAccounts = get_user_meta($user_ID, 'loginradius_provider_id');
+			if(count($loginRadiusMappings) > 0){
+				foreach($loginRadiusMappings as $map){
+					$loginRadiusMappingId = get_user_meta($user_ID, 'loginradius_'.$map.'_id');
+					if(count($loginRadiusMappingId) > 0){
+						foreach($loginRadiusMappingId as $tempId){
+							?> 
+							<tr style='border-top:1px solid rgb(243, 243, 243)'>							
+							<?php
+							if($loginRadiusLoggedIn == $tempId){
+								$append = "<span style='color:green'>Currently </span>";
+								$connected = true;
+							}else{
+								$append = "";
+							}
+							echo "<td>".$append;
+							echo _e("Connected with", "LoginRadius");
+							echo "<strong> ".ucfirst($map)."</strong> <img src='".plugins_url('images/linking/' . $map. '.png', __FILE__)."' align='absmiddle' style='margin-left:5px' /></td><td>";
+							if(count($totalAccounts) != 1){
+								?>
+								<a href='<?php echo admin_url( 'profile.php' )?>?loginRadiusMap=<?php echo $tempId; ?>&loginRadiusMappingProvider=<?php echo $map; ?>' ><input type='button' class='button-primary' value='<?php _e('Remove', 'LoginRadius'); ?>' /></a>
+								<?php
+							}
+							echo "</td>";
+							?>
+							</tr> 
+							<?php 
+						}
+					}
+				} 
+			}
+			$map = get_user_meta($user_ID, 'loginradius_provider', true);
+			if($map != false){
+				?>
+				<tr style='border-top:1px solid rgb(243, 243, 243)'> 
+				<?php
+				$tempId = $loginRadiusLoggedIn;
+				$append = !$connected ? "<span style='color:green'>Currently </span>" : ""; 
+				echo "<th style='width:41%'>".$append;
+				echo _e("Connected with", "LoginRadius");
+				echo "<strong> ".ucfirst($map)."</strong> <img src='".plugins_url('images/linking/' . $map. '.png', __FILE__)."' align='absmiddle' style='margin-left:5px' /></th><td>";
+				if(count($totalAccounts) != 1){
+					?>
+					<a href='<?php echo admin_url( 'profile.php' )?>?loginRadiusMain=1&loginRadiusMap=<?php echo $tempId; ?>&loginRadiusMappingProvider=<?php echo $map; ?>' ><input type='button' class='button-primary' value='<?php _e('Remove', 'LoginRadius'); ?>' /></a>
+					<?php
+				}
+				echo "</td>";
+				?> 
+				</tr>
+				<?php
+			}
+			?> 
+			</table>
+			</div>
+			</div>
+		</div>
+		<?php 
+		//echo '</div>'; 
+	} 
+} 
+add_action('admin_notices', 'login_radius_mapping');
 
-function loginradius_counter_output() {
-	global $LoginRadius_settings;
-	if (strpos($LoginRadius_settings['LoginRadius_counterCode'], 'islrsharing = false') !== false){
-		echo str_replace("islrsharing = false", "islrsharing = true", $LoginRadius_settings['LoginRadius_counterCode']);
-	}else{
-		echo $LoginRadius_settings['LoginRadius_counterCode'];
+/** 
+ * Delete the field holding current provider information.
+ */ 
+function login_radius_delete_meta(){
+	global $user_ID; 
+	delete_user_meta($user_ID, 'loginradius_current_id');
+}
+add_action('clear_auth_cookie', 'login_radius_delete_meta' );
+
+// check if provider column to be shown in the user list.
+if((isset($loginRadiusSettings['LoginRadius_noProvider']) && $loginRadiusSettings['LoginRadius_noProvider'] != "1") || (isset($loginRadiusSettings['LoginRadius_enableUserActivation']) && $loginRadiusSettings['LoginRadius_enableUserActivation'] == "1")){
+    // add provider column in the user list
+	function login_radius_add_provider_column($columns){
+		global $loginRadiusSettings;
+		if(isset($loginRadiusSettings['LoginRadius_noProvider']) && $loginRadiusSettings['LoginRadius_noProvider'] != "1"){
+			$columns['loginradius_provider'] = 'LoginRadius Provider';
+		}
+		if(isset($loginRadiusSettings['LoginRadius_enableUserActivation']) && $loginRadiusSettings['LoginRadius_enableUserActivation'] == "1"){
+			$columns['loginradius_status'] = 'Status';
+		}
+		return $columns;
+	}
+	add_filter('manage_users_columns', 'login_radius_add_provider_column');
+	// show social ID provider in the provider column
+	function login_radius_show_provider($value, $columnName, $userId){
+		global $loginRadiusSettings;
+		if(isset($loginRadiusSettings['LoginRadius_noProvider']) && $loginRadiusSettings['LoginRadius_noProvider'] != "1"){
+			$lrProvider = get_user_meta($userId, 'loginradius_provider', true);
+			$lrProvider = ($lrProvider == false) ? "-" : $lrProvider;
+			if('loginradius_provider' == $columnName){
+				return ucfirst($lrProvider);
+			}
+		}
+		if(isset($loginRadiusSettings['LoginRadius_enableUserActivation']) && $loginRadiusSettings['LoginRadius_enableUserActivation'] == "1"){
+			if($userId == 1){
+				return;
+			}
+			if(($lrStatus = get_user_meta($userId, 'loginradius_status', true)) == "" || $lrStatus == '1'){
+				$lrStatus = '1';
+			}else{
+				$lrStatus = '0';
+			}
+			if('loginradius_status' == $columnName){
+				if($lrStatus == '1'){
+					return '<span id="loginRadiusStatus'.$userId.'"><a alt="Active (Click to Disable)" title="Active (Click to Disable)" href="javascript:void(0)" onclick="loginRadiusChangeStatus('.$userId.', '.$lrStatus.')" ><img height="20" width="20" src="'.plugins_url("images/enable.png", __FILE__).'" /></a></span>';
+				}else{
+					return '<span id="loginRadiusStatus'.$userId.'"><a alt="Inactive (Click to Enable)" title="Inactive (Click to Enable)" href="javascript:void(0)" onclick="loginRadiusChangeStatus('.$userId.', '.$lrStatus.')" ><img height="20" width="20" src="'.plugins_url("images/disable.png", __FILE__).'" /></a></span>';
+				}
+			}
+		}
+	}
+	add_action('manage_users_custom_column', 'login_radius_show_provider', 10, 3);
+
+	// add javascript on users.php in admin
+	function loginradius_add_script(){
+		global $parent_file;
+		if($parent_file == 'users.php'){
+			?>
+			<script type="text/javascript">
+			function loginRadiusChangeStatus(userId, currentStatus){
+				jQuery('#loginRadiusStatus'+userId).html('<img width="20" height="20" title="<?php _e('Please wait', 'LoginRadius') ?>..." src="<?php echo plugins_url("images/loading_icon.gif", __FILE__) ?>" />');
+				jQuery.ajax({
+				  type: 'POST',
+				  url: '<?php echo get_admin_url() ?>admin-ajax.php',
+				  data: {  
+					  action: 'login_radius_change_user_status',
+					  user_id: userId,
+					  current_status: currentStatus
+				  },
+				  success: function(data, textStatus, XMLHttpRequest){
+					if(data == 'done'){
+						if(currentStatus == 0){
+							jQuery('#loginRadiusStatus'+userId).html('<span id="loginRadiusStatus'+userId+'"><a href="javascript:void(0)" alt="<?php _e('Active (Click to Disable)', 'LoginRadius') ?>" title="<?php _e('Active (Click to Disable)', 'LoginRadius') ?>" onclick="loginRadiusChangeStatus('+userId+', 1)" ><img width="20" height="20" src="<?php echo plugins_url("images/enable.png", __FILE__) ?>" /></a></span>');
+						}else if(currentStatus == 1){
+							jQuery('#loginRadiusStatus'+userId).html('<span id="loginRadiusStatus'+userId+'"><a href="javascript:void(0)" alt="<?php _e('Inactive (Click to Enable)', 'LoginRadius') ?>" title="<?php _e('Inactive (Click to Enable)', 'LoginRadius') ?>" onclick="loginRadiusChangeStatus('+userId+', 0)" ><img width="20" height="20" src="<?php echo plugins_url("images/disable.png", __FILE__) ?>" /></a></span>');
+						}
+					}else if(data == 'error'){
+						jQuery('#loginRadiusStatus'+userId).html('<span id="loginRadiusStatus'+userId+'"><a href="javascript:void(0)" alt="<?php _e('Active (Click to Disable)', 'LoginRadius') ?>" title="<?php _e('Active (Click to Disable)', 'LoginRadius') ?>" onclick="loginRadiusChangeStatus('+userId+', 1)" ><img width="20" height="20" src="<?php echo plugins_url("images/enable.png", __FILE__) ?>" /></a></span>');
+					}
+				  },
+				  error: function(xhr, textStatus, errorThrown){
+				  	  alert('<?php _e('Unexpected error occurred') ?>');
+				  }
+				});
+			}
+			</script>
+			<?php
+		}
+	}
+	if(isset($loginRadiusSettings['LoginRadius_enableUserActivation']) && $loginRadiusSettings['LoginRadius_enableUserActivation'] == "1"){
+		add_filter('admin_head', 'loginradius_add_script');
 	}
 }
-
-
-/**
-
- * Function for shows share bar title.
-
- */		
-
-function loginradius_share_title() {
-
-  global $LoginRadius_settings;
-
-  $html = '<!-- Start Sociable --><div class="loginradius">';
-
-  // If a tagline is set, display it above the social icons
-
-  $tagline = isset( $LoginRadius_settings['LoginRadius_share_title'] ) ? $LoginRadius_settings['LoginRadius_share_title'] : '' ;
-
-  if (!empty($tagline)) {
-
-    $html .= '<div class="loginradius_tagline">';
-
-    $html .= "<a class='loginradius_tagline' target='_blank' href='http://loginradius.com' style='color:#333333;text-decoration:none'>".$tagline."</a>";
-
-    $html .= "</div>";
-
-  }
-
-  return $html;
-
+// keep track of the inactive user login attempts from traditional login form 
+$loginRadiusLoginAttempt = 0;
+/** 
+ * Stop disabled user from logging in.
+ */ 
+function login_radius_filter_login($user, $username, $password) {
+	$tempUser = get_user_by('login', $username);
+	if(isset($tempUser->data->ID)){
+		$id = $tempUser->data->ID;
+		if(get_user_meta($id, 'loginradius_status', true) === '0'){
+			global $loginRadiusLoginAttempt;
+			$loginRadiusLoginAttempt = 1;
+			return null;
+		}
+	}
+	return $user;
 }
+add_filter('authenticate', 'login_radius_filter_login', 40, 3);
 
-
-
-/**
-
- * Function for auto approve comment if uses sociallogin.
-
- */
-
-function loginradius_comment_approved($approved) {
-
-  global $LoginRadius_settings;
-
-  if (empty($approved)) {
-
-    $LoginRadius_settings = get_option ('LoginRadius_settings');
-
-    if ($LoginRadius_settings['LoginRadius_autoapprove'] == '1') {
-
-      $user_id = get_current_user_id();
-
-      if (is_numeric($user_id)) {
-
-        $comment_user = get_user_meta ($user_id, 'id', true);
-
-        if ($comment_user !== false) {
-
-          $approved = 1;
-
-        }
-
-      }
-
+function login_radius_error_message($error){
+	global $loginRadiusLoginAttempt;
+    //check if inactive user has attempted to login
+    if($loginRadiusLoginAttempt == 1){
+        $error = __('Your account is currently inactive. You will be notified through email, once Administrator activates your account.', 'LoginRadius');
     }
-
-  }
-
-  return $approved;
-
+    return $error;
 }
-
-if ($LoginRadius_settings['LoginRadius_commentEnable'] == '1') {
-	add_action('pre_comment_approved', 'loginradius_comment_approved');
-}
-
-?>
+add_filter('login_errors','login_radius_error_message');
