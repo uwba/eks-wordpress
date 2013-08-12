@@ -45,7 +45,7 @@ $_SESSION['role'] = "volunteer";
             <p>Thank you for your interest in volunteering with Earn It! Keep It! Save It! Please click on the sign up link below to complete your registration.</p>
             <p>
                 <strong>Please Note:</strong><br/>
-                By signing up to volunteer below, you are confirming your commitment to volunteer for the upcoming tax season. If you are interested but only want more information at this time, <a href="/county-coordinators">click here to find out more</a>.
+                By signing up to volunteer below, you are confirming your commitment to volunteer for the upcoming tax season. If you are interested but only want more information at this time, <a href="/volunteer">click here to find out more</a>.
             </p>
             <?php } else { // Person is a volunteer ?>
             <!-- Copy for logged-in volunteers goes here -->
