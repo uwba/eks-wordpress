@@ -34,6 +34,9 @@
                     }
                 }
                 
+            global $current_user, $user_ID, $post;
+            get_currentuserinfo();
+                
                 function display_meta($label, $name)
                 {
                    $m = get_post_meta(get_the_ID(), $name, true);
@@ -42,7 +45,10 @@
                 <?php } 
                 }
                 
-                display_meta('Type', 'type');
+                // Only display the training type if this is the owner
+                if ($post->post_author == $user_ID)
+                    display_meta('Type', 'type');
+                
                 display_meta('Address', 'address');
                 display_meta('Date(s)', 'date');
                 display_meta('Time(s)', 'times');
@@ -52,11 +58,8 @@
                 <?php appthemes_after_blog_post_content(); ?>
             </section>
             <br><br>
-    <!--<small>Created at <?php // va_the_post_byline();   ?></small>-->
-            <?php //edit_post_link( __( 'Edit', APP_TD ), '<span class="edit-link">', '</span>' );   ?>	
             <?php
-            global $current_user, $user_ID, $post;
-            get_currentuserinfo();
+
             if ($post->post_author == $user_ID) {
                 ?>
                 <span class="edit-link"><a href="<?php echo site_url('edit/?postid=' . get_the_ID()) ?>">Edit</a></span>

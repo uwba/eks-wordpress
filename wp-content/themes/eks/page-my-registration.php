@@ -123,11 +123,11 @@ $_SESSION['role'] = "volunteer";
                     <form id="step41" action="<?php echo admin_url('admin-ajax.php'); ?>" method="get" class="mti_font_element">
                         <h3>Please select a tax site you are interested in volunteering at by using the search box below.</h3>
                         <div class="yui3-g">
-                            <div class="yui3-u-1-2">
+                            <div class="yui3-u-2-3">
                                 <div id="main-search" class="mti_font_element">
                                     <div class="search-for mti_font_element">
                                         <label for="search-text" class="mti_font_element">
-                                            <span class="search-help mti_font_element">Enter zipcode or keyword to find a free tax site.</span>
+                                            <span class="search-help mti_font_element">Enter the county, city, or day of week to find a free tax site.</span>
                                         </label>
                                         <div>
                                             <input type="text" id="search-text" name="search_terms" size="30" style="width:100%">
@@ -135,7 +135,7 @@ $_SESSION['role'] = "volunteer";
                                     </div>
                                 </div>
                             </div>
-                            <div class="yui3-u-1-2">
+                            <div class="yui3-u-1-3">
                                 <div class="search-button mti_font_element">
                                     <button class="rounded-small mti_font_element" id="search-submit" type="submit">Search</button>
                                 </div>

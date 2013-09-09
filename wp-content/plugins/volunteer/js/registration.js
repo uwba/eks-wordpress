@@ -59,7 +59,11 @@ jQuery(document).ready(function($) {
             beforeSubmit: function() {
             },
             success: function(response, statusText, xhr, $form) {
+        
                 if (response.success) {
+                    // Wipe out any existing site search results
+                    $('#search-text').val('');
+                    $('#step42 #results').html('');
                     gotoStep(4);
                 } else {
                     $('#step3 .error').html(implode('<br/>', response.errors));

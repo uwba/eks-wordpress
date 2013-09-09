@@ -48,19 +48,12 @@ wp_enqueue_script('jquery-ui-datepicker');
             </div>
         </fieldset>
 
-        <?php
-        // if categories are locked display only the current listing category
-        if (va_categories_locked())
-            $listing_cat = $listing->category;
-        else
-            $listing_cat = array();
-        ?>
-        
         <fieldset id="category-fields">
             <div class="featured-head"><h3><?php _e('Tax Site Details', APP_TD); ?></h3></div>
             <div class="form-field"><label>
                     <?php _e('County', APP_TD); ?>
                     <?php
+                    // Any category can be selected (i.e., categories are not "locked")
                     wp_dropdown_categories(array(
                         'taxonomy' => VA_LISTING_CATEGORY,
                         'hide_empty' => false,
@@ -69,8 +62,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                         'selected' => $listing->category,
                         'show_option_none' => __('Select Category', APP_TD),
                         'class' => 'required',
-                        'orderby' => 'name',
-                        'include' => $listing_cat
+                        'orderby' => 'name'
                     ));
                     ?>
                 </label></div>    
@@ -163,9 +155,16 @@ wp_enqueue_script('jquery-ui-datepicker');
             
             $('#app_contactphone,#app_sitecoordinatorphonenumber').mask("999-999-9999");
 
-            $("#app_openingdate,#app_closingdate").datepicker();
+            $("#app_openingdate,#app_closingdate").datepicker().on('blur change', function() {
+                    if ($(this).attr('id') == 'app_openingdate')
+                        $('#app_closingdate').datepicker('option', 'minDate', $(this).datepicker("getDate") ? $(this).datepicker("getDate") : null);
+                    else
+                        $('#app_openingdate').datepicker('option', 'maxDate', $(this).datepicker("getDate") ? $(this).datepicker("getDate") : null);                
+            });
 
             renderScheduleCreatorWidget();
+            
+            // Ensure the Closing Date is after the Opening Date, and vice versa
             
             $('#btn-submit').show();
             

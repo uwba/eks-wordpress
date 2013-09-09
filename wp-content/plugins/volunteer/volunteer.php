@@ -218,6 +218,12 @@ function myajax_submit() {
             }
 
             update_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer'])); // preparer|new
+            
+            // Delete all existing positions, just to be safe
+            foreach (array('preparer', 'screener', 'greeter', 'interpreter') as $el)
+            {
+                delete_post_meta($post_id, $el);
+            }
             foreach ($_SESSION['volunteer']['position'] as $position) {
                 update_post_meta($post_id, $position, $_POST['tax_sites']);
             }
@@ -759,28 +765,40 @@ function tax_search() {
     global $wpdb;
     global $table_prefix;
 
-    $conditions_string = '';
+        $conditions_or = array();
+        $conditions_and = array();
+        
     if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
         $terms = split(' ', $_GET['search_terms']);
-        $conditions = array();
+
         foreach ($terms as $term) {
             $term = mysql_real_escape_string($term);
-            $conditions[] = " (p.post_title LIKE '%$term%' 
+            if (in_array($term, array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
+            {
+                // See character classes here: http://dev.mysql.com/doc/refman/5.1/en/regexp.html#operator_regexp
+                $fragment = str_replace('"', '[[.quotation-mark.]]', '"' . $term . '":{"Start1":"","End1":"","Start2":"","End2":""}');
+                $fragment = str_replace("{", '[[.left-brace.]]', $fragment);
+                $fragment = str_replace("}", '[[.right-brace.]]', $fragment);
+                $conditions_and[] = "hours.meta_value NOT REGEXP '$fragment'";
+            }
+            else
+                $conditions_or[] = " (p.post_title LIKE '%$term%' 
                 OR p.post_excerpt LIKE '%$term%' 
                 OR p.post_content LIKE '%$term%' 
                 OR bart.meta_value LIKE '%$term%' 
                 OR t.name LIKE '%$term%' 
                 OR a.meta_value LIKE '%$term%' ) ";
         }
-        $conditions_string = 'AND (' . implode(' OR ', $conditions) . ')';
     };
 
     $query = "SELECT p.*, 
             bart.meta_value AS bartstations, 
+            hours.meta_value AS hours, 
             t.name AS county,
             a.meta_value AS address 
         FROM {$table_prefix}posts as p
         LEFT JOIN {$table_prefix}postmeta as bart ON ID = bart.post_id AND bart.meta_key = 'app_closestbartstations'
+        JOIN {$table_prefix}postmeta as hours ON ID = hours.post_id AND hours.meta_key = 'app_hoursofoperation'
         LEFT JOIN {$table_prefix}postmeta as a ON ID = a.post_id AND a.meta_key = 'address'
 
         LEFT JOIN {$table_prefix}term_relationships ON ID = object_id
@@ -790,7 +808,8 @@ function tax_search() {
         )
         LEFT JOIN {$table_prefix}terms AS t USING(term_id) 
         WHERE post_status = 'publish' AND post_type = 'listing'
-        $conditions_string
+        AND (" . (count($conditions_or) > 0 ? implode(' OR ', $conditions_or) : '1=1') . ")
+        AND (" . (count($conditions_and) > 0 ?implode(' AND ', $conditions_and) : '1=1'). ")
         GROUP BY ID";
 
     $data = $wpdb->get_results($query, 'OBJECT');
