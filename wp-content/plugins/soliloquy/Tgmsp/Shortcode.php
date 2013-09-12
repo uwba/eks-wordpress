@@ -436,7 +436,7 @@ class Tgmsp_Shortcode {
 					$preload_script = 'jQuery(document).ready(function($){$("#soliloquy-container-' . absint( $slider['id'] ) . '").css({"height":(Math.round($("#soliloquy-container-' . absint( $slider['id'] ) . '").width() / ' . $slider['ratio'] . '))});});';
 
 				?>
-				<script type="text/javascript"><?php if ( $preload_script ) echo $preload_script; ?>jQuery(window).load(function(){var $ = jQuery;<?php echo apply_filters( 'tgmsp_slider_preload', $script, $slider['id'] ); ?>$('<?php echo apply_filters( 'tgmsp_slider_selector', '#soliloquy-' . absint( $slider['id'] ), $slider['id'], $slider ); ?>').<?php echo $fitvids; ?>soliloquy({animation:'<?php echo $animation; ?>',<?php echo $slide; ?>slideshow:<?php echo $slideshow; ?>,slideshowSpeed:<?php echo isset( $slider['meta']['speed'] ) ? absint( $slider['meta']['speed'] ) : '7000'; ?>,animationSpeed:<?php echo isset( $slider['meta']['duration'] ) ? absint( $slider['meta']['duration'] ) : '600'; ?>,directionNav:<?php echo $navigation; ?>,controlNav:<?php echo apply_filters( 'tgmsp_control_nav', $control, absint( $slider['id'] ) ); ?>,keyboard:<?php echo $keyboard; ?>,multipleKeyboard:<?php echo $multi; ?>,mousewheel:<?php echo $mouse; ?>,pausePlay:<?php echo $pauseplay; ?>,randomize:<?php echo $random; ?>,startAt:<?php echo isset( $slider['meta']['number'] ) ? absint( $slider['meta']['number'] ) : '0'; ?>,animationLoop:<?php echo $loop; ?>,pauseOnAction:<?php echo $action; ?>,pauseOnHover:<?php echo $hover; ?>,controlsContainer:'<?php echo apply_filters( 'tgmsp_slider_controls', '#soliloquy-container-' . absint( $slider['id'] ), $slider['id'] ); ?>',manualControls:'<?php echo apply_filters( 'tgmsp_manual_controls', '', $slider['id'] ); ?>',video:<?php echo $video; ?>,useCSS:<?php echo $css; ?>,reverse:<?php echo $reverse; ?>,smoothHeight:<?php echo $smooth; ?>,touch:<?php echo $touch; ?>,initDelay:<?php echo isset( $slider['meta']['delay'] ) ? absint( $slider['meta']['delay'] ) : '0'; ?>,namespace:'soliloquy-',selector:'.soliloquy-slides > li',<?php do_action( 'tgmsp_slider_script', $slider, absint( $slider['id'] ) ); ?>start:function(slider){<?php echo 'soliloquySlider' . absint( $slider['id'] ) . ' = slider;'; do_action( 'tgmsp_callback_start', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_start_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},before:function(slider){<?php do_action( 'tgmsp_callback_before', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_before_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},after:function(slider){<?php do_action( 'tgmsp_callback_after', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_after_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},end:function(slider){<?php do_action( 'tgmsp_callback_end', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_end_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},added:function(slider){<?php do_action( 'tgmsp_callback_added', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_added_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},removed:function(slider){<?php do_action( 'tgmsp_callback_removed', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_removed_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>}});});</script>
+				<script type="text/javascript"><?php echo 'var soliloquySlider' . absint( $slider['id'] ) . ';'; if ( $preload_script ) echo $preload_script; ?>jQuery(window).load(function(){var $ = jQuery;<?php echo apply_filters( 'tgmsp_slider_preload', $script, $slider['id'] ); ?>$('<?php echo apply_filters( 'tgmsp_slider_selector', '#soliloquy-' . absint( $slider['id'] ), $slider['id'], $slider ); ?>').<?php echo $fitvids; ?>soliloquy({animation:'<?php echo $animation; ?>',<?php echo $slide; ?>slideshow:<?php echo $slideshow; ?>,slideshowSpeed:<?php echo isset( $slider['meta']['speed'] ) ? absint( $slider['meta']['speed'] ) : '7000'; ?>,animationSpeed:<?php echo isset( $slider['meta']['duration'] ) ? absint( $slider['meta']['duration'] ) : '600'; ?>,directionNav:<?php echo $navigation; ?>,controlNav:<?php echo apply_filters( 'tgmsp_control_nav', $control, absint( $slider['id'] ) ); ?>,keyboard:<?php echo $keyboard; ?>,multipleKeyboard:<?php echo $multi; ?>,mousewheel:<?php echo $mouse; ?>,pausePlay:<?php echo $pauseplay; ?>,randomize:<?php echo $random; ?>,startAt:<?php echo isset( $slider['meta']['number'] ) ? absint( $slider['meta']['number'] ) : '0'; ?>,animationLoop:<?php echo $loop; ?>,pauseOnAction:<?php echo $action; ?>,pauseOnHover:<?php echo $hover; ?>,controlsContainer:'<?php echo apply_filters( 'tgmsp_slider_controls', '#soliloquy-container-' . absint( $slider['id'] ), $slider['id'] ); ?>',manualControls:'<?php echo apply_filters( 'tgmsp_manual_controls', '', $slider['id'] ); ?>',video:<?php echo $video; ?>,useCSS:<?php echo $css; ?>,reverse:<?php echo $reverse; ?>,smoothHeight:<?php echo $smooth; ?>,touch:<?php echo $touch; ?>,initDelay:<?php echo isset( $slider['meta']['delay'] ) ? absint( $slider['meta']['delay'] ) : '0'; ?>,namespace:'soliloquy-',selector:'.soliloquy-slides > li',<?php do_action( 'tgmsp_slider_script', $slider, absint( $slider['id'] ) ); ?>start:function(slider){<?php echo 'soliloquySlider' . absint( $slider['id'] ) . ' = slider;'; do_action( 'tgmsp_callback_start', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_start_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},before:function(slider){<?php do_action( 'tgmsp_callback_before', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_before_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},after:function(slider){<?php do_action( 'tgmsp_callback_after', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_after_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},end:function(slider){<?php do_action( 'tgmsp_callback_end', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_end_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},added:function(slider){<?php do_action( 'tgmsp_callback_added', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_added_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>},removed:function(slider){<?php do_action( 'tgmsp_callback_removed', absint( $slider['id'] ) ); do_action( 'tgmsp_callback_removed_' . absint( $slider['id'] ), absint( $slider['id'] ) ); ?>}});});</script>
 				<?php
 
 				/** Provide a hook for users after the init script */
@@ -571,14 +571,20 @@ class Tgmsp_Shortcode {
 							$script .= 'function soliloquyCreateYTEvent(playerID) {';
 								$script .= 'return function(event) {';
 									/** If the video is being played or is buffering, pause the slider */
-									$script .= 'if ( 1 == event.data || 3 == event.data ) ';
+									$script .= 'if ( 1 == event.data || 3 == event.data ) {';
+									    $script .= 'jQuery(soliloquySlider' . absint( $slider['id'] ) . ').find(".soliloquy-video-slide .soliloquy-caption").fadeOut(300);';
 										if ( isset( $slider['meta']['action'] ) && $slider['meta']['action'] ) {
-											$script .= 'if ( ! soliloquySlider' . absint( $slider['id'] ) . '.animating ) ';
-												$script .= 'soliloquySlider' . absint( $slider['id'] ) . '.pause();';
-										} else {
-											$script .= 'soliloquySlider' . absint( $slider['id'] ) . '.pause();';
-										}
-									$script .= 'if ( 0 == event.data ) soliloquySlider' . absint( $slider['id'] ) . '.play()';
+    										$script .= 'if ( ! soliloquySlider' . absint( $slider['id'] ) . '.animating ) {';
+    											$script .= 'if ( typeof soliloquySlider' . absint( $slider['id'] ) . '.pause() == "function" ) soliloquySlider' . absint( $slider['id'] ) . '.pause();';
+                                            $script .= '}';
+    									} else {
+    										$script .= 'if ( typeof soliloquySlider' . absint( $slider['id'] ) . '.pause() == "function" ) soliloquySlider' . absint( $slider['id'] ) . '.pause();';
+    									}
+                                    $script .= '}';
+									$script .= 'if ( 0 == event.data || 2 == event.data ) {';
+									    $script .= 'jQuery(soliloquySlider' . absint( $slider['id'] ) . ').find(".soliloquy-video-slide .soliloquy-caption").fadeIn(300);';
+									    $script .= 'if ( typeof soliloquySlider' . absint( $slider['id'] ) . '.play() == "function" ) soliloquySlider' . absint( $slider['id'] ) . '.play();';
+                                    $script .= '}';
 								$script .= '}';
 							$script .= '}';
 
@@ -603,13 +609,19 @@ class Tgmsp_Shortcode {
 
 							$script .= 'function soliloquyVimeoPausePlay(playerID) {';
 								$script .= 'soliloquy_vimeo_players[playerID].addEvent("play", function(data){';
+								    $script .= 'jQuery(soliloquySlider' . absint( $slider['id'] ) . ').find(".soliloquy-video-slide .soliloquy-caption").fadeOut(300);';
 									if ( isset( $slider['meta']['action'] ) && $slider['meta']['action'] ) {
-										$script .= 'if ( ! soliloquySlider' . absint( $slider['id'] ) . '.animating ) ';
-											$script .= 'soliloquySlider' . absint( $slider['id'] ) . '.pause();';
+										$script .= 'if ( ! soliloquySlider' . absint( $slider['id'] ) . '.animating ) {';
+											$script .= 'if ( typeof soliloquySlider' . absint( $slider['id'] ) . '.pause() == "function" ) soliloquySlider' . absint( $slider['id'] ) . '.pause();';
+                                        $script .= '}';
 									} else {
-										$script .= 'soliloquySlider' . absint( $slider['id'] ) . '.pause();';
+										$script .= 'if ( typeof soliloquySlider' . absint( $slider['id'] ) . '.pause() == "function" ) soliloquySlider' . absint( $slider['id'] ) . '.pause();';
 									}
 								$script .= '});';
+								$script .= 'soliloquy_vimeo_players[playerID].addEvent("pause", function(data){';
+									$script .= 'jQuery(soliloquySlider' . absint( $slider['id'] ) . ').find(".soliloquy-video-slide .soliloquy-caption").fadeIn(300);';
+								$script .= '});';
+								$script .= 'jQuery(soliloquySlider' . absint( $slider['id'] ) . ').trigger("soliloquyVimeoReady", { id: playerID });';
 							$script .= '}';
 
 							$vimeo_init = true;
@@ -820,7 +832,7 @@ class Tgmsp_Shortcode {
 	 */
 	public function preloader( $id ) {
 
-		echo 'jQuery("#soliloquy-container-' . absint( $id ) . '").css({ "background" : "transparent", "height" : "auto" });';
+		echo 'jQuery("#soliloquy-container-' . absint( $id ) . '").css({ "background" : "transparent", "background-image" : "none", "height" : "auto" });';
 
 	}
 

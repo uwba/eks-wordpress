@@ -197,6 +197,8 @@ jQuery(document).ready(function($){
 			/** Loop through each child element */
 			$.each(children, function() {
 				var field_class = $(this).attr('class');
+				    if ( field_class )
+				        field_class = field_class.replace(' ', '-');
 				var field_val 	= $(this).val();
 
 				if ( 'checkbox' == $(this).attr('type') )
@@ -587,6 +589,13 @@ jQuery(document).ready(function($){
 				/** Hide the image meta when refreshing the list */
 				$('.soliloquy-image-meta').hide();
 
+				// Load TinyMCE editors for captions.
+				$('.soliloquy-image').find('.wp-editor-area').each(function(i, el){
+				    var id = $(el).attr('id').split('-')[2];
+				    quicktags({id: 'soliloquy-caption-' + id, buttons: 'strong,em,link,block,del,ins,img,ul,ol,li,code,close'});
+				    QTags._buttonsInit(); // Force buttons to initialize since they have already been intialized on page load.
+				});
+
 				// Initialize any code editors that have been generated with HTML slides.
 				$('.soliloquy-html').find('.soliloquy-html-code').each(function(i, el){
 					var id = $(el).attr('id');
@@ -725,5 +734,8 @@ jQuery(document).ready(function($){
 			$(this).remove();
 		});
 	}
+
+	// Empty callback to ensure buttons initialize properly.
+	function soliloquyButtonHelper(){}
 
 });

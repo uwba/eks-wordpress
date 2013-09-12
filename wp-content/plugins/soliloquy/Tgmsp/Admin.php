@@ -49,7 +49,7 @@ class Tgmsp_Admin {
 		global $soliloquy_license;
 
 		// Return early if we have already have the db_version key set and it is greater than or equal to the current version of Soliloquy.
-		if ( isset( $soliloquy_license['db_version'] ) && version_compare( Tgmsp::get_instance()->version, $soliloquy_license['db_version'], '<=' ) )
+		if ( ! $soliloquy_license || isset( $soliloquy_license['db_version'] ) && version_compare( Tgmsp::get_instance()->version, $soliloquy_license['db_version'], '<=' ) )
 			return;
 
 		// For pre-1.5.0 Soliloquy users, upgrade all current video slides to the new system.
@@ -95,6 +95,9 @@ class Tgmsp_Admin {
 			endif;
 
 			// Update the global Soliloquy option to reflect that the version has been updated.
+			if ( ! is_array( $soliloquy_license ) )
+			    $soliloquy_license = array();
+
 			$soliloquy_license['db_version'] = '1.5';
 			update_option( 'soliloquy_license_key', $soliloquy_license );
 		endif;
@@ -237,7 +240,7 @@ class Tgmsp_Admin {
 				<p class="soliloquy-chose-slider-type">
 					<span class="soliloquy-type"><?php echo Tgmsp_Strings::get_instance()->strings['slider_type']; ?></span>
 					<span class="soliloquy-type-select">
-						<label for="soliloquy-default-slider"><input id="soliloquy-default-slider" type="radio" name="_soliloquy_settings[type]" value="default" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'type' ), 'default' ); ?> /> <?php echo Tgmsp_Strings::get_instance()->strings['slider_type_default']; ?></label>
+						<label for="soliloquy-default-slider"><input id="soliloquy-default-slider" type="radio" name="_soliloquy_settings[type]" value="default" <?php checked( self::get_custom_field( '_soliloquy_settings', 'type' ), 'default' ); ?> /> <?php echo Tgmsp_Strings::get_instance()->strings['slider_type_default']; ?></label>
 						<?php do_action( 'tgmsp_slider_type', $post ); ?>
 					</span>
 				</p>
@@ -324,7 +327,7 @@ class Tgmsp_Admin {
 																			echo '<tr id="soliloquy-caption-box-' . $attachment->ID . '" valign="middle">';
 																				echo '<th scope="row"><label for="soliloquy-caption-' . $attachment->ID . '">' . Tgmsp_Strings::get_instance()->strings['image_caption'] . '</label></th>';
 																				echo '<td>';
-																					echo '<textarea id="soliloquy-caption-' . $attachment->ID . '" class="soliloquy-caption" rows="3" name="_soliloquy_uploads[caption]">' . esc_html( $attachment->post_excerpt ) . '</textarea>';
+																				    wp_editor( $attachment->post_excerpt, 'soliloquy-caption-' . $attachment->ID, array( 'wpautop' => true, 'media_buttons' => false, 'textarea_rows' => '6', 'textarea_name' => '_soliloquy_uploads[caption]', 'tabindex' => '100', 'tinymce' => false, 'teeny' => true, 'quicktags' => array('buttons' => 'strong,em,link,block,del,ins,img,ul,ol,li,code,close'), 'dfw' => false ) );
 																					echo '<span class="description">' . Tgmsp_Strings::get_instance()->strings['image_caption_desc'] . '</span>';
 																				echo '</td>';
 																			echo '</tr>';
@@ -545,7 +548,7 @@ class Tgmsp_Admin {
 						$defaults = apply_filters( 'tgmsp_default_sizes', array( 'default', 'custom' ) );
 						echo '<select id="soliloquy-default-size" name="_soliloquy_settings[default]">';
 							foreach ( $defaults as $default ) {
-								echo '<option value="' . esc_attr( $default ) . '"' . selected( $default, $this->get_custom_field( '_soliloquy_settings', 'default' ), false ) . '>' . esc_html( $default ) . '</option>';
+								echo '<option value="' . esc_attr( $default ) . '"' . selected( $default, self::get_custom_field( '_soliloquy_settings', 'default' ), false ) . '>' . esc_html( $default ) . '</option>';
 								}
 						echo '</select>';
 					?>
@@ -557,7 +560,7 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-width"><?php echo Tgmsp_Strings::get_instance()->strings['slider_size']; ?></label></th>
 					<td>
 						<div id="soliloquy-default-sizes">
-							<input id="soliloquy-width" type="text" name="_soliloquy_settings[width]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'width' ) ); ?>" /> &#215; <input id="soliloquy-height" type="text" name="_soliloquy_settings[height]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'height' ) ); ?>" />
+							<input id="soliloquy-width" type="text" name="_soliloquy_settings[width]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'width' ) ); ?>" /> &#215; <input id="soliloquy-height" type="text" name="_soliloquy_settings[height]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'height' ) ); ?>" />
 							<p class="description"><?php printf( '%s <a class="soliloquy-size-more" href="#">%s</a>', Tgmsp_Strings::get_instance()->strings['slider_size_desc'], Tgmsp_Strings::get_instance()->strings['slider_size_more'] ); ?></p>
 							<p id="soliloquy-explain-size" class="description" style="display: none;"><?php printf( '%s <a href="%s" target="_blank">%s</a>.', Tgmsp_Strings::get_instance()->strings['slider_size_explain'], 'http://codex.wordpress.org/Function_Reference/add_image_size', 'add_image_size()' ); ?></p>
 						</div>
@@ -577,9 +580,9 @@ class Tgmsp_Admin {
 									}
 
 									if ( ! $width && ! $height )
-										echo '<option value="' . esc_attr( $size ) . '"' . selected( $size, $this->get_custom_field( '_soliloquy_settings', 'custom' ), false ) . '>' . esc_html( $size ) . '</option>';
+										echo '<option value="' . esc_attr( $size ) . '"' . selected( $size, self::get_custom_field( '_soliloquy_settings', 'custom' ), false ) . '>' . esc_html( $size ) . '</option>';
 									else
-										echo '<option value="' . esc_attr( $size ) . '"' . selected( $size, $this->get_custom_field( '_soliloquy_settings', 'custom' ), false ) . '>' . esc_html( $size . ' (' . $width . ' &#215; ' . $height . ')' ) . '</option>';
+										echo '<option value="' . esc_attr( $size ) . '"' . selected( $size, self::get_custom_field( '_soliloquy_settings', 'custom' ), false ) . '>' . esc_html( $size . ' (' . $width . ' &#215; ' . $height . ')' ) . '</option>';
 								}
 							echo '</select>';
 						?>
@@ -595,7 +598,7 @@ class Tgmsp_Admin {
 						$transitions = apply_filters( 'tgmsp_slider_transitions', array( 'fade', 'slide-horizontal', 'slide-vertical' ) );
 						echo '<select id="soliloquy-transition" name="_soliloquy_settings[transition]">';
 							foreach ( $transitions as $transition ) {
-								echo '<option value="' . esc_attr( $transition ) . '"' . selected( $transition, $this->get_custom_field( '_soliloquy_settings', 'transition' ), false ) . '>' . esc_html( $transition ) . '</option>';
+								echo '<option value="' . esc_attr( $transition ) . '"' . selected( $transition, self::get_custom_field( '_soliloquy_settings', 'transition' ), false ) . '>' . esc_html( $transition ) . '</option>';
 							}
 						echo '</select>';
 					?>
@@ -606,9 +609,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-animate"><?php echo Tgmsp_Strings::get_instance()->strings['slider_animate']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'animate' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'animate' ) ) { ?>
 							<input id="soliloquy-animate" type="checkbox" name="_soliloquy_settings[animate]" value="1" checked="checked" rel="tester" /> <?php } else { ?>
-							<input id="soliloquy-animate" type="checkbox" name="_soliloquy_settings[animate]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'animate' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'animate' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-animate" type="checkbox" name="_soliloquy_settings[animate]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'animate' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'animate' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_animate_desc']; ?></span>
 					</td>
 				</tr>
@@ -616,7 +619,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-speed-box" valign="middle">
 					<th scope="row"><label for="soliloquy-speed"><?php echo Tgmsp_Strings::get_instance()->strings['slider_speed']; ?></label></th>
 					<td>
-						<input id="soliloquy-speed" type="text" name="_soliloquy_settings[speed]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'speed' ) ); ?>" />
+						<input id="soliloquy-speed" type="text" name="_soliloquy_settings[speed]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'speed' ) ); ?>" />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_milliseconds']; ?></span>
 					</td>
 				</tr>
@@ -624,7 +627,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-duration-box" valign="middle">
 					<th scope="row"><label for="soliloquy-duration"><?php echo Tgmsp_Strings::get_instance()->strings['slider_animation_dur']; ?></label></th>
 					<td>
-						<input id="soliloquy-duration" type="text" name="_soliloquy_settings[duration]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'duration' ) ); ?>" />
+						<input id="soliloquy-duration" type="text" name="_soliloquy_settings[duration]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'duration' ) ); ?>" />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_milliseconds']; ?></span>
 					</td>
 				</tr>
@@ -633,9 +636,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-video"><?php echo Tgmsp_Strings::get_instance()->strings['slider_video']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'video' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'video' ) ) { ?>
 							<input id="soliloquy-video" type="checkbox" name="_soliloquy_settings[video]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-video" type="checkbox" name="_soliloquy_settings[video]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'video' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'video' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-video" type="checkbox" name="_soliloquy_settings[video]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'video' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'video' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_video_desc']; ?></span>
 					</td>
 				</tr>
@@ -643,7 +646,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-preloader-box" valign="middle">
 					<th scope="row"><label for="soliloquy-preloader"><?php echo Tgmsp_Strings::get_instance()->strings['slider_preloader']; ?></label></th>
 					<td>
-						<input id="soliloquy-preloader" type="checkbox" name="_soliloquy_settings[preloader]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'preloader' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'preloader' ), 1 ); ?> />
+						<input id="soliloquy-preloader" type="checkbox" name="_soliloquy_settings[preloader]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'preloader' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'preloader' ), 1 ); ?> />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_preloader_desc']; ?></span>
 					</td>
 				</tr>
@@ -651,7 +654,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-advanced-box" valign="middle">
 					<th scope="row"><label for="soliloquy-advanced"><strong><?php echo Tgmsp_Strings::get_instance()->strings['slider_advanced']; ?></strong></label></th>
 					<td>
-						<input id="soliloquy-advanced" type="checkbox" name="_soliloquy_settings[advanced]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'advanced' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'advanced' ), 1 ); ?> />
+						<input id="soliloquy-advanced" type="checkbox" name="_soliloquy_settings[advanced]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'advanced' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'advanced' ), 1 ); ?> />
 						<span class="description"><strong><?php echo Tgmsp_Strings::get_instance()->strings['slider_advanced_desc']; ?></strong></span>
 					</td>
 				</tr>
@@ -660,9 +663,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-navigation"><?php echo Tgmsp_Strings::get_instance()->strings['slider_prevnext']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'navigation' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'navigation' ) ) { ?>
 							<input id="soliloquy-navigation" type="checkbox" name="_soliloquy_settings[navigation]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-navigation" type="checkbox" name="_soliloquy_settings[navigation]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'navigation' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'navigation' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-navigation" type="checkbox" name="_soliloquy_settings[navigation]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'navigation' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'navigation' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_prevnext_desc']; ?></span>
 					</td>
 				</tr>
@@ -671,9 +674,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-control"><?php echo Tgmsp_Strings::get_instance()->strings['slider_control']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'control' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'control' ) ) { ?>
 							<input id="soliloquy-control" type="checkbox" name="_soliloquy_settings[control]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-control" type="checkbox" name="_soliloquy_settings[control]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'control' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'control' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-control" type="checkbox" name="_soliloquy_settings[control]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'control' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'control' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_control_desc']; ?></span>
 					</td>
 				</tr>
@@ -682,9 +685,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-keyboard"><?php echo Tgmsp_Strings::get_instance()->strings['slider_key']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'keyboard' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'keyboard' ) ) { ?>
 							<input id="soliloquy-keyboard" type="checkbox" name="_soliloquy_settings[keyboard]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-keyboard" type="checkbox" name="_soliloquy_settings[keyboard]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'keyboard' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'keyboard' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-keyboard" type="checkbox" name="_soliloquy_settings[keyboard]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'keyboard' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'keyboard' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_key_desc']; ?></span>
 					</td>
 				</tr>
@@ -692,7 +695,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-multi-keyboard-box" valign="middle">
 					<th scope="row"><label for="soliloquy-multi-keyboard"><?php echo Tgmsp_Strings::get_instance()->strings['slider_multi_key']; ?></label></th>
 					<td>
-						<input id="soliloquy-multi-keyboard" type="checkbox" name="_soliloquy_settings[multi_key]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'multi_key' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'multi_key' ), 1 ); ?> />
+						<input id="soliloquy-multi-keyboard" type="checkbox" name="_soliloquy_settings[multi_key]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'multi_key' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'multi_key' ), 1 ); ?> />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_multi_key_desc']; ?></span>
 					</td>
 				</tr>
@@ -700,7 +703,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-mousewheel-box" valign="middle">
 					<th scope="row"><label for="soliloquy-mousewheel"><?php echo Tgmsp_Strings::get_instance()->strings['slider_mouse']; ?></label></th>
 					<td>
-						<input id="soliloquy-mousewheel" type="checkbox" name="_soliloquy_settings[mousewheel]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'mousewheel' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'mousewheel' ), 1 ); ?> />
+						<input id="soliloquy-mousewheel" type="checkbox" name="_soliloquy_settings[mousewheel]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'mousewheel' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'mousewheel' ), 1 ); ?> />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_mouse_desc']; ?></span>
 					</td>
 				</tr>
@@ -708,7 +711,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-pauseplay-box" valign="middle">
 					<th scope="row"><label for="soliloquy-pauseplay"><?php echo Tgmsp_Strings::get_instance()->strings['slider_pp']; ?></label></th>
 					<td>
-						<input id="soliloquy-pauseplay" type="checkbox" name="_soliloquy_settings[pauseplay]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'pauseplay' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'pauseplay' ), 1 ); ?> />
+						<input id="soliloquy-pauseplay" type="checkbox" name="_soliloquy_settings[pauseplay]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'pauseplay' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'pauseplay' ), 1 ); ?> />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_pp_desc']; ?></span>
 					</td>
 				</tr>
@@ -716,14 +719,14 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-random-box" valign="middle">
 					<th scope="row"><label for="soliloquy-random"><?php echo Tgmsp_Strings::get_instance()->strings['slider_random']; ?></label></th>
 					<td>
-						<input id="soliloquy-random" type="checkbox" name="_soliloquy_settings[random]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'random' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'random' ), 1 ); ?> />
+						<input id="soliloquy-random" type="checkbox" name="_soliloquy_settings[random]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'random' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'random' ), 1 ); ?> />
 					</td>
 				</tr>
 				<?php do_action( 'tgmsp_before_setting_number', $post ); ?>
 				<tr id="soliloquy-number-box" valign="middle">
 					<th scope="row"><label for="soliloquy-number"><?php echo Tgmsp_Strings::get_instance()->strings['slider_start']; ?></label></th>
 					<td>
-						<input id="soliloquy-number" type="text" name="_soliloquy_settings[number]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'number' ) ); ?>" />
+						<input id="soliloquy-number" type="text" name="_soliloquy_settings[number]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'number' ) ); ?>" />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_start_desc']; ?></span>
 					</td>
 				</tr>
@@ -732,9 +735,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-loop"><?php echo Tgmsp_Strings::get_instance()->strings['slider_loop']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'loop' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'loop' ) ) { ?>
 							<input id="soliloquy-loop" type="checkbox" name="_soliloquy_settings[loop]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-loop" type="checkbox" name="_soliloquy_settings[loop]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'loop' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'loop' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-loop" type="checkbox" name="_soliloquy_settings[loop]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'loop' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'loop' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_loop_desc']; ?></span>
 					</td>
 				</tr>
@@ -743,9 +746,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-action"><?php echo Tgmsp_Strings::get_instance()->strings['slider_pause']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'action' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'action' ) ) { ?>
 							<input id="soliloquy-action" type="checkbox" name="_soliloquy_settings[action]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-action" type="checkbox" name="_soliloquy_settings[action]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'action' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'action' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-action" type="checkbox" name="_soliloquy_settings[action]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'action' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'action' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_pause_desc']; ?></span>
 					</td>
 				</tr>
@@ -753,7 +756,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-hover-box" valign="middle">
 					<th scope="row"><label for="soliloquy-hover"><?php echo Tgmsp_Strings::get_instance()->strings['slider_hover']; ?></label></th>
 					<td>
-						<input id="soliloquy-hover" type="checkbox" name="_soliloquy_settings[hover]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'hover' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'hover' ), 1 ); ?> />
+						<input id="soliloquy-hover" type="checkbox" name="_soliloquy_settings[hover]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'hover' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'hover' ), 1 ); ?> />
 					</td>
 				</tr>
 				<?php do_action( 'tgmsp_before_setting_css', $post ); ?>
@@ -761,9 +764,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-slider-css"><?php echo Tgmsp_Strings::get_instance()->strings['slider_css']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'css' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'css' ) ) { ?>
 							<input id="soliloquy-slider-css" type="checkbox" name="_soliloquy_settings[css]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-slider-css" type="checkbox" name="_soliloquy_settings[css]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'css' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'css' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-slider-css" type="checkbox" name="_soliloquy_settings[css]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'css' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'css' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_css_desc']; ?></span>
 					</td>
 				</tr>
@@ -771,7 +774,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-reverse-box" valign="middle">
 					<th scope="row"><label for="soliloquy-reverse"><?php echo Tgmsp_Strings::get_instance()->strings['slider_reverse']; ?></label></th>
 					<td>
-						<input id="soliloquy-reverse" type="checkbox" name="_soliloquy_settings[reverse]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'reverse' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'reverse' ), 1 ); ?> />
+						<input id="soliloquy-reverse" type="checkbox" name="_soliloquy_settings[reverse]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'reverse' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'reverse' ), 1 ); ?> />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_reverse_desc']; ?></span>
 					</td>
 				</tr>
@@ -780,9 +783,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-smooth"><?php echo Tgmsp_Strings::get_instance()->strings['slider_smooth']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'smooth' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'smooth' ) ) { ?>
 							<input id="soliloquy-smooth" type="checkbox" name="_soliloquy_settings[smooth]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-smooth" type="checkbox" name="_soliloquy_settings[smooth]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'smooth' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'smooth' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-smooth" type="checkbox" name="_soliloquy_settings[smooth]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'smooth' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'smooth' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_smooth_desc']; ?></span>
 					</td>
 				</tr>
@@ -791,9 +794,9 @@ class Tgmsp_Admin {
 					<th scope="row"><label for="soliloquy-touch"><?php echo Tgmsp_Strings::get_instance()->strings['slider_touch']; ?></label></th>
 					<td>
 					<?php
-						if ( '' === $this->get_custom_field( '_soliloquy_settings', 'touch' ) ) { ?>
+						if ( '' === self::get_custom_field( '_soliloquy_settings', 'touch' ) ) { ?>
 							<input id="soliloquy-touch" type="checkbox" name="_soliloquy_settings[touch]" value="1" checked="checked" /> <?php } else { ?>
-							<input id="soliloquy-touch" type="checkbox" name="_soliloquy_settings[touch]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'touch' ) ); ?>" <?php checked( $this->get_custom_field( '_soliloquy_settings', 'touch' ), 1 ); ?> /> <?php } ?>
+							<input id="soliloquy-touch" type="checkbox" name="_soliloquy_settings[touch]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'touch' ) ); ?>" <?php checked( self::get_custom_field( '_soliloquy_settings', 'touch' ), 1 ); ?> /> <?php } ?>
 							<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_touch_desc']; ?></span>
 					</td>
 				</tr>
@@ -801,7 +804,7 @@ class Tgmsp_Admin {
 				<tr id="soliloquy-delay-box" valign="middle">
 					<th scope="row"><label for="soliloquy-delay"><?php echo Tgmsp_Strings::get_instance()->strings['slider_delay']; ?></label></th>
 					<td>
-						<input id="soliloquy-delay" type="text" name="_soliloquy_settings[delay]" value="<?php echo esc_attr( $this->get_custom_field( '_soliloquy_settings', 'delay' ) ); ?>" />
+						<input id="soliloquy-delay" type="text" name="_soliloquy_settings[delay]" value="<?php echo esc_attr( self::get_custom_field( '_soliloquy_settings', 'delay' ) ); ?>" />
 						<span class="description"><?php echo Tgmsp_Strings::get_instance()->strings['slider_delay_desc']; ?></span>
 					</td>
 				</tr>
@@ -815,6 +818,11 @@ class Tgmsp_Admin {
 			<p><strong><?php echo Tgmsp_Strings::get_instance()->strings['slider_cb']; ?></strong></p>
 		</div>
 		<?php
+
+		// Ugly hack to make sure wp_editor initializes in ajax calls.
+		echo '<!--';
+        wp_editor( '', 'invisible_editor_for_initialization' );
+        echo '-->';
 
 		do_action( 'tgmsp_after_settings', $post );
 
@@ -987,7 +995,7 @@ class Tgmsp_Admin {
 	 * @param int $postid The current post ID
 	 * @return string|boolean The custom field value on success, false on failure
 	 */
-	public function get_custom_field( $field, $setting = null, $index = null, $postid = null ) {
+	public static function get_custom_field( $field, $setting = null, $index = null, $postid = null ) {
 
 		global $id, $post;
 

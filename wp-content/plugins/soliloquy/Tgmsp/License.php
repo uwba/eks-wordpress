@@ -51,7 +51,7 @@ class Tgmsp_License {
 		/** If the user has pre-defined their license key and it hasn't already been validated, go ahead and validate it */
 		if ( ( Tgmsp::get_key() || defined( 'SOLILOQUY_LICENSE_KEY' ) ) && ! isset( $soliloquy_license['license'] ) ) {
 			$key 		= Tgmsp::get_key() ? Tgmsp::get_key() : SOLILOQUY_LICENSE_KEY; // It's going to be one or the other if we get here
-			$verify_key = $this->perform_remote_request( 'verify-soliloquy-license', array( 'key' => $key ) );
+			$verify_key = self::perform_remote_request( 'verify-soliloquy-license', array( 'key' => $key ) );
 
 			/** Return early is there is an error (but output no notices) */
 			if ( is_wp_error( $verify_key ) )
@@ -75,7 +75,7 @@ class Tgmsp_License {
 			check_admin_referer( 'soliloquy-verify-license-key' );
 
 			/** We need to verify the plugin license */
-			$verify_key = $this->perform_remote_request( 'verify-soliloquy-license', array( 'key' => $_POST['soliloquy_license_key'] ) );
+			$verify_key = self::perform_remote_request( 'verify-soliloquy-license', array( 'key' => $_POST['soliloquy_license_key'] ) );
 
 			/** Return early is there is an error */
 			if ( is_wp_error( $verify_key ) ) {
@@ -106,7 +106,7 @@ class Tgmsp_License {
 			check_admin_referer( 'soliloquy-deactivate-license-key' );
 
 			/** We need to deactivate the license for this site */
-			$deactivate = $this->perform_remote_request( 'deactivate-soliloquy-license', array( 'key' => $_POST['soliloquy_license_key'] ) );
+			$deactivate = self::perform_remote_request( 'deactivate-soliloquy-license', array( 'key' => $_POST['soliloquy_license_key'] ) );
 
 			/** Return early is there is an error */
 			if ( is_wp_error( $deactivate ) ) {
@@ -141,7 +141,7 @@ class Tgmsp_License {
 	 * @param string $return_format The format for returning content from the remote URL
 	 * @return string|boolean Json decoded response on success, false on failure
 	 */
-	public function perform_remote_request( $action, $body = array(), $headers = array(), $return_format = 'json' ) {
+	public static function perform_remote_request( $action, $body = array(), $headers = array(), $return_format = 'json' ) {
 
 		/** Build body */
 		$body = wp_parse_args( $body, array(
@@ -199,7 +199,7 @@ class Tgmsp_License {
 			return;
 
 		/** Query the API to validate the license key */
-		$validate = $this->perform_remote_request( 'validate-soliloquy-license', array( 'key' => $soliloquy_license['license'] ) );
+		$validate = self::perform_remote_request( 'validate-soliloquy-license', array( 'key' => $soliloquy_license['license'] ) );
 
 		/** Force the plugin to keep checking if there are errors in connecting */
 		if ( is_wp_error( $validate ) )

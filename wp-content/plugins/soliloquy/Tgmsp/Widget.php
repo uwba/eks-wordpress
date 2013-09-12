@@ -55,7 +55,7 @@ class Tgmsp_Widget extends WP_Widget {
 
  	 	/** If a title exists, output it */
  	 	if ( $title )
- 	 		echo $before_title . esc_attr( $title ) . $after_title;
+ 	 		echo $before_title . $title . $after_title;
 
  	 	do_action( 'tgmsp_widget_before_slider', $args, $instance );
 

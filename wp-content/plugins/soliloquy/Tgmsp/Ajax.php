@@ -194,7 +194,10 @@ class Tgmsp_Ajax {
 																$html .= '<tr id="soliloquy-caption-box-' . $image['id'] . '" valign="middle">';
 																	$html .= '<th scope="row"><label for="soliloquy-caption-' . $image['id'] . '">' . Tgmsp_Strings::get_instance()->strings['image_caption'] . '</label></th>';
 																	$html .= '<td>';
-																		$html .= '<textarea id="soliloquy-caption-' . $image['id'] . '" class="soliloquy-caption" rows="3" name="_soliloquy_uploads[caption]">' . $image['caption'] . '</textarea>';
+																	    ob_start();
+																	    wp_editor( $image['caption'], 'soliloquy-caption-' . $image['id'], array( 'wpautop' => true, 'media_buttons' => false, 'textarea_rows' => '6', 'textarea_name' => '_soliloquy_uploads[caption]', 'tabindex' => '100', 'tinymce' => false, 'teeny' => true, 'quicktags' => array('buttons' => 'strong,em,link,block,del,ins,img,ul,ol,li,code,close'), 'dfw' => false ) );
+																	    $contents = ob_get_clean();
+																	    $html .= $contents;
 																		$html .= '<span class="description">' . Tgmsp_Strings::get_instance()->strings['image_caption_desc'] . '</span>';
 																	$html .= '</td>';
 																$html .= '</tr>';
@@ -481,7 +484,7 @@ class Tgmsp_Ajax {
 				$entry 				   = array();
 				$entry['ID'] 		   = $attachment_id;
 				$entry['post_title']   = strip_tags( $_POST['soliloquy-title'] );
-				$entry['post_excerpt'] = current_user_can( 'unfiltered_html' ) ? stripslashes( $_POST['soliloquy-caption'] ) : wp_kses_post( $_POST['soliloquy-caption'] );
+				$entry['post_excerpt'] = current_user_can( 'unfiltered_html' ) ? stripslashes( $_POST['wp-editor-area'] ) : wp_kses_post( $_POST['wp-editor-area'] );
 				wp_update_post( $entry );
 
 				/** Update attachment alt text */
