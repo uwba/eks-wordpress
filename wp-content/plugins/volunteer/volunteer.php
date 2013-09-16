@@ -295,7 +295,7 @@ function myajax_submit() {
     <p>
         Alameda County - Vanessa Muniz, 510.238.2424<br/>
         Contra Costa County - Breana Stokes, 510.238.2454<br/>
-        Marin County - Ramona Smith, 415.526.7534<br/>
+        Marin County - Community Action Marin, 415.526.7530<br/>
         Napa County - Vanessa Muniz, 510.238.2424<br/>
         San Francisco and San Mateo Counties - Minnie Sage, 415.963.5133<br/>
         Solano County - Maria Moses, 707.421.7229 ext. 109
