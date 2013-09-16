@@ -127,7 +127,7 @@ $_SESSION['role'] = "volunteer";
                                 <div id="main-search" class="mti_font_element">
                                     <div class="search-for mti_font_element">
                                         <label for="search-text" class="mti_font_element">
-                                            <span class="search-help mti_font_element">Enter the county, city, or day of week to find a free tax site.</span>
+                                            <span class="search-help mti_font_element">Enter the county, city, or day of week you would like to volunteer.</span>
                                         </label>
                                         <div>
                                             <input type="text" id="search-text" name="search_terms" size="30" style="width:100%">

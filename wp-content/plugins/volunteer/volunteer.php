@@ -773,8 +773,9 @@ function tax_search() {
 
         foreach ($terms as $term) {
             $term = mysql_real_escape_string($term);
-            if (in_array($term, array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
+            if (in_array(ucfirst(strtolower($term)), array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
             {
+                $term = ucfirst(strtolower($term));
                 // See character classes here: http://dev.mysql.com/doc/refman/5.1/en/regexp.html#operator_regexp
                 $fragment = str_replace('"', '[[.quotation-mark.]]', '"' . $term . '":{"Start1":"","End1":"","Start2":"","End2":""}');
                 $fragment = str_replace("{", '[[.left-brace.]]', $fragment);

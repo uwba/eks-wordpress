@@ -155,16 +155,28 @@ wp_enqueue_script('jquery-ui-datepicker');
             
             $('#app_contactphone,#app_sitecoordinatorphonenumber').mask("999-999-9999");
 
-            $("#app_openingdate,#app_closingdate").datepicker().on('blur change', function() {
-                    if ($(this).attr('id') == 'app_openingdate')
-                        $('#app_closingdate').datepicker('option', 'minDate', $(this).datepicker("getDate") ? $(this).datepicker("getDate") : null);
-                    else
-                        $('#app_openingdate').datepicker('option', 'maxDate', $(this).datepicker("getDate") ? $(this).datepicker("getDate") : null);                
+            // Handle setup of the datepicker, enforcing sensible start and end dates
+            $("#app_openingdate,#app_closingdate").datepicker();
+            $("#app_openingdate").on('change', function() {           
+                var selectedDate = $(this).datepicker("getDate");
+                $('#app_closingdate').datepicker('option', 'minDate', selectedDate ? selectedDate : null);
             });
+            $("#app_closingdate").on('change', function() {
+                var selectedDate = $(this).datepicker("getDate");
+                $('#app_openingdate').datepicker('option', 'maxDate', selectedDate ? selectedDate : null);     
+            });
+            $("#app_openingdate").trigger('change');
+            $("#app_closingdate").trigger('change');
+            
+            // Tweak labels for clarity.  Note ugly string manipulation since this is poorly-formed HTML
+            var previous = $('#app_busshuttles').parent().html();
+            previous = previous.replace('Bus/Shuttles', 'Bus/Shuttles (include line numbers and letters and transit organization)');
+            $('#app_busshuttles').parent().html(previous);        
+            previous = $('[name^="app_taxreturnsprocessedforspecificyears"]').first().parent().parent().html();
+            previous = previous.replace('Years ', 'Years (in addition to Tax Year 2013)');
+            $('[name^="app_taxreturnsprocessedforspecificyears"]').first().parent().parent().html(previous);
 
             renderScheduleCreatorWidget();
-            
-            // Ensure the Closing Date is after the Opening Date, and vice versa
             
             $('#btn-submit').show();
             
