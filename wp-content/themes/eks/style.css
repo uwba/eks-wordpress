@@ -726,7 +726,8 @@ article.post .post-heading a, article.post .post-heading .left-hanger {
 	padding: 10px 0;
 	font-family:'HelveticaNeueW01-UltLt', Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	line-height: 20px;
+	/*line-height: 20px;*/
+	line-height: 42px;
 	-moz-text-shadow: none;
 	-webkit-text-shadow: none;
 	text-shadow: none;
