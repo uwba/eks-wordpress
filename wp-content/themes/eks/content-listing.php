@@ -21,4 +21,9 @@ appthemes_before_post_title( VA_LISTING_PTYPE ); ?>
     <?php echo get_formatted_hours_of_operation(get_post_meta( get_the_ID(), 'app_hoursofoperation', true )); ?></p>
 <p class="listing-hours"><strong><?php _e( 'Availability:', APP_TD ); ?></strong> <?php echo get_post_meta( get_the_ID(), 'app_availability', true ); ?></p>
 <p class="listing-hours"><strong><?php _e( 'Dates:', APP_TD ); ?></strong> <?php echo get_post_meta( get_the_ID(), 'app_openingdate', true ); ?> - <?php echo get_post_meta( get_the_ID(), 'app_closingdate', true ); ?></p>
+
+<?php $closed_dates = get_post_meta( get_the_ID(), 'app_specialcloseddates', true );
+if (!empty($closed_dates)) { ?>
+<p class="listing-hours"><strong><?php _e( 'Special Closed Dates:', APP_TD ); ?></strong> <?php echo $closed_dates ?></p>
+<?php } ?>
 <p class="listing-hours"><strong><?php _e( 'Additional Languages Spoken:', APP_TD ); ?></strong> <?php echo implode(', ', get_post_meta( get_the_ID(), 'app_additionallanguagesspoken')); ?></p>
