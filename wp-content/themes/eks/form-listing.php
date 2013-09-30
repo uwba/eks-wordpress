@@ -153,7 +153,7 @@ wp_enqueue_script('jquery-ui-datepicker');
                 'min': 0
             });
             
-            $('#app_contactphone,#app_sitecoordinatorphonenumber').mask("999-999-9999");
+            $('#app_contactphone,#app_sitecoordinatorphonenumber').mask("999-999-9999? x99999");
 
             // Handle setup of the datepicker, enforcing sensible start and end dates
             $("#app_openingdate,#app_closingdate").datepicker();
