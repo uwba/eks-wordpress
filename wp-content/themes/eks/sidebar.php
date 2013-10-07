@@ -8,7 +8,7 @@
             <ul>
                 <li>Photo identification (for you and your spouse, if filing jointly)</li>
                 <li>Social Security card or ITIN for each family member</li>
-                <li>W-2 forms for all jobs held in 2011 and all 1099 or 1098 forms</li>
+                <li>W-2 forms for all jobs held in 2012 and all 1099 or 1098 forms</li>
                 <li>Child care provider information</li>
                 <li>Landlord's Name, Address and Phone number for the CA renter's credit</li>
                 <li>A voided check for direct deposit</li>
