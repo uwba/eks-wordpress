@@ -36,10 +36,14 @@
 	<?php if ( $facebook or $twitter ) : ?>
 		<li><p class="listing-custom-field"><span class="custom-field-label">Follow</span><span class="custom-field-sep">: </span>
 			<?php if ( $facebook ) : ?>
-			<br/><a href="<?php echo esc_url( 'http://facebook.com/' . $facebook ); ?>" title="<?php _e( 'Facebook', APP_TD ); ?>" target="_blank"><div class="facebook-icon">Facebook</div></a>
+                    <div>
+                        <a href="<?php echo esc_url( 'http://facebook.com/' . $facebook ); ?>" title="<?php _e( 'Facebook', APP_TD ); ?>" target="_blank"><span class="facebook-icon">Facebook -</span> <span class="facebook-handle"><?php echo esc_html( 'http://facebook.com/' . $facebook ); ?></span></a>
+                    </div>
 			<?php endif; ?>
 			<?php if ( $twitter ) : ?>
-			<br/><a href="<?php echo esc_url( 'http://twitter.com/' . $twitter ); ?>" title="<?php _e( 'Twitter', APP_TD ); ?>" target="_blank"><div class="twitter-icon">Twitter -</div> <span class="twitter-handle">@<?php echo esc_html( $twitter ); ?></span></a>
+                    <div>
+                        <a href="<?php echo esc_url( 'http://twitter.com/' . $twitter ); ?>" title="<?php _e( 'Twitter', APP_TD ); ?>" target="_blank"><div class="twitter-icon">Twitter -</div> <span class="twitter-handle">@<?php echo esc_html( $twitter ); ?></span></a>
+                    </div>
 			<?php endif; ?>
                 </li>
 	<?php endif; ?>
