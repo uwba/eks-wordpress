@@ -173,12 +173,12 @@ class VA_Listing_Search extends APP_View {
                     $subquery[] = "(meta_key = 'app_adaaccessible' AND meta_value = '".esc_sql(like_escape($_GET['ada']))."')";
 
                 if (!empty($_GET['itin']))
-                    $subquery[] = "(meta_key = 'app_certifyingacceptanceagent' AND meta_value = '".esc_sql(like_escape($_GET['language']))."')";
+                    $subquery[] = "(meta_key = 'app_certifyingacceptanceagent' AND meta_value = '".esc_sql(like_escape($_GET['itin']))."')";
                 
                 if (count($subquery) > 0)
                     $search .= " AND $wpdb->posts.id IN (SELECT post_id FROM $wpdb->postmeta WHERE ( ".implode(' OR ', $subquery)." ) ) ";
                 // End EKS hack
-                
+
 		// END COPY
 		return $search;
 	}
