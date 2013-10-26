@@ -249,7 +249,7 @@ function eks_handle_download_document() {
                 empty($meta_values['app_specialcloseddates'][0]) ? '' : $meta_values['app_specialcloseddates'][0],
                 empty($meta_values['app_specialinstructions'][0]) ? '' : $meta_values['app_specialinstructions'][0],
                 empty($meta_values['app_additionallanguagesspoken'][0]) ? '' : implode(', ', $meta_values['app_additionallanguagesspoken']),
-                empty($meta_values['app_otherlanguages'][0]) ? '' : $meta_values['app_specialcloseddates'][0],
+                empty($meta_values['app_otherlanguages'][0]) ? '' : $meta_values['app_otherlanguages'][0],
                 empty($meta_values['app_certifyingacceptanceagent'][0]) ? '' : $meta_values['app_certifyingacceptanceagent'][0],
                 empty($meta_values['app_specialtaxformsorschedulesprepared'][0]) ? '' : implode(', ', $meta_values['app_specialtaxformsorschedulesprepared']),
                 empty($meta_values['app_taxreturnsprocessedforspecificyears'][0]) ? '' : implode(', ', $meta_values['app_taxreturnsprocessedforspecificyears']),
@@ -297,6 +297,7 @@ function eks_handle_download_document() {
             'New Tax Preparer Training',
             'Returning Tax Preparer Training'
         );
+
         $e = new EksExcel();
         $e->downloadExcel('EKS Tax Sites Export.xlsx', $arr, $header);
     }
