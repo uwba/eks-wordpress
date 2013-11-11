@@ -907,9 +907,6 @@ function tax_search() {
                             <p>
                                 ADA Accessible: <?php echo get_post_meta(get_the_ID(), 'app_adaaccessible', true) ?>
                             </p>
-                            <p>
-                                Number of Tax Preparers, Interpreters, and Greeters needed: <?php echo get_post_meta(get_the_ID(), 'app_numberoftaxpreparersneeded', true) ?> |  <?php echo get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) ?> | <?php echo get_post_meta(get_the_ID(), 'app_numberofgreetersneeded', true) ?>
-                            </p>
                         </div>
                     <?php ?></article><?php
                 }

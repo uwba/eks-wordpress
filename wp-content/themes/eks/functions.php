@@ -260,6 +260,7 @@ function eks_handle_download_document() {
                 empty($meta_values['app_numberofinterpretersneeded'][0]) ? '' : $meta_values['app_numberofinterpretersneeded'][0],
                 empty($meta_values['app_numberofgreetersneeded'][0]) ? '' : $meta_values['app_numberofgreetersneeded'][0],
                 empty($meta_values['phone'][0]) ? '' : $meta_values['phone'][0],
+                empty($meta_values['email'][0]) ? '' : $meta_values['email'][0],
                 empty($meta_values['app_sitetype'][0]) ? '' : $meta_values['app_sitetype'][0],
                 empty($meta_values['app_newtaxpreparertrainingrequired'][0]) ? '' : $meta_values['app_newtaxpreparertrainingrequired'][0],
                 empty($meta_values['app_returningtaxpreparertrainingrequired'][0]) ? '' : $meta_values['app_returningtaxpreparertrainingrequired'][0]
@@ -293,6 +294,7 @@ function eks_handle_download_document() {
             'Number of Interpreters needed',
             'Number of Greeters needed',
             'Public Phone Number',
+            'Public Email',
             'Site Type',
             'New Tax Preparer Training',
             'Returning Tax Preparer Training'
@@ -685,8 +687,7 @@ class ZG_Nav_Walker extends Walker_Nav_Menu {
             if (!is_volunteer()) {
                 $item->url = site_url("/dashboard");
                 $item->title = __("Coordinator Dashboard");
-            }
-            else
+            } else
                 $this->page_is_visible = false;
         }
 
@@ -724,7 +725,7 @@ function recent_searches() {
     // View Recent Searches
     $html = '<h3>Recent Searches</h3><ul class="links">';
     for ($i = 0; $i < count($recent_searches);) {
-        $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . (++$i) . '</a></li>';
+        $html .= '<li><a href="' . $recent_searches[$i] . '">Search ' . ( ++$i) . '</a></li>';
     }
     $html .= '</ul>';
 
@@ -925,18 +926,24 @@ function get_formatted_hours_of_operation($json, $separator = "<br/>") {
  * @param string $subject
  * @param string $body          HTML body
  * @param string $cc            Optional email to CC
+ * @param string $replyTo       Optional replyTo email
  * @return bool $success
  */
-function eks_mail($to, $from, $subject, $body, $cc = null) {
+function eks_mail($to, $from, $subject, $body, $cc = null, $replyTo = null) {
     $headers = 'From: ' . $from . "\r\n";
     if (!empty($cc))
         $headers .= 'Cc: ' . $cc . "\r\n";
+    if (!empty($replyTo))
+        $headers .= 'ReplyTo: ' . $replyTo . "\r\n";
     add_filter('wp_mail_content_type', 'eks_set_html_content_type');
     $success = wp_mail($to, $subject, $body, $headers);
     // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
     remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
     if (!$success)
-        error_log("Could not email to:$to\n from:$from\n subject:$subject\n, cc:$cc");
+    {
+        //throw new exception("Could not email to:$to\n subject:$subject\n, headers:$headers");
+        error_log("Could not email to:$to\n subject:$subject\n, headers:$headers");
+    }
     return $success;
 }
 
@@ -962,16 +969,14 @@ function eks_notify_site_updated($listing) {
 
     // This should really be a "no-reply" alias.
     $sender = "\"EarnItKeepItSaveIt!\"<" . get_option('admin_email') . ">";
-    
+
     $county = get_the_listing_category($listing->ID);
     $to_emails = get_option('email_notifications_' . $county->term_id);
-    
-    if (!empty($to_emails))
-    {
+
+    if (!empty($to_emails)) {
         if (!eks_mail($to_emails, $sender, $subject, $body)) {
             // Mailing failed, too bad but continue on
         }
     }
     return $listing;
 }
-

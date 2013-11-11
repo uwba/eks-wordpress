@@ -36,18 +36,19 @@ wp_enqueue_script('json-form', '/wp-content/plugins/volunteer/js/jquery.form.js'
             global $current_user;
             get_currentuserinfo();
             $name = $current_user->user_nicename;
-            $noreply_email = 'noreply@' . $_SERVER["HTTP_HOST"];
+            $noreply_email = get_option('admin_email');
+            
             $subject = $_POST['subject'];
             $message = "<b>The following is a message from $name (" . $current_user->user_email . "):</b><br/><br/><pre>{$_POST['message']}</pre>";
 
             $count = 0;
             foreach ($volunteers as $volunteer) {
                 if (in_array($volunteer->post_author, $_POST['volunteers'])) {
-                    set_current_user($volunteer->post_author);
-                    get_currentuserinfo();
-                    $to = "{$current_user->user_nicename} <{$current_user->user_email}>";
                     
-                    if (!eks_mail($to, "\"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>", $subject, $message)) {
+                    $volunteer_user = get_user_by( 'id' , $volunteer->post_author );
+                    $to = "{$volunteer_user->data->user_nicename} <{$volunteer_user->data->user_email}>";
+                    $replyTo = "{$name} <{$current_user->data->user_email}>";
+                    if (!eks_mail($to, "\"{$name} via EarnItKeepItSaveIt!\"<{$noreply_email}>", $subject, $message, null, $replyTo)) {
                         $errors[] = "The email to ".$current_user->user_email." could not be sent.";
                     }
                     else
