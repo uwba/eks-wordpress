@@ -474,6 +474,8 @@ function get_volunteer_tax_sites($volunteer_user_id = null) {
  */
 function get_volunteers() {
     global $current_user, $user_ID;
+    
+    $volunteers = array();
 
     get_currentuserinfo();
 
@@ -488,23 +490,27 @@ function get_volunteers() {
         $conditions['author'] = $user_ID;
 
     $my_tax_sites = get_posts($conditions);
-    $my_tax_sites_ids = array();
-    foreach ($my_tax_sites as $tax_site) {
-        $my_tax_sites_ids[] = $tax_site->ID;
+
+    if (count($my_tax_sites) > 0) {
+        $my_tax_sites_ids = array();
+        foreach ($my_tax_sites as $tax_site) {
+            $my_tax_sites_ids[] = $tax_site->ID;
+        }
+
+        $arg = array(
+            'numberposts' => -1,
+            'post_type' => 'volunteer',
+            'post_status' => array('publish', 'pending'),
+            'meta_query' => array('relation' => 'OR'),
+        );
+
+        foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
+            $arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
+        }
+
+        $volunteers = get_posts($arg);
     }
-
-    $arg = array(
-        'numberposts' => -1,
-        'post_type' => 'volunteer',
-        'post_status' => array('publish', 'pending'),
-        'meta_query' => array('relation' => 'OR'),
-    );
-
-    foreach (array('preparer', 'interpreter', 'screener', 'greeter') as $position) {
-        $arg['meta_query'][] = array('key' => $position, 'compare' => 'IN', 'value' => $my_tax_sites_ids);
-    }
-
-    return get_posts($arg);
+    return $volunteers;
 }
 
 /**
@@ -939,8 +945,7 @@ function eks_mail($to, $from, $subject, $body, $cc = null, $replyTo = null) {
     $success = wp_mail($to, $subject, $body, $headers);
     // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
     remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
-    if (!$success)
-    {
+    if (!$success) {
         //throw new exception("Could not email to:$to\n subject:$subject\n, headers:$headers");
         error_log("Could not email to:$to\n subject:$subject\n, headers:$headers");
     }
