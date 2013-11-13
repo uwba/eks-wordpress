@@ -52,9 +52,8 @@ if (!function_exists('wp_new_user_notification')) {
         $user_login = stripslashes($user->user_login);
         $user_email = stripslashes($user->user_email);
         $group = $user->roles[0];
-        
-        if ($group == 'coordinator')
-        {
+
+        if ($group == 'coordinator') {
             // Update the name
             $userdata = array(
                 'ID' => $user_id,
@@ -64,7 +63,7 @@ if (!function_exists('wp_new_user_notification')) {
             wp_update_user($userdata);
             $user->user_nicename = $_POST['user_name'];
         }
-        
+
         //throw new exception($group);
 
         $body = "<p>There has been a new user registration on " . get_option('blogname') . "
@@ -151,8 +150,7 @@ function myajax_submit() {
 
             if (empty($_SESSION['volunteer']['position'][0])) {
                 $errors[] = '<strong>ERROR</strong>: Please select a position.';
-            }
-            else
+            } else
                 $_SESSION['volunteer']['terms'] = nl2br(get_option('terms_' . $_SESSION['volunteer']['position'][0]));
 
             $valid = !count($errors);
@@ -188,7 +186,7 @@ function myajax_submit() {
                 $_SESSION['volunteer']['email'] = $current_user->data->user_email;
                 $_SESSION['volunteer']['phone'] = $meta['phone'][0];
             }
-            
+
             // Get any existing post object if you can, for the Volunteer/Tax Site association
             $my_posts = get_posts(array(
                 'author' => $_SESSION['volunteer']['user_ID'],
@@ -218,14 +216,9 @@ function myajax_submit() {
             }
 
             update_post_meta($post_id, "experience", wp_strip_all_tags($_SESSION['volunteer']['preparer'])); // preparer|new
-            
             // Delete all existing positions, just to be safe
-            foreach (array('preparer', 'screener', 'greeter', 'interpreter') as $el)
-            {
+            foreach (array('preparer', 'screener', 'greeter', 'interpreter') as $el) {
                 delete_post_meta($post_id, $el);
-            }
-            foreach ($_SESSION['volunteer']['position'] as $position) {
-                update_post_meta($post_id, $position, $_POST['tax_sites']);
             }
 
             $valid = count($errors) == 0;
@@ -278,15 +271,15 @@ function myajax_submit() {
                         // Link and Learn - should just be one of these
                         $query = new WP_Query(array(
                             'post_type' => 'training',
-                            's' => 'Link and Learn',
                             'posts_per_page' => -1,
                             'orderby' => 'title',
                             'order' => 'ASC'
                         ));
 
                         foreach ($query->posts as $post) {
-                            setup_postdata($post);
-                            $html .= eks_training_html($post, true);
+                            $type = get_post_meta($post->ID, 'type');
+                            if ($type[0] == 'Link and Learn')
+                                $html .= eks_training_html($post, true);
                         }
                     }
                     if (empty($html))
@@ -318,11 +311,11 @@ function myajax_submit() {
 
         case 5: // Selected desired Training, so show the details so the volunteer can confirm
             $_SESSION['volunteer']['training'] = $_POST['training'];
-            
+
             $header = 'Your site coordinator will be in contact with you regarding your training.';
             $html = '';
             $footer = 'Please click the "Confirm" button below.';
-            
+
             if (!empty($_SESSION['volunteer']['training'])) {
                 $training = get_post($_POST['training']);
                 $training_meta = get_post_meta($training->ID);
@@ -352,7 +345,14 @@ function myajax_submit() {
         case 6:
             // Training confirmed, so save it and email the coordinator of the selected tax site.
             if (!empty($_SESSION['volunteer']['training'])) {
+
                 $volunteer = get_volunteer($_SESSION['volunteer']['user_ID']);
+                
+                // Finally we can update the Tax Site for the user
+                foreach ($_SESSION['volunteer']['position'] as $position) {
+                    update_post_meta($volunteer->ID, $position, $_SESSION['volunteer']['tax_site']);
+                }
+             
                 update_post_meta($volunteer->ID, 'training', $_SESSION['volunteer']['training']);
             }
             //var_dump($_SESSION);die();
@@ -544,85 +544,85 @@ function register_role_custom() {
     }
     ?> value="volunteer">Volunteer</option>
                 <option <?php
-    if (isset($_GET['role']) && $_GET['role'] == 'coordinator') {
-        echo 'selected';
-    }
-    ?> value="coordinator">Coordinator</option>
+                if (isset($_GET['role']) && $_GET['role'] == 'coordinator') {
+                    echo 'selected';
+                }
+                ?> value="coordinator">Coordinator</option>
             </select>
         </label>
     </div><?php
-}
+        }
 
-/* Process Custom Roles */
-add_action('user_register', 'custom_user_role');
+        /* Process Custom Roles */
+        add_action('user_register', 'custom_user_role');
 
-function custom_user_role($user_id, $password = "", $meta = array()) {
+        function custom_user_role($user_id, $password = "", $meta = array()) {
 
 
-    $role = empty($_REQUEST['role']) ? 'volunteer' : $_REQUEST['role'];
-    $userdata = array();
-    $userdata['ID'] = $user_id;
-    $userdata['role'] = $role;
+            $role = empty($_REQUEST['role']) ? 'volunteer' : $_REQUEST['role'];
+            $userdata = array();
+            $userdata['ID'] = $user_id;
+            $userdata['role'] = $role;
 
-    if ($role == "coordinator" || strpos(getenv("HTTP_REFERER"), 'role=coordinator') !== FALSE) {
-        $userdata['role'] = "coordinator";
-    } else {
-        $userdata['role'] = "volunteer";
-    }
+            if ($role == "coordinator" || strpos(getenv("HTTP_REFERER"), 'role=coordinator') !== FALSE) {
+                $userdata['role'] = "coordinator";
+            } else {
+                $userdata['role'] = "volunteer";
+            }
 
 //	$data = date('Y-m-d--h-i-s') . ' ' . getenv("HTTP_REFERER") . ' ' . getenv("REQUEST_URI") . " = {$userdata['role']}\n\n";
 //	file_put_contents('registration.log', $data, FILE_APPEND);
 
 
-    if (in_array($userdata['role'], array('volunteer', 'coordinator'))) {
-        wp_update_user($userdata);
-    }
-}
-
-/** Save LatLng for Gmap * */
-add_action('save_post', 'add_gmap');
-
-function add_gmap($post_id) {
-
-    if (!empty($_REQUEST['address'])) {
-        $address = urlencode($_REQUEST['address']);
-
-        $url = "http://maps.googleapis.com/maps/api/geocode/json?address={$address}&sensor=false";
-        $curl = curl_init($url);
-        //  $cookieJar = 'cookies.txt';
-        //  curl_setopt($this->curl, CURLOPT_COOKIEJAR, $cookieJar);
-        //  curl_setopt($this->curl, CURLOPT_COOKIEFILE, $cookieJar);
-        curl_setopt($curl, CURLOPT_AUTOREFERER, true);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 25);
-        //  curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-        $result = curl_exec($curl);
-        $result = json_decode($result);
-        //  var_dump($result->results[0]->geometry->location);exit;
-        if (isset($result->results[0]->geometry->location->lat)) {
-            $lat = $result->results[0]->geometry->location->lat;
-            update_post_meta($post_id, 'lat', $lat);
-            //	  echo $lat;
+            if (in_array($userdata['role'], array('volunteer', 'coordinator'))) {
+                wp_update_user($userdata);
+            }
         }
-        if (isset($result->results[0]->geometry->location->lng)) {
-            $lng = $result->results[0]->geometry->location->lng;
-            update_post_meta($post_id, 'lng', $lng);
-            //	  echo $lng;
+
+        /** Save LatLng for Gmap * */
+        add_action('save_post', 'add_gmap');
+
+        function add_gmap($post_id) {
+
+            if (!empty($_REQUEST['address'])) {
+                $address = urlencode($_REQUEST['address']);
+
+                $url = "http://maps.googleapis.com/maps/api/geocode/json?address={$address}&sensor=false";
+                $curl = curl_init($url);
+                //  $cookieJar = 'cookies.txt';
+                //  curl_setopt($this->curl, CURLOPT_COOKIEJAR, $cookieJar);
+                //  curl_setopt($this->curl, CURLOPT_COOKIEFILE, $cookieJar);
+                curl_setopt($curl, CURLOPT_AUTOREFERER, true);
+                curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+                curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 25);
+                //  curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+                $result = curl_exec($curl);
+                $result = json_decode($result);
+                //  var_dump($result->results[0]->geometry->location);exit;
+                if (isset($result->results[0]->geometry->location->lat)) {
+                    $lat = $result->results[0]->geometry->location->lat;
+                    update_post_meta($post_id, 'lat', $lat);
+                    //	  echo $lat;
+                }
+                if (isset($result->results[0]->geometry->location->lng)) {
+                    $lng = $result->results[0]->geometry->location->lng;
+                    update_post_meta($post_id, 'lng', $lng);
+                    //	  echo $lng;
+                }
+            }
         }
-    }
-}
 
 // require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-register_activation_hook(__FILE__, 'volunteer_install');
+        register_activation_hook(__FILE__, 'volunteer_install');
 
 //add_action('wp_footer', 'your_function'); // test
 //add_action('publish_post', 'unreadcounter_publish_post' );//trash_post , delete_post , publish_page , // delete/add categories from post
 //add_action('the_post', 'unreadcounter_view_single_post');
 //
-function volunteer_install() {
-    global $wpdb;
+        function volunteer_install() {
+            global $wpdb;
 //	    $table = $wpdb->prefix."volunteer";
 //	    $structure = "CREATE TABLE $table (
 //	        volunteer_id INT(9) NOT NULL AUTO_INCREMENT,
@@ -634,7 +634,7 @@ function volunteer_install() {
 //		UNIQUE KEY id (volunteer_id)
 //	    );";
 //	    $wpdb->query($structure);
-}
+        }
 
 //
 //
@@ -644,45 +644,45 @@ function volunteer_install() {
 //}
 
 
-function volunteer_register_new_user($user_login, $user_email) {
-    $errors = new WP_Error();
+        function volunteer_register_new_user($user_login, $user_email) {
+            $errors = new WP_Error();
 
-    $sanitized_user_login = sanitize_user($user_login);
-    $user_email = apply_filters('user_registration_email', $user_email);
+            $sanitized_user_login = sanitize_user($user_login);
+            $user_email = apply_filters('user_registration_email', $user_email);
 
-    // Check the username
-    if ($sanitized_user_login == '') {
-        $errors->add('empty_username', __('<strong>ERROR</strong>: Please enter a username.'));
-    } elseif (!validate_username($user_login)) {
-        $errors->add('invalid_username', __('<strong>ERROR</strong>: This username is invalid because it uses illegal characters. Please enter a valid username.'));
-        $sanitized_user_login = '';
-    } elseif (username_exists($sanitized_user_login)) {
-        $errors->add('username_exists', __('<strong>ERROR</strong>: This username is already registered, please choose another one.'));
-    }
+            // Check the username
+            if ($sanitized_user_login == '') {
+                $errors->add('empty_username', __('<strong>ERROR</strong>: Please enter a username.'));
+            } elseif (!validate_username($user_login)) {
+                $errors->add('invalid_username', __('<strong>ERROR</strong>: This username is invalid because it uses illegal characters. Please enter a valid username.'));
+                $sanitized_user_login = '';
+            } elseif (username_exists($sanitized_user_login)) {
+                $errors->add('username_exists', __('<strong>ERROR</strong>: This username is already registered, please choose another one.'));
+            }
 
-    // Check the e-mail address
-    if ($user_email == '') {
-        $errors->add('empty_email', __('<strong>ERROR</strong>: Please type your e-mail address.'));
-    } elseif (!is_email($user_email)) {
-        $errors->add('invalid_email', __('<strong>ERROR</strong>: The email address isn&#8217;t correct.'));
-        $user_email = '';
-    } elseif (email_exists($user_email)) {
-        $errors->add('email_exists', __('<strong>ERROR</strong>: This email is already registered, please choose another one.'));
-    } elseif ($_SESSION['volunteer']['email'] != $_SESSION['volunteer']['email_confirm']) {
-        $errors->add('email_confirm', __('<strong>ERROR</strong>: Confirm Email is not same.'));
-    }
+            // Check the e-mail address
+            if ($user_email == '') {
+                $errors->add('empty_email', __('<strong>ERROR</strong>: Please type your e-mail address.'));
+            } elseif (!is_email($user_email)) {
+                $errors->add('invalid_email', __('<strong>ERROR</strong>: The email address isn&#8217;t correct.'));
+                $user_email = '';
+            } elseif (email_exists($user_email)) {
+                $errors->add('email_exists', __('<strong>ERROR</strong>: This email is already registered, please choose another one.'));
+            } elseif ($_SESSION['volunteer']['email'] != $_SESSION['volunteer']['email_confirm']) {
+                $errors->add('email_confirm', __('<strong>ERROR</strong>: Confirm Email is not same.'));
+            }
 
-    // Check the password
-    if ($_SESSION['volunteer']['password'] == '') {
-        $errors->add('empty_password', __('<strong>ERROR</strong>: Please type your password.'));
-    } elseif ($_SESSION['volunteer']['password'] != $_SESSION['volunteer']['password_confirm']) {
-        $errors->add('password_confirm', __('<strong>ERROR</strong>: Confirm password is not same.'));
-    }
+            // Check the password
+            if ($_SESSION['volunteer']['password'] == '') {
+                $errors->add('empty_password', __('<strong>ERROR</strong>: Please type your password.'));
+            } elseif ($_SESSION['volunteer']['password'] != $_SESSION['volunteer']['password_confirm']) {
+                $errors->add('password_confirm', __('<strong>ERROR</strong>: Confirm password is not same.'));
+            }
 
-    // Check the Username
-    if ($_SESSION['volunteer']['name'] == '') {
-        $errors->add('empty_name', __('<strong>ERROR</strong>: Please type your name.'));
-    }
+            // Check the Username
+            if ($_SESSION['volunteer']['name'] == '') {
+                $errors->add('empty_name', __('<strong>ERROR</strong>: Please type your name.'));
+            }
 
 
 //	// Check captcha
@@ -690,109 +690,107 @@ function volunteer_register_new_user($user_login, $user_email) {
 //		$errors->add('wrong_captcha', __( '<strong>ERROR</strong>: Please complete the CAPTCHA.'));
 //	}
 
-    do_action('register_post', $sanitized_user_login, $user_email, $errors);
+            do_action('register_post', $sanitized_user_login, $user_email, $errors);
 
 
 
 
-    $errors = apply_filters('registration_errors', $errors, $sanitized_user_login, $user_email);
+            $errors = apply_filters('registration_errors', $errors, $sanitized_user_login, $user_email);
 
-    if ($errors->get_error_code())
-        return $errors;
+            if ($errors->get_error_code())
+                return $errors;
 
-    $user_pass = wp_generate_password(12, false);
-    $user_pass = $_SESSION['volunteer']['password'];
-    $user_id = wp_create_user($sanitized_user_login, $user_pass, $user_email);
+            $user_pass = wp_generate_password(12, false);
+            $user_pass = $_SESSION['volunteer']['password'];
+            $user_id = wp_create_user($sanitized_user_login, $user_pass, $user_email);
 
-    if (!$user_id) {
-        $errors->add('registerfail', sprintf(__('<strong>ERROR</strong>: Couldn&#8217;t register you... please contact the <a href="mailto:%s">webmaster</a> !'), get_option('admin_email')));
-        return $errors;
-    }
+            if (!$user_id) {
+                $errors->add('registerfail', sprintf(__('<strong>ERROR</strong>: Couldn&#8217;t register you... please contact the <a href="mailto:%s">webmaster</a> !'), get_option('admin_email')));
+                return $errors;
+            }
 
-    update_user_option($user_id, 'default_password_nag', true, true); //Set up the Password change nag.
+            update_user_option($user_id, 'default_password_nag', true, true); //Set up the Password change nag.
 
-    $userdata = array(
-        'ID' => $user_id,
-        'user_nicename' => $_SESSION['volunteer']['name']
-    );
-    wp_update_user($userdata);
+            $userdata = array(
+                'ID' => $user_id,
+                'user_nicename' => $_SESSION['volunteer']['name']
+            );
+            wp_update_user($userdata);
 
-    wp_new_user_notification($user_id, $user_pass);
+            wp_new_user_notification($user_id, $user_pass);
 
-    $user = get_userdata($user_id);
-    $login_data['user_login'] = $user->name;
-    $login_data['user_password'] = $user_pass;
-    $login_data['remember'] = TRUE;
-    $user_verify = wp_signon($login_data, true);
+            $user = get_userdata($user_id);
+            $login_data['user_login'] = $user->name;
+            $login_data['user_password'] = $user_pass;
+            $login_data['remember'] = TRUE;
+            $user_verify = wp_signon($login_data, true);
 
-    return $user_id;
-}
+            return $user_id;
+        }
 
-include 'coordinator.php';
+        include 'coordinator.php';
 
 
-add_action('before_content', 'error_message');
+        add_action('before_content', 'error_message');
 
-function error_message() {
-    if (is_user_logged_in()) {
-        global $current_user;
-        get_currentuserinfo();
-        if ($current_user->roles[0] == 'volunteer') {
-            if (!is_volunteer()) {
-                echo '<div class="notice success"><span>You\'re almost finished! <a href="/volunteer-registration/#complete">Complete your registration now</a>.</span></div>';
+        function error_message() {
+            if (is_user_logged_in()) {
+                global $current_user;
+                get_currentuserinfo();
+                if ($current_user->roles[0] == 'volunteer') {
+                    if (!is_volunteer()) {
+                        echo '<div class="notice success"><span>You\'re almost finished! <a href="/volunteer-registration/#complete">Complete your registration now</a>.</span></div>';
+                    }
+                }
             }
         }
-    }
-}
 
-add_action('wp_ajax_nopriv_tax_search', 'tax_search');
-add_action('wp_ajax_tax_search', 'tax_search');
+        add_action('wp_ajax_nopriv_tax_search', 'tax_search');
+        add_action('wp_ajax_tax_search', 'tax_search');
 
-/**
- * Find Tax Sites to volunteer at - called in Step 3 of the volunteer registration wizard.
- * 
- * @global type $wpdb
- * @global type $table_prefix
- * @global type $post
- * @return $html                    HTML fragment showing a list of excerpted Tax Sites matching the search.
- */
-function tax_search() {
-    $errors = array();
+        /**
+         * Find Tax Sites to volunteer at - called in Step 3 of the volunteer registration wizard.
+         * 
+         * @global type $wpdb
+         * @global type $table_prefix
+         * @global type $post
+         * @return $html                    HTML fragment showing a list of excerpted Tax Sites matching the search.
+         */
+        function tax_search() {
+            $errors = array();
 
-    // response output
-    header("Content-Type: text/html");
+            // response output
+            header("Content-Type: text/html");
 
-    global $wpdb;
-    global $table_prefix;
+            global $wpdb;
+            global $table_prefix;
 
-        $conditions_or = array();
-        $conditions_and = array();
-        
-    if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
-        $terms = split(' ', $_GET['search_terms']);
+            $conditions_or = array();
+            $conditions_and = array();
 
-        foreach ($terms as $term) {
-            $term = mysql_real_escape_string($term);
-            if (in_array(ucfirst(strtolower($term)), array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
-            {
-                $term = ucfirst(strtolower($term));
-                // See character classes here: http://dev.mysql.com/doc/refman/5.1/en/regexp.html#operator_regexp
-                $fragment = str_replace('"', '[[.quotation-mark.]]', '"' . $term . '":{"Start1":"","End1":"","Start2":"","End2":""}');
-                $fragment = str_replace("{", '[[.left-brace.]]', $fragment);
-                $fragment = str_replace("}", '[[.right-brace.]]', $fragment);
-                $conditions_and[] = "hours.meta_value NOT REGEXP '$fragment'";
-            }
-            else
-                $conditions_or[] = " (p.post_title LIKE '%$term%' 
+            if ($_GET['search_terms'] && trim($_GET['search_terms']) != 'Search ...') {
+                $terms = split(' ', $_GET['search_terms']);
+
+                foreach ($terms as $term) {
+                    $term = mysql_real_escape_string($term);
+                    if (in_array(ucfirst(strtolower($term)), array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))) {
+                        $term = ucfirst(strtolower($term));
+                        // See character classes here: http://dev.mysql.com/doc/refman/5.1/en/regexp.html#operator_regexp
+                        $fragment = str_replace('"', '[[.quotation-mark.]]', '"' . $term . '":{"Start1":"","End1":"","Start2":"","End2":""}');
+                        $fragment = str_replace("{", '[[.left-brace.]]', $fragment);
+                        $fragment = str_replace("}", '[[.right-brace.]]', $fragment);
+                        $conditions_and[] = "hours.meta_value NOT REGEXP '$fragment'";
+                    } else
+                        $conditions_or[] = " (p.post_title LIKE '%$term%' 
                 OR p.post_excerpt LIKE '%$term%' 
                 OR p.post_content LIKE '%$term%' 
                 OR bart.meta_value LIKE '%$term%' 
                 OR t.name LIKE '%$term%' 
                 OR a.meta_value LIKE '%$term%' ) ";
-        }
-    };
+                }
+            };
 
-    $query = "SELECT p.*, 
+            $query = "SELECT p.*, 
             bart.meta_value AS bartstations, 
             hours.meta_value AS hours, 
             t.name AS county,
@@ -810,110 +808,110 @@ function tax_search() {
         LEFT JOIN {$table_prefix}terms AS t USING(term_id) 
         WHERE post_status = 'publish' AND post_type = 'listing'
         AND (" . (count($conditions_or) > 0 ? implode(' OR ', $conditions_or) : '1=1') . ")
-        AND (" . (count($conditions_and) > 0 ?implode(' AND ', $conditions_and) : '1=1'). ")
+        AND (" . (count($conditions_and) > 0 ? implode(' AND ', $conditions_and) : '1=1') . ")
         GROUP BY ID";
 
-    $data = $wpdb->get_results($query, 'OBJECT');
-    $volunteer_position = $_SESSION['volunteer']['position'][0];
+            $data = $wpdb->get_results($query, 'OBJECT');
+            $volunteer_position = $_SESSION['volunteer']['position'][0];
 
-    global $post;
-    
-  $total_available = 0;
+            global $post;
 
-        foreach ($data as $post) {
-            if (setup_postdata($post)) {
+            $total_available = 0;
 
-                // Screeners are always eligible; other positions may not be.
-                $tax_site_available = true;
-                if ($volunteer_position == 'preparer')
-                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberoftaxpreparersneeded', true) > 0;
-                if ($volunteer_position == 'greeter')
-                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofgreetersneeded', true) > 0;
-                if ($volunteer_position == 'interpreter')
-                    $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) > 0;
+            foreach ($data as $post) {
+                if (setup_postdata($post)) {
 
-                if ($tax_site_available) {
-                    $total_available++;
-                    ?>
-                    <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();   ?>><?php
-                    //get_template_part('content-listing');
-                    // TODO: USE select + join instead get_post_meta
+                    // Screeners are always eligible; other positions may not be.
+                    $tax_site_available = true;
+                    if ($volunteer_position == 'preparer')
+                        $tax_site_available = get_post_meta(get_the_ID(), 'app_numberoftaxpreparersneeded', true) > 0;
+                    if ($volunteer_position == 'greeter')
+                        $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofgreetersneeded', true) > 0;
+                    if ($volunteer_position == 'interpreter')
+                        $tax_site_available = get_post_meta(get_the_ID(), 'app_numberofinterpretersneeded', true) > 0;
 
-                    $lat = get_post_meta(get_the_ID(), 'lat', true);
-                    $lng = get_post_meta(get_the_ID(), 'lng', true);
-                    $T = get_the_title();
-                    $T = $T[0];
-                    if ($lat && $lng) {
-                        $center = $lat . ',' . $lng;
-                    } else {
-                        $center = esc_html(get_post_meta(get_the_ID(), 'address', true));
-                    }
-                    ?>
-                        <div class="result-item">
-                            <div id="map-<?php the_ID(); ?>" class="map"><img
-                                    src="http://maps.googleapis.com/maps/api/staticmap?center=<?php print $center; ?>&zoom=13&size=160x160&maptype=roadmap&markers=color:red%7Clabel:<?php echo $T; ?>%7C<?php echo $center; ?>&sensor=false"
-                                    title="Click to explain"/></div>
-                            <!--  -->
-                            <script type="text/javascript">
-                                jQuery(document).ready(function($) {
-                                    $('#map-<?php the_ID() ?>').click(function() {
-                                        var lat = '<?php print $lat; ?>';
-                                        var lng = '<?php print $lng; ?>';
-                                        if (!(lat && lng)) {
-                                            codeAddress('<?= $center ?>', 'map-<?php the_ID() ?>');
-                                        } else {
-                                            initializeMap(lat, lng, 'map-<?php the_ID() ?>');
-                                        }
-                                    });
-                                });
-                            </script>
+                    if ($tax_site_available) {
+                        $total_available++;
+                            ?>
+                <article class="tax-search-dialog" id="post-<?php the_ID(); ?>" <?php //post_class();   ?>><?php
+                //get_template_part('content-listing');
+                // TODO: USE select + join instead get_post_meta
 
-                            <button class="tax_sites" name="tax_sites" value="<?php the_ID(); ?>">SELECT THIS SITE</button>
-                            <h2><?php the_title(); ?></h2>
-
-                            <p class="listing-phone">
-                                Phone: <?php echo esc_html(get_post_meta(get_the_ID(), 'phone', true)); ?></p>
-
-                            <p class="listing-address">Address: <?php the_listing_address(); ?></p>
-
-                            <p class="listing-hours">Hours of
-                                operation:<br/><?php echo get_formatted_hours_of_operation(get_post_meta(get_the_ID(), 'app_hoursofoperation', true)); ?></p>
-
-                            <p class="listing-coordinator">
-                                Coordinator
-                                info: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatorname', true)); ?>
-                    <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatorphonenumber', true)); ?>
-                    <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatoremailaddress', true)); ?>
-                            </p>
-
-                            <p class="listing-lang">Addition
-                                languages: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_additionallanguagesspoken', false))); ?></p>
-
-                            <p class="listing-transportation">
-                                Parking: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_parking', false))); ?>
-                                |
-                                Transit
-                                Agency: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_busshuttles', true)); ?>
-                                |
-                                Bart
-                                stations: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closestbartstation', true)); ?>
-                            </p>
-
-                            <p class="listing-openclose">
-                                Opening/closing
-                                dates: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_openingdate', true)); ?> |
-                    <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closingdate', true)); ?>
-                            </p>
-                            <p>
-                                ADA Accessible: <?php echo get_post_meta(get_the_ID(), 'app_adaaccessible', true) ?>
-                            </p>
-                        </div>
-                    <?php ?></article><?php
+                $lat = get_post_meta(get_the_ID(), 'lat', true);
+                $lng = get_post_meta(get_the_ID(), 'lng', true);
+                $T = get_the_title();
+                $T = $T[0];
+                if ($lat && $lng) {
+                    $center = $lat . ',' . $lng;
+                } else {
+                    $center = esc_html(get_post_meta(get_the_ID(), 'address', true));
                 }
-            } else {
-                //echo 'error';
+                ?>
+                    <div class="result-item">
+                        <div id="map-<?php the_ID(); ?>" class="map"><img
+                                src="http://maps.googleapis.com/maps/api/staticmap?center=<?php print $center; ?>&zoom=13&size=160x160&maptype=roadmap&markers=color:red%7Clabel:<?php echo $T; ?>%7C<?php echo $center; ?>&sensor=false"
+                                title="Click to explain"/></div>
+                        <!--  -->
+                        <script type="text/javascript">
+                            jQuery(document).ready(function($) {
+                                $('#map-<?php the_ID() ?>').click(function() {
+                                    var lat = '<?php print $lat; ?>';
+                                    var lng = '<?php print $lng; ?>';
+                                    if (!(lat && lng)) {
+                                        codeAddress('<?= $center ?>', 'map-<?php the_ID() ?>');
+                                    } else {
+                                        initializeMap(lat, lng, 'map-<?php the_ID() ?>');
+                                    }
+                                });
+                            });
+                        </script>
+
+                        <button class="tax_sites" name="tax_sites" value="<?php the_ID(); ?>">SELECT THIS SITE</button>
+                        <h2><?php the_title(); ?></h2>
+
+                        <p class="listing-phone">
+                            Phone: <?php echo esc_html(get_post_meta(get_the_ID(), 'phone', true)); ?></p>
+
+                        <p class="listing-address">Address: <?php the_listing_address(); ?></p>
+
+                        <p class="listing-hours">Hours of
+                            operation:<br/><?php echo get_formatted_hours_of_operation(get_post_meta(get_the_ID(), 'app_hoursofoperation', true)); ?></p>
+
+                        <p class="listing-coordinator">
+                            Coordinator
+                            info: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatorname', true)); ?>
+                <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatorphonenumber', true)); ?>
+                <?php echo esc_html(get_post_meta(get_the_ID(), 'app_sitecoordinatoremailaddress', true)); ?>
+                        </p>
+
+                        <p class="listing-lang">Addition
+                            languages: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_additionallanguagesspoken', false))); ?></p>
+
+                        <p class="listing-transportation">
+                            Parking: <?php echo esc_html(implode(', ', get_post_meta(get_the_ID(), 'app_parking', false))); ?>
+                            |
+                            Transit
+                            Agency: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_busshuttles', true)); ?>
+                            |
+                            Bart
+                            stations: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closestbartstation', true)); ?>
+                        </p>
+
+                        <p class="listing-openclose">
+                            Opening/closing
+                            dates: <?php echo esc_html(get_post_meta(get_the_ID(), 'app_openingdate', true)); ?> |
+                <?php echo esc_html(get_post_meta(get_the_ID(), 'app_closingdate', true)); ?>
+                        </p>
+                        <p>
+                            ADA Accessible: <?php echo get_post_meta(get_the_ID(), 'app_adaaccessible', true) ?>
+                        </p>
+                    </div>
+                <?php ?></article><?php
             }
+        } else {
+            //echo 'error';
         }
+    }
     if ($total_available == 0) {
         ?>
         <article class="listing">

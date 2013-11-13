@@ -474,7 +474,7 @@ function get_volunteer_tax_sites($volunteer_user_id = null) {
  */
 function get_volunteers() {
     global $current_user, $user_ID;
-    
+
     $volunteers = array();
 
     get_currentuserinfo();
@@ -785,7 +785,7 @@ function eks_is_admin() {
  */
 function fileupload($label, $myposts = array()) {
     ?>
-    <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';    ?>" accept-charset="utf-8" >
+    <form name="uploadfile" id="uploadfile_form" method="POST" enctype="multipart/form-data" action="<?php //echo $this->filepath.'#uploadfile';      ?>" accept-charset="utf-8" >
 
         <?php if (count($myposts) > 0) { ?>
 
@@ -936,19 +936,26 @@ function get_formatted_hours_of_operation($json, $separator = "<br/>") {
  * @return bool $success
  */
 function eks_mail($to, $from, $subject, $body, $cc = null, $replyTo = null) {
+
+    // Set to true for debugging
+    $SIMULATE_MAIL_SENDING = false;
+
     $headers = 'From: ' . $from . "\r\n";
     if (!empty($cc))
         $headers .= 'Cc: ' . $cc . "\r\n";
     if (!empty($replyTo))
         $headers .= 'ReplyTo: ' . $replyTo . "\r\n";
     add_filter('wp_mail_content_type', 'eks_set_html_content_type');
-    $success = wp_mail($to, $subject, $body, $headers);
+
+    $msg = "to:$to\n subject:$subject\n, headers:$headers\n" . $body;
+    if ($SIMULATE_MAIL_SENDING) {
+        $success = true;
+    } else {
+        $success = wp_mail($to, $subject, $body, $headers);
+    }
     // reset content-type to to avoid conflicts -- http://core.trac.wordpress.org/ticket/23578
     remove_filter('wp_mail_content_type', 'eks_set_html_content_type');
-    if (!$success) {
-        //throw new exception("Could not email to:$to\n subject:$subject\n, headers:$headers");
-        error_log("Could not email to:$to\n subject:$subject\n, headers:$headers");
-    }
+    error_log( ($SIMULATE_MAIL_SENDING ? 'SIMULATE ' : '') . 'SEND MAIL ' . ($success ? 'SUCCESS' : 'FAILURE') . ': ' . $msg);
     return $success;
 }
 

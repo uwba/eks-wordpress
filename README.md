@@ -3,6 +3,16 @@ eks-wordpress
 
 EarnItKeepItSaveIt site, based on Wordpress 3.5.
 
+### Migrating to a different server
+
+1. Copy the contents of /wp-contents/uploads
+1. Execute this SQL on your database server:
+
+```sql
+UPDATE db_options SET option_value = 'http://yourservername' WHERE option_name IN ('siteurl', 'home');
+```
+1. Activate the Configure SMTP plugin if needed to send mail.
+
 ### Debugging
 
 To aid in debugging, you can do optionally do the following:
@@ -62,7 +72,7 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
                     $is_statement = preg_match( '/^\s*(insert|delete|update|replace)\s/i', $query );
                     $row_count = $is_statement ? mysql_affected_rows() : mysql_num_rows ( $this->result );
                     $this->queries[] = array( $query, $this->timer_stop(), $this->get_caller(),  $row_count);
-                    error_log("$query ($row_count)\n", 3, dirname(ini_get('error_log')) . '/' . 'sql.log');
+                    error_log("[" . date(DATE_ATOM) . "] $query ($row_count)\n", 3, dirname(ini_get('error_log')) . '/' . 'sql.log');
                     // End EKS hack
                 }
 [...]
